@@ -1,5 +1,12 @@
+setup:
+  addons:
+    - plan: heroku-postgresql
+      as: DATABASE
 build:
   docker:
     web: Dockerfile
+    worker: worker/Dockerfile
+release:
+  image: worker
 run:
   web: go run main.go
