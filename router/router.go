@@ -2,174 +2,11 @@ package router
 
 import (
 	"bytes"
-	"crypto/sha512"
-	"errors"
 	"fmt"
-	"github.com/gbrlsnchs/jwt/v3"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/gorilla/mux"
-	"log"
-	"math/rand"
 	"net/http"
-	"os"
-	"strconv"
-	"time"
 )
-
-type User struct {
-	ID        uint
-	Email     string
-	Password  []byte//Длина хеш-суммы по алгоритму SHA512
-	Salt      []byte
-	SessionID uint
-	ProfileID uint
-	BestScore uint
-}
-
-type UserPk struct {
-	ID    uint
-	Email string
-}
-
-/*type Session struct {
-	ID        uint
-	Token     []byte
-	CreatedBy string
-	CreatedAt time.Time
-	ExpiresAt time.Time
-}*/
-
-type Profile struct {
-	ID       uint
-	Nickname string
-	AvatarID uint
-}
-
-type Avatar struct {
-	ID   uint
-	Path string
-}
-
-var IDSource uint
-var users map[string]User
-var userKeyPairs map[uint]string
-var profiles map[uint]Profile
-var avatars map[uint]Avatar
-var secret []byte
-
-func init() {
-	users = make(map[string]User, 0)
-	userKeyPairs = make(map[uint]string, 0)
-	profiles = make(map[uint]Profile, 0)
-	avatars = make(map[uint]Avatar, 0)
-
-	err := os.Setenv("SaltLen", "16")//16 байт (128 бит), как в современных UNIX системах
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = os.Setenv("SessionLifeLen", time.Hour.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = os.Setenv("ServerID", "MyConfidantServer")
-	if err != nil {
-		log.Fatal(err)
-	}
-	secretFile, err := os.Open("secret")
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = fmt.Fscanln(secretFile, &secret)
-	if err != nil {
-		return
-	}
-}
-
-func MakeID() uint {
-	//TODO make thread-safe
-	IDSource++
-	return IDSource
-}
-
-func MakeSalt()(salt []byte, err error) {
-	saltLen, err := strconv.Atoi(os.Getenv("SaltLen"))
-	if err != nil {
-		return
-	}
-	salt = make([]byte, saltLen)
-	rand.Read(salt)//Заполняем слайс случайными значениями по всей его длине
-	return
-}
-
-func MakePasswordHash(password string, salt []byte)(hash []byte){
-	saltedPassword:= bytes.Join([][]byte {[]byte(password), salt}, nil)
-	hashedPassword := sha512.Sum512(saltedPassword)//sha512 возвращает массив, а слайс можно взять только по addressable массиву
-	hash = hashedPassword[0:]
-	return
-}
-
-func MakeSession(user *User)(sessionCookie http.Cookie, err error){
-	signer := jwt.NewHMAC(jwt.SHA512, secret)
-	header := jwt.Header{}
-	sessionLifeLen, err := time.ParseDuration(os.Getenv("SessionLifeLen"))
-	if err != nil {
-		return
-	}
-	expiresAt := time.Now().Add(sessionLifeLen)
-	payload := jwt.Payload{
-		ExpirationTime: expiresAt.Unix(),
-		JWTID: strconv.FormatUint(uint64(user.ID), 10),
-	}
-	token, err := jwt.Sign(header, payload, signer)
-	if err != nil {
-		return
-	}
-
-	//Создаём cookie сессии
-	sessionCookie = http.Cookie{
-		Name:     "session_token",
-		Value:    string(token),
-		Expires:  expiresAt,
-		HttpOnly: true,
-	}
-	return
-}
-
-func Authorize(sessionToken string)(*User, error){
-	rawToken, err := jwt.Parse([]byte(sessionToken))
-	if err != nil {
-		fmt.Println("Error while parsing token")
-		return nil, err
-	}
-	verifier := jwt.NewHMAC(jwt.SHA512, secret)
-	err = rawToken.Verify(verifier)
-	if err != nil {
-		fmt.Println("Error while verifying token")
-		return nil, err
-	}
-	payload := jwt.Payload{}
-	_, err = rawToken.Decode(&payload)
-	if err != nil {
-		fmt.Println("Error while decoding token")
-		fmt.Println(err)
-		return nil, err
-	}
-	expValidator := jwt.ExpirationTimeValidator(time.Now(), true)
-	err = payload.Validate(expValidator)
-	if err != nil {
-		fmt.Println("Error while validating token")
-		return nil, err
-	}
-	userID, err := strconv.ParseUint(payload.JWTID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	user, found := users[userKeyPairs[uint(userID)]]
-	if !found {
-		fmt.Println("Error: user not found in the database")
-		return nil, errors.New("error: There are no token's owner in database")
-	}
-	return &user, nil
-}
 
 func GetRouter()(router *mux.Router){
 	router = mux.NewRouter()
@@ -252,7 +89,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	str := r.Form.Get("email")
 	fmt.Println(str)
-	_, userExist := users[r.Form.Get("email")]
+	_, userExist := models.Users[r.Form.Get("email")]
 	if userExist {
 		_, err := w.Write([]byte(
 			`
@@ -279,27 +116,33 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	user := User{ID:        MakeID(),
+	user := models.User{
+		ID:        models.MakeID(),
 		Email:     r.Form.Get("email"),
 		Salt:      salt,
-		ProfileID: MakeID(),
-		BestScore: 0}
+		ProfileID: models.MakeID(),
+		BestScore: 0,
+	}
 	user.Password = MakePasswordHash(r.Form.Get("password"), user.Salt)
 
-	profile := Profile{ID:       user.ProfileID,
+	profile := models.Profile{
+		ID:       user.ProfileID,
 		Nickname: r.Form.Get("nickname"),
-		AvatarID: MakeID()}
+		AvatarID: models.MakeID(),
+	}
 
-	avatar := Avatar{ID: profile.AvatarID,
-		Path: "img/default_avatar.jpg"}
+	avatar := models.Avatar{
+		ID: profile.AvatarID,
+		Path: "img/default_avatar.jpg",
+	}
 
-	profiles[profile.ID] = profile
-	avatars[avatar.ID] = avatar
+	models.Profiles[profile.ID] = profile
+	models.Avatars[avatar.ID] = avatar
 	defer func() {
 		//Пользователь уже успешно создан, поэтому его в любом случае следует добавить в БД
 		//Однако, с ним ещё можно произвести полезную работу, которая может вызвать ошибки
-		users[user.Email] = user
-		userKeyPairs[user.ID] = user.Email
+		models.Users[user.Email] = user
+		models.UserKeyPairs[user.ID] = user.Email
 	}()
 
 	sessionCookie, err := MakeSession(&user)//Заводим для пользователя новую сессию
@@ -335,7 +178,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request){
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	user, found := users[r.Form.Get("email")]
+	user, found := models.Users[r.Form.Get("email")]
 	password := MakePasswordHash(r.Form.Get("password"), user.Salt)
 	if !found || bytes.Compare(password, user.Password) != 0 {
 		_, err := w.Write([]byte(
@@ -396,12 +239,12 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error while doing auth")
 		return
 	}
-	profile, found := profiles[user.ProfileID]
+	profile, found := models.Profiles[user.ProfileID]
 	if !found {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	avatar, found := avatars[profile.AvatarID]
+	avatar, found := models.Avatars[profile.AvatarID]
 	if !found {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
