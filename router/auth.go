@@ -15,10 +15,21 @@ import (
 	"time"
 )
 
+const (
+	saltLen = 16
+	sessionLifeLen = time.Hour
+)
+
 var secret []byte
 
 func init() {
 	secretFile, err := os.Open("secret")
+	defer func() {
+		err := secretFile.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,10 +40,6 @@ func init() {
 }
 
 func MakeSalt()(salt []byte, err error) {
-	saltLen, err := strconv.Atoi(os.Getenv("SaltLen"))
-	if err != nil {
-		return
-	}
 	salt = make([]byte, saltLen)
 	rand.Read(salt)//Заполняем слайс случайными значениями по всей его длине
 	return
@@ -45,13 +52,9 @@ func MakePasswordHash(password string, salt []byte)(hash []byte){
 	return
 }
 
-func MakeSession(user *models.User)(sessionCookie http.Cookie, err error){
+func MakeSession(user models.User)(sessionCookie http.Cookie, err error){
 	signer := jwt.NewHMAC(jwt.SHA512, secret)
 	header := jwt.Header{}
-	sessionLifeLen, err := time.ParseDuration(os.Getenv("SessionLifeLen"))
-	if err != nil {
-		return
-	}
 	expiresAt := time.Now().Add(sessionLifeLen)
 	payload := jwt.Payload{
 		ExpirationTime: expiresAt.Unix(),
@@ -72,39 +75,33 @@ func MakeSession(user *models.User)(sessionCookie http.Cookie, err error){
 	return
 }
 
-func Authorize(sessionToken string)(*models.User, error){
+func Authorize(sessionToken string)(user models.User, err error){
 	rawToken, err := jwt.Parse([]byte(sessionToken))
 	if err != nil {
-		fmt.Println("Error while parsing token")
-		return nil, err
+		return
 	}
 	verifier := jwt.NewHMAC(jwt.SHA512, secret)
 	err = rawToken.Verify(verifier)
 	if err != nil {
-		fmt.Println("Error while verifying token")
-		return nil, err
+		return
 	}
 	payload := jwt.Payload{}
 	_, err = rawToken.Decode(&payload)
 	if err != nil {
-		fmt.Println("Error while decoding token")
-		fmt.Println(err)
-		return nil, err
+		return
 	}
 	expValidator := jwt.ExpirationTimeValidator(time.Now(), true)
 	err = payload.Validate(expValidator)
 	if err != nil {
-		fmt.Println("Error while validating token")
-		return nil, err
+		return
 	}
 	userID, err := strconv.ParseUint(payload.JWTID, 10, 64)
 	if err != nil {
-		return nil, err
+		return
 	}
 	user, found := models.Users[models.UserKeyPairs[uint(userID)]]
 	if !found {
-		fmt.Println("Error: user not found in the database")
-		return nil, errors.New("error: There are no token's owner in database")
+		return user, errors.New(NoTokenOwner)
 	}
-	return &user, nil
+	return
 }
