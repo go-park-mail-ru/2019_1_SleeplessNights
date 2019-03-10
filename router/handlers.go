@@ -4,11 +4,21 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"strings"
 )
 
 const (
-	CORSPolicy = "*"
+	DomainsCORS     = "*"
+	MethodsCORS     = "GET POST PATCH OPTIONS"
+	CredentialsCORS = "true"
+	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control"
+)
+
+const (
+	AvatarPrefix = "../static/img/"
 )
 
 func GetRouter()(router *mux.Router){
@@ -17,6 +27,8 @@ func GetRouter()(router *mux.Router){
 	router.HandleFunc("/api/auth", AuthHandler).Methods("POST", "OPTIONS")//.Headers("Referer")
 	router.HandleFunc("/api/profile", ProfileHandler).Methods("GET", "OPTIONS")
 	//router.HandleFunc("/profile", ProfileUpdateHandler).Methods("PATCH")
+	router.HandleFunc("/api/avatar", AvatarHandler).Methods("GET, OPTIONS").Queries("path")
+	//router.HandleFunc("/api/leaders", ProfileHandler).Methods("GET", "OPTIONS")
 	return
 }
 
@@ -49,7 +61,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Lost:      0,
 		PlayTime:  0,
 		Nickname: r.Form.Get("nickname"),
-		AvatarPath: "img/default_avatar.jpg",
+		AvatarPath: "default_avatar.jpg",
 	}
 	salt, err := MakeSalt()
 	if err != nil {
@@ -133,6 +145,28 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func AvatarHandler(w http.ResponseWriter, r *http.Request) {
+	path := AvatarPrefix + strings.TrimPrefix(r.URL.Query().Get("path"), "/")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	avatar, err := ioutil.ReadFile(path)
+	if err != nil {
+		Return500(&w, err)
+		return
+	}
+	w.Header().Set("Content-type", "image/jpeg")
+	_, err = w.Write(avatar)
+	if err != nil {
+		Return500(&w, err)
+		return
+	}
+}
+
 func AllowCORS(w *http.ResponseWriter){
-	(*w).Header().Set("Access-Control-Allow-Origin", CORSPolicy)
+	(*w).Header().Set("Access-Control-Allow-Origin", DomainsCORS)
+	(*w).Header().Set("Access-Control-Allow-Credentials", CredentialsCORS)
+	(*w).Header().Set("Access-Control-Allow-Methods", MethodsCORS)
+	(*w).Header().Set("Access-Control-Allow-Headers", HeadersCORS)
 }
