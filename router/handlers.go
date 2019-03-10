@@ -146,8 +146,10 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AvatarHandler(w http.ResponseWriter, r *http.Request) {
+	AllowCORS(&w)
 	path := AvatarPrefix + strings.TrimPrefix(r.URL.Query().Get("path"), "/")
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	_, err := os.Stat(path)
+	if 	err !=nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -156,7 +158,7 @@ func AvatarHandler(w http.ResponseWriter, r *http.Request) {
 		Return500(&w, err)
 		return
 	}
-	w.Header().Set("Content-type", "image/jpeg")
+	w.Header().Set("Content-type", http.DetectContentType(avatar))
 	_, err = w.Write(avatar)
 	if err != nil {
 		Return500(&w, err)

@@ -64,8 +64,8 @@ func MarshalToJSON(errSet ErrorSet)([]byte, error) {
 }
 
 func Return500(w *http.ResponseWriter, err error) {
-	(*w).WriteHeader(http.StatusInternalServerError)
 	(*w).Header().Set("Content-type", "application/json")
+	(*w).WriteHeader(http.StatusInternalServerError)
 	data := ErrorSet{err.Error()}
 	jsonData, err := MarshalToJSON(data)
 	if err != nil {
@@ -78,8 +78,8 @@ func Return500(w *http.ResponseWriter, err error) {
 }
 
 func Return400(w *http.ResponseWriter, requestErrorMessages ErrorSet) {
-	(*w).WriteHeader(http.StatusBadRequest)
 	(*w).Header().Set("Content-type", "application/json")
+	(*w).WriteHeader(http.StatusBadRequest)
 	data := requestErrorMessages
 	jsonData, err := MarshalToJSON(data)
 	if err != nil {
