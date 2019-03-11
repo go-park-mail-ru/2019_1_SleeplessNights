@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/gorilla/mux"
-	"image"
 	"io/ioutil"
 	"net/http"
 	"os"
 )
 
 const (
-	DomainsCORS     = "http://localhost:8000/"
+	DomainsCORS     = "https://sleeples-nights--frontend.herokuapp.com"
 	MethodsCORS     = "GET POST PATCH OPTIONS"
 	CredentialsCORS = "true"
-	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent"
+	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"
 )
 
 const (
@@ -24,12 +23,14 @@ const (
 
 func GetRouter()(router *mux.Router){
 	router = mux.NewRouter()
-	router.HandleFunc("/api/register", RegisterHandler).Methods("POST", "OPTIONS")
-	router.HandleFunc("/api/auth", AuthHandler).Methods("POST", "OPTIONS")//.Headers("Referer")
-	router.HandleFunc("/api/profile", ProfileHandler).Methods("GET", )
-	router.HandleFunc("/profile", ProfileUpdateHandler).Methods("PATCH")
-	router.HandleFunc("/api/leaders", LeadersHandler).Methods("GET", "OPTIONS")
-	router.HandleFunc("/img/{path}", ImgHandler).Methods("GET, OPTIONS") //.Queries("path")
+	router.HandleFunc("/api/register", RegisterHandler).Methods("POST")
+	router.HandleFunc("/api/auth", AuthHandler).Methods("POST")//.Headers("Referer")
+	router.HandleFunc("/api/profile", func(w http.ResponseWriter, r *http.Request) {SetBasicHeaders(&w); w.WriteHeader(http.StatusOK)}).Methods("OPTIONS")
+	router.HandleFunc("/api/profile", ProfileHandler).Methods("GET")
+	//router.HandleFunc("/profile", ProfileUpdateHandler).Methods("PATCH", "OPTIONS")
+	//router.HandleFunc("/api/leaders", LeadersHandler).Methods("GET")
+	router.HandleFunc("/img/{path}", func(w http.ResponseWriter, r *http.Request) {SetBasicHeaders(&w); w.WriteHeader(http.StatusOK)}).Methods("OPTIONS")
+	router.HandleFunc("/img/{path}", ImgHandler).Methods("GET") //.Queries("path")
 	return
 }
 
@@ -153,8 +154,8 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	/*SetBasicHeaders(&w)
+/*func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	SetBasicHeaders(&w)
 	err := r.ParseMultipartForm(MaxPhotoSize)
 	if err != nil {
 		formErrorMessages := ErrorSet{
@@ -195,7 +196,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	file, err :=
-}
+}*/
 
 func ImgHandler(w http.ResponseWriter, r *http.Request) {
 	SetBasicHeaders(&w)
@@ -221,7 +222,7 @@ func ImgHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Return500(&w, err)
 		return
-	}*/
+	}
 }
 
 func LeadersHandler(w http.ResponseWriter, r *http.Request)  {
