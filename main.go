@@ -8,9 +8,10 @@ import (
 )
 
 func main() {
-	//TODO MAKE LOGGER
-	//TODO MAKE CODES FOR CUSTOM ERRORS
-	//TODO MAKE SECRET MANAGER
+	//TODO MAKE LOGGER ?
+	//TODO RENAME ROUTER PACKAGE ?
+	//TODO MAKE SECRET MANAGER ?
+	//TODO WRITE TESTS
 	r := router.GetRouter()
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), r))
 }

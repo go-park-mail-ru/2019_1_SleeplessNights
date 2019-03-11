@@ -31,7 +31,6 @@ func init() {
 }
 
 func MakeID() uint {
-	//TODO make thread-safe
 	idSource++
 	return idSource
 }

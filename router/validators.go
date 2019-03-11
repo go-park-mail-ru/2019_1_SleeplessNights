@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+const (
+	MaxPhotoSize = 2*1024*1024
+)
+
 func ValidateRegisterRequest(r *http.Request)(requestErrors ErrorSet, isValid bool, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
