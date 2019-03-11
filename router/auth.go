@@ -17,7 +17,7 @@ import (
 
 const (
 	saltLen = 16
-	sessionLifeLen = time.Hour
+	sessionLifeLen = 4 * time.Hour
 )
 
 var secret []byte

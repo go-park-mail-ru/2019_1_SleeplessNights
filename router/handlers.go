@@ -4,37 +4,38 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/gorilla/mux"
+	"image"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 )
 
 const (
-	DomainsCORS     = "http://localhost:8000"
+	DomainsCORS     = "http://localhost:8000/"
 	MethodsCORS     = "GET POST PATCH OPTIONS"
 	CredentialsCORS = "true"
-	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control"
+	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent"
 )
 
 const (
-	AvatarPrefix = "../static/img/"
+	AvatarPrefix = "static/img/"
+	MaxPhotoSize = 2*1024*1024
 )
 
 func GetRouter()(router *mux.Router){
 	router = mux.NewRouter()
 	router.HandleFunc("/api/register", RegisterHandler).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/auth", AuthHandler).Methods("POST", "OPTIONS")//.Headers("Referer")
-	router.HandleFunc("/api/profile", ProfileHandler).Methods("GET", "OPTIONS")
-	//router.HandleFunc("/profile", ProfileUpdateHandler).Methods("PATCH")
-	router.HandleFunc("/api/avatar", AvatarHandler).Methods("GET, OPTIONS").Queries("path")
-	//router.HandleFunc("/api/leaders", LeadersHandler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/api/profile", ProfileHandler).Methods("GET", )
+	router.HandleFunc("/profile", ProfileUpdateHandler).Methods("PATCH")
+	router.HandleFunc("/api/leaders", LeadersHandler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/img/{path}", ImgHandler).Methods("GET, OPTIONS") //.Queries("path")
 	return
 }
 
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	AllowCORS(&w)
+	SetBasicHeaders(&w)
 	err := r.ParseForm()
 	if err != nil {
 		formErrorMessages := ErrorSet{
@@ -83,12 +84,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, &sessionCookie)
-	http.Redirect(w, r, "/profile", http.StatusFound)
+	_, err = w.Write([]byte("{}"))
+	if err != nil {
+		Return500(&w, err)
+		return
+	}
 }
 
 
 func AuthHandler(w http.ResponseWriter, r *http.Request){
-	AllowCORS(&w)
+	SetBasicHeaders(&w)
 	err := r.ParseForm()
 	if err != nil {
 		formErrorMessages := ErrorSet{
@@ -114,22 +119,25 @@ func AuthHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	http.SetCookie(w, &sessionCookie)
-	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+	_, err = w.Write([]byte("{}"))
+	if err != nil {
+		Return500(&w, err)
+		return
+	}
 }
 
-
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
-	AllowCORS(&w)
+	SetBasicHeaders(&w)
 	sessionCookie, err := r.Cookie("session_token")
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
-		http.Redirect(w, r, "/auth", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	user, err := Authorize(sessionCookie.Value)
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
-		http.Redirect(w, r, "/auth", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -145,9 +153,59 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AvatarHandler(w http.ResponseWriter, r *http.Request) {
-	AllowCORS(&w)
-	path := AvatarPrefix + strings.TrimPrefix(r.URL.Query().Get("path"), "/")
+func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	/*SetBasicHeaders(&w)
+	err := r.ParseMultipartForm(MaxPhotoSize)
+	if err != nil {
+		formErrorMessages := ErrorSet{
+			FormParsingErrorMsg,
+			err.Error(),
+		}
+		Return400(&w, formErrorMessages)
+		return
+	}
+
+	sessionCookie, err := r.Cookie("session_token")
+	if err != nil {
+		r.Header.Add("Referer", r.URL.String())
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	user, err := Authorize(sessionCookie.Value)
+	if err != nil {
+		r.Header.Add("Referer", r.URL.String())
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	requestErrors, isValid, err := ValidateUpdateProfileRequest(r, user)
+	if err != nil {
+		Return500(&w, err)
+	}
+	if !isValid {
+		Return400(&w, requestErrors)
+		return
+	}
+
+	user.Nickname = r.MultipartForm.Value["nickname"][0]
+	models.Users[user.Email] = user
+	newAvatar, err := r.MultipartForm.File["avatar"][0].Open()
+	if err != nil {
+		Return500(&w, err)
+		return
+	}
+	file, err :=
+}
+
+func ImgHandler(w http.ResponseWriter, r *http.Request) {
+	SetBasicHeaders(&w)
+	vars := mux.Vars(r)
+	pathToFile, found := vars["path"]
+	if !found {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	path := AvatarPrefix + pathToFile//r.URL.Query().Get("path")
 	_, err := os.Stat(path)
 	if 	err !=nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -163,12 +221,17 @@ func AvatarHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Return500(&w, err)
 		return
-	}
+	}*/
 }
 
-func AllowCORS(w *http.ResponseWriter){
+func LeadersHandler(w http.ResponseWriter, r *http.Request)  {
+
+}
+
+func SetBasicHeaders(w *http.ResponseWriter){
 	(*w).Header().Set("Access-Control-Allow-Origin", DomainsCORS)
 	(*w).Header().Set("Access-Control-Allow-Credentials", CredentialsCORS)
 	(*w).Header().Set("Access-Control-Allow-Methods", MethodsCORS)
 	(*w).Header().Set("Access-Control-Allow-Headers", HeadersCORS)
+	(*w).Header().Set("Content-type", "application/json")
 }
