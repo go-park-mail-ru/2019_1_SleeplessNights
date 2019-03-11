@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DomainsCORS     = "*"
+	DomainsCORS     = "http://localhost:8000"
 	MethodsCORS     = "GET POST PATCH OPTIONS"
 	CredentialsCORS = "true"
 	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control"
@@ -28,7 +28,7 @@ func GetRouter()(router *mux.Router){
 	router.HandleFunc("/api/profile", ProfileHandler).Methods("GET", "OPTIONS")
 	//router.HandleFunc("/profile", ProfileUpdateHandler).Methods("PATCH")
 	router.HandleFunc("/api/avatar", AvatarHandler).Methods("GET, OPTIONS").Queries("path")
-	//router.HandleFunc("/api/leaders", ProfileHandler).Methods("GET", "OPTIONS")
+	//router.HandleFunc("/api/leaders", LeadersHandler).Methods("GET", "OPTIONS")
 	return
 }
 
