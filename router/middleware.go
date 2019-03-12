@@ -3,7 +3,7 @@ package router
 import "net/http"
 
 const (
-	DomainsCORS     = "http://localhost:8080"//"https://sleeples-nights--frontend.herokuapp.com"
+	DomainsCORS     = "https://sleeples-nights--frontend.herokuapp.com"
 	MethodsCORS     = "GET POST PATCH OPTIONS"
 	CredentialsCORS = "true"
 	//TODO FIX CORS HEADERS
