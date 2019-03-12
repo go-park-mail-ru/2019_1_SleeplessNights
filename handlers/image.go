@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +13,6 @@ const (
 )
 
 func ImgHandler(w http.ResponseWriter, r *http.Request) {
-	router.SetBasicHeaders(&w)
 	vars := mux.Vars(r)
 	pathToFile, found := vars["path"]
 	if !found {
@@ -28,13 +27,13 @@ func ImgHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	avatar, err := ioutil.ReadFile(path)
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
 	w.Header().Set("Content-type", http.DetectContentType(avatar))
 	_, err = w.Write(avatar)
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
 }
