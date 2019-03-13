@@ -1,29 +1,28 @@
 package handlers
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
 	"net/http"
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	router.SetBasicHeaders(&w)
 	err := r.ParseForm()
 	if err != nil {
-		formErrorMessages := router.ErrorSet{
-			router.FormParsingErrorMsg,
+		formErrorMessages := helpers.ErrorSet{
+			helpers.FormParsingErrorMsg,
 			err.Error(),
 		}
-		router.Return400(&w, formErrorMessages)
+		helpers.Return400(&w, formErrorMessages)
 		return
 	}
 
-	requestErrors, isValid, err := router.ValidateRegisterRequest(r)
+	requestErrors, isValid, err := helpers.ValidateRegisterRequest(r)
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 	}
 	if !isValid {
-		router.Return400(&w, requestErrors)
+		helpers.Return400(&w, requestErrors)
 		return
 	}
 
@@ -36,13 +35,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Nickname: r.Form.Get("nickname"),
 		AvatarPath: "default_avatar.jpg",
 	}
-	salt, err := router.MakeSalt()
+	salt, err := helpers.MakeSalt()
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
 	user.Salt = salt
-	user.Password = router.MakePasswordHash(r.Form.Get("password"), user.Salt)
+	user.Password = helpers.MakePasswordHash(r.Form.Get("password"), user.Salt)
 	defer func() {
 		//Пользователь уже успешно создан, поэтому его в любом случае следует добавить в БД
 		//Однако, с ним ещё можно произвести полезную работу, которая может вызвать ошибки
@@ -50,15 +49,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		models.UserKeyPairs[user.ID] = user.Email//Пара ключей ID-email, чтобы юзера можно было найти 2-мя способами
 	}()
 
-	sessionCookie, err := router.MakeSession(user)
+	sessionCookie, err := helpers.MakeSession(user)
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
 	http.SetCookie(w, &sessionCookie)
 	_, err = w.Write([]byte("{}"))
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
 }
