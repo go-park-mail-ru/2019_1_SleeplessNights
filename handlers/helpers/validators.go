@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	MaxPhotoSize = 2*1024*1024
+	MaxPhotoSize = 2 * 1024 * 1024
 )
 
-func ValidateRegisterRequest(r *http.Request)(requestErrors ErrorSet, isValid bool, err error) {
+func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
 	err = validateEmail(email, &requestErrors)
@@ -46,7 +46,7 @@ func ValidateRegisterRequest(r *http.Request)(requestErrors ErrorSet, isValid bo
 	return requestErrors, len(requestErrors) == 0, nil
 }
 
-func ValidateAuthRequest(r *http.Request)(requestErrors ErrorSet, isValid bool, user models.User, err error) {
+func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, user models.User, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
 	err = validateEmail(email, &requestErrors)
@@ -74,7 +74,7 @@ func ValidateAuthRequest(r *http.Request)(requestErrors ErrorSet, isValid bool, 
 	return requestErrors, len(requestErrors) == 0, user, nil
 }
 
-func validateEmail(email string, requestErrors *ErrorSet)(err error) {
+func validateEmail(email string, requestErrors *ErrorSet) (err error) {
 	isValid, err := regexp.Match("^[a-z0-9._%+-]+@[a-z0-9-]+.+.[a-z]{2,4}$", []byte(email))
 	if !isValid {
 		*requestErrors = append(*requestErrors, InvalidEmailErrorMsg)
@@ -82,7 +82,7 @@ func validateEmail(email string, requestErrors *ErrorSet)(err error) {
 	return
 }
 
-func validatePassword(password string, requestErrors *ErrorSet)(err error) {
+func validatePassword(password string, requestErrors *ErrorSet) (err error) {
 	isValid := len(password) >= 8
 	if !isValid {
 		*requestErrors = append(*requestErrors, PasswordIsTooSmallErrorMsg)
@@ -90,7 +90,7 @@ func validatePassword(password string, requestErrors *ErrorSet)(err error) {
 	return nil
 }
 
-func validateNickname(nickname string, requestErrors *ErrorSet)(err error) {
+func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
 	isValid, err := regexp.Match("^[A-Za-z0-9_-]", []byte(nickname))
 	if err != nil {
 		return

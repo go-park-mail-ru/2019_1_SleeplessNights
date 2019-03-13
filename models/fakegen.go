@@ -44,11 +44,10 @@ func CreateFakeData(Quantity int) {
 			Lost:       uint(rand.Uint32()),
 			PlayTime:   TimeDuration,
 			Nickname:   Fake.UserName(),
-			AvatarPath: "static/img/default_avatar.jpg",
+			AvatarPath: "default_avatar.jpg",
 		}
 		Users[user.Email] = user
 		UserKeyPairs[user.ID] = user.Email
 	}
 
 }
-

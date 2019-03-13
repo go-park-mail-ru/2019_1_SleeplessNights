@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/satori/go.uuid"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 const AvatarPath string = "../static/img"
@@ -72,14 +75,14 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r, user) //TODO WRITE VALIDATOR
+	/*requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r, user) //TODO WRITE VALIDATOR
 	if err != nil {
 		helpers.Return500(&w, err)
 	}
 	if !isValid {
 		helpers.Return400(&w, requestErrors)
 		return
-	}
+	}*/
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	models.Users[user.Email] = user
@@ -92,7 +95,9 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newAvatarName := r.MultipartForm.File["avatar"][0].Filename
-	file, err := os.Create(AvatarPath + string(os.PathSeparator) + newAvatarName)
+	file_ext := strings.TrimPrefix(newAvatarName, filepath.Ext(newAvatarName))
+	filename := uuid.NewV4().String()
+	file, err := os.Create(AvatarPath + string(os.PathSeparator) + filename + file_ext)
 
 	defer file.Close()
 
@@ -101,13 +106,12 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	written, err := io.Copy(file, newAvatar)
-	written += 0
+	_, err = io.Copy(file, newAvatar)
 
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	user.AvatarPath = AvatarURL + "/" + newAvatarName
+	user.AvatarPath = filename + file_ext
 
 }

@@ -16,7 +16,6 @@ type User struct {
 	AvatarPath string        `json:"avatar_path"`
 }
 
-
 type UserPk struct {
 	ID    uint
 	Email string
@@ -37,6 +36,5 @@ func MakeID() uint {
 	//Fill Users map, UserKeyPairs with fake data
 
 	return idSource
-
 
 }
