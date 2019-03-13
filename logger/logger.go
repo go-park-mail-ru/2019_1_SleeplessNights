@@ -6,12 +6,16 @@ import (
 )
 
 var (
-	Info *log.Logger
-	Error *log.Logger
-	Trace *log.Logger
-	Debug *log.Logger
+	Info    *log.Logger
+	Error   *log.Logger
+	Trace   *log.Logger
+	Debug   *log.Logger
 	Warning *log.Logger
-	Fatal *log.Logger
+	Fatal   *log.Logger
+)
+
+const (
+	LoggerPath = "logger/logBase.log/"
 )
 
 func InitLogger() {
