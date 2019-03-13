@@ -23,7 +23,7 @@ func TestOptionsHandler(t *testing.T){
 			status, http.StatusOK)
 	}
 
-	expected := `` //TODO expected
+	expected := `{}` //TODO expected
 	if resp.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			resp.Body.String(), expected)
