@@ -50,7 +50,7 @@ func TestProfileHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected := `{"ID": 10, "Email": test@test.com, "Password": {}, Salt: {}, "Won": 1, "Lost": 2, "PlayTime": 10, "Nickname": bob, "AvatarPath": /static/img/default_avatar.jpg"}`
+	expected := `{"nickname":"bob","email":"test@test.com","won":1,"lost":2,"play_time":10,"avatar_path":"/static/img/default_avatar.jpg"}`
 	if resp.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			resp.Body.String(), expected)
