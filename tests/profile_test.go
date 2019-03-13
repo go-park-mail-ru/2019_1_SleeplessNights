@@ -35,7 +35,7 @@ func TestProfileHandler(t *testing.T) {
 
 	req, err := http.NewRequest("GET", "/api/profile", nil)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 
 	req.AddCookie(&cookie)
@@ -46,13 +46,13 @@ func TestProfileHandler(t *testing.T) {
 	handler.ServeHTTP(resp, req)
 
 	if status := resp.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
+		t.Errorf(WrongStatus+" got %v want %v",
 			status, http.StatusOK)
 	}
 
 	expected := `{"nickname":"bob","email":"test@test.com","won":1,"lost":2,"play_time":10,"avatar_path":"/static/img/default_avatar.jpg"}`
 	if resp.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
+		t.Errorf(UnexpectedBody+": got %v want %v",
 			resp.Body.String(), expected)
 	}
 }
@@ -69,13 +69,13 @@ func TestProfileUpdateHandler(t *testing.T) {
 	handler.ServeHTTP(resp, req)
 
 	if status := resp.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
+		t.Errorf(WrongStatus+": got %v want %v",
 			status, http.StatusOK)
 	}
 
 	expected := `{}` //TODO expected
 	if resp.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
+		t.Errorf(UnexpectedBody+": got %v want %v",
 			resp.Body.String(), expected)
 	}
 }

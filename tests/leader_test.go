@@ -10,7 +10,7 @@ import (
 func TestLeadersHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/api/leaders", nil)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 
 	resp := httptest.NewRecorder()
@@ -19,13 +19,13 @@ func TestLeadersHandler(t *testing.T) {
 	handler.ServeHTTP(resp, req)
 
 	if status := resp.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
+		t.Errorf(WrongStatus+": got %v want %v",
 			status, http.StatusOK)
 	}
 
 	expected := `{}` //TODO expected
 	if resp.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
+		t.Errorf(UnexpectedBody+": got %v want %v",
 			resp.Body.String(), expected)
 	}
 }
