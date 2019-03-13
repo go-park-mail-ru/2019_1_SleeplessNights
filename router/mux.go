@@ -28,6 +28,7 @@ func GetRouter()(router *mux.Router){
 	router.HandleFunc("/api/leaders", handlers.LeadersHandler).Methods("GET")
 	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods("OPTIONS")
 	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods("GET") //.Queries("path")
+	router.HandleFunc("/api/log", handlers.LoggerHandler).Methods("GET")
 	return
 }
 
