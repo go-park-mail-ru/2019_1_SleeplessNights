@@ -1,19 +1,19 @@
 package tests
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"bytes"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestImgHandler(t *testing.T){
+func TestImgHandler(t *testing.T) {
 
 	path := "/img/static/img/default_avatar.jpg"
 	req, err := http.NewRequest("GET", path, nil)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -30,7 +30,7 @@ func TestImgHandler(t *testing.T){
 		return
 	}
 
-	if  bytes.Compare(resp.Body.Bytes(), expected) != 0 { //TODO
+	if bytes.Compare(resp.Body.Bytes(), expected) != 0 { //TODO
 		t.Errorf("handler returned unexpected body")
 	}
 }

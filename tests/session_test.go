@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestAuthHandler(t *testing.T){
+func TestAuthHandler(t *testing.T) {
 	req, err := http.NewRequest("POST", "/api/auth", nil)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
 

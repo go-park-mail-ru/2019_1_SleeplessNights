@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestOptionsHandler(t *testing.T){
+func TestOptionsHandler(t *testing.T) {
 	req, err := http.NewRequest("PATCH", "/api/register", nil)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
 

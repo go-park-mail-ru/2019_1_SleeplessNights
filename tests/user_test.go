@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestRegisterHandler(t *testing.T){
+func TestRegisterHandler(t *testing.T) {
 	req, err := http.NewRequest("POST", "/api/register", nil)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
 

@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestLeadersHandler(t *testing.T){
+func TestLeadersHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/api/leaders", nil)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
 
