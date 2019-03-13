@@ -17,6 +17,7 @@ const (
 	InvalidNicknameErrorMsg     = "Никнейм может состоять только из букв латинского алфавита и символов '-' и '_'"
 	NicknameIsTooSmallErrorMsg  = "Никнейм не может быть короче 3 символов"
 	NicknameIsTooLongErrorMsg   = "Никнейм не может быть длиннее 16 символов"
+
 )
 
 const (
