@@ -1,6 +1,7 @@
 package router
 
 import (
+
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -25,7 +26,7 @@ func GetRouter()(router *mux.Router){
 	router.HandleFunc("/api/profile", handlers.ProfileHandler).Methods("GET")
 	router.HandleFunc("/profile", handlers.ProfileUpdateHandler).Methods("PATCH")
 	router.HandleFunc("/api/leaders", handlers.OptionsHandler).Methods("OPTIONS")
-	router.HandleFunc("/api/leaders", handlers.LeadersHandler).Methods("GET")
+	router.HandleFunc("/api/leaders/{page}", handlers.LeadersHandler).Methods("GET")
 	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods("OPTIONS")
 	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods("GET") //.Queries("path")
 	return

@@ -2,32 +2,35 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
+	"io"
 	"net/http"
+	"os"
 )
 
+const AvatarPath string = "../static/img"
+const AvatarURL string = "static/img"
 
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
-	router.SetBasicHeaders(&w)
 	sessionCookie, err := r.Cookie("session_token")
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
 		w.WriteHeader(http.StatusUnauthorized)
 		_, err = w.Write([]byte("{}"))
 		if err != nil {
-			router.Return500(&w, err)
+			helpers.Return500(&w, err)
 			return
 		}
 		return
 	}
-	user, err := router.Authorize(sessionCookie.Value)
+	user, err := helpers.Authorize(sessionCookie.Value)
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
 		w.WriteHeader(http.StatusUnauthorized)
 		_, err = w.Write([]byte("{}"))
 		if err != nil {
-			router.Return500(&w, err)
+			helpers.Return500(&w, err)
 			return
 		}
 		return
@@ -35,25 +38,24 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.Marshal(user)
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
 	_, err = w.Write(data)
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
 }
 
 func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	router.SetBasicHeaders(&w)
-	err := r.ParseMultipartForm(router.MaxPhotoSize)
+	err := r.ParseMultipartForm(helpers.MaxPhotoSize)
 	if err != nil {
-		formErrorMessages := router.ErrorSet{
-			router.FormParsingErrorMsg,
+		formErrorMessages := helpers.ErrorSet{
+			helpers.FormParsingErrorMsg,
 			err.Error(),
 		}
-		router.Return400(&w, formErrorMessages)
+		helpers.Return400(&w, formErrorMessages)
 		return
 	}
 
@@ -63,29 +65,49 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	user, err := router.Authorize(sessionCookie.Value)
+	user, err := helpers.Authorize(sessionCookie.Value)
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	requestErrors, isValid, err := router.ValidateUpdateProfileRequest(r, user)//TODO WRITE VALIDATOR
+	requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r, user) //TODO WRITE VALIDATOR
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 	}
 	if !isValid {
-		router.Return400(&w, requestErrors)
+		helpers.Return400(&w, requestErrors)
 		return
 	}
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	models.Users[user.Email] = user
-	//TODO UPLOAD AVATAR
+
 	newAvatar, err := r.MultipartForm.File["avatar"][0].Open()
+	defer newAvatar.Close()
+
 	if err != nil {
-		router.Return500(&w, err)
+		helpers.Return500(&w, err)
 		return
 	}
-	file, err :=
+	newAvatarName := r.MultipartForm.File["avatar"][0].Filename
+	file, err := os.Create(AvatarPath + string(os.PathSeparator) + newAvatarName)
+
+	defer file.Close()
+
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+
+	written, err := io.Copy(file, newAvatar)
+	written += 0
+
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+	user.AvatarPath = AvatarURL + "/" + newAvatarName
+
 }

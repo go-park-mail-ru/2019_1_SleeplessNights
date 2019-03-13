@@ -5,16 +5,17 @@ import (
 )
 
 type User struct {
-	ID        uint 			`json:"-"`
-	Email     string		`json:"email"`
-	Password  []byte		`json:"-"`
-	Salt      []byte		`json:"-"`
-	Won       uint			`json:"won"`
-	Lost      uint			`json:"lost"`
-	PlayTime  time.Duration `json:"play_time"`
-	Nickname  string        `json:"nickname"`
-	AvatarPath string       `json:"avatar_path"`
+	ID         uint          `json:"-"`
+	Email      string        `json:"email"`
+	Password   []byte        `json:"-"`
+	Salt       []byte        `json:"-"`
+	Won        uint          `json:"won"`
+	Lost       uint          `json:"lost"`
+	PlayTime   time.Duration `json:"play_time"`
+	Nickname   string        `json:"nickname"`
+	AvatarPath string        `json:"avatar_path"`
 }
+
 
 type UserPk struct {
 	ID    uint
@@ -28,9 +29,14 @@ var UserKeyPairs map[uint]string
 func init() {
 	Users = make(map[string]User, 0)
 	UserKeyPairs = make(map[uint]string, 0)
+	CreateFakeData(12)
 }
 
 func MakeID() uint {
 	idSource++
+	//Fill Users map, UserKeyPairs with fake data
+
 	return idSource
+
+
 }
