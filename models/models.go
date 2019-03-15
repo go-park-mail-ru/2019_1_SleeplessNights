@@ -28,13 +28,9 @@ var UserKeyPairs map[uint]string
 func init() {
 	Users = make(map[string]User, 0)
 	UserKeyPairs = make(map[uint]string, 0)
-	CreateFakeData(12)
 }
 
 func MakeID() uint {
 	idSource++
-	//Fill Users map, UserKeyPairs with fake data
-
 	return idSource
-
 }

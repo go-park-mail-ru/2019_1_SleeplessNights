@@ -41,7 +41,7 @@ func init() {
 
 func MakeSalt()(salt []byte, err error) {
 	salt = make([]byte, saltLen)
-	rand.Read(salt)//Заполняем слайс случайными значениями по всей его длине
+	_, err = rand.Read(salt)//Заполняем слайс случайными значениями по всей его длине
 	return
 }
 
