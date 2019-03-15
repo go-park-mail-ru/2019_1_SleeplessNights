@@ -9,7 +9,8 @@ import (
 func GetRouter()(router *mux.Router){
 	//TODO REFACTOR WITH NO VERBS
 	//TODO REORGANIZE STATIC FILES ACCESS
-	//TODO ADD SUBROUTERS
+	//TODO ADD AMAZON S3
+	//TODO ADD RECOVER MIDDLEWARE
 	router = mux.NewRouter()
 	api := router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/register", handlers.RegisterHandler).Methods("POST")
@@ -24,6 +25,7 @@ func GetRouter()(router *mux.Router){
 
 	router.Use(MiddlewareBasicHeaders)
 	router.Use(MiddlewareCORS)
+	router.Use(MiddlewareLog)
 	return
 }
 

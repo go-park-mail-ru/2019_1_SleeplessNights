@@ -4,16 +4,12 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/satori/go.uuid"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 const AvatarPath string = "../static/img"
-const AvatarURL string = "static/img"
 
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie("session_token")
@@ -87,17 +83,20 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	models.Users[user.Email] = user
 
-	newAvatar, err := r.MultipartForm.File["avatar"][0].Open()
-	defer newAvatar.Close()
-
+	newAvatar:= r.MultipartForm.File["avatar"][0]
+	avatarFile, err := newAvatar.Open()
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+	defer avatarFile.Close()
+	avatarBytes, err := ioutil.ReadAll(avatarFile)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
 	newAvatarName := r.MultipartForm.File["avatar"][0].Filename
-	file_ext := strings.TrimPrefix(newAvatarName, filepath.Ext(newAvatarName))
-	filename := uuid.NewV4().String()
-	file, err := os.Create(AvatarPath + string(os.PathSeparator) + filename + file_ext)
+	file, err := os.Create(AvatarPrefix + newAvatarName)
 
 	defer file.Close()
 
@@ -106,12 +105,17 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = io.Copy(file, newAvatar)
+	_, err = file.Write(avatarBytes)
 
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	user.AvatarPath = filename + file_ext
-
+	user.AvatarPath = newAvatarName
+	models.Users[user.Email] = user
+	_, err = w.Write([]byte(`{"avatar_path": "`+newAvatarName+`"}`))
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
 }

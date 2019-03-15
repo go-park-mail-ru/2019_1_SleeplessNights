@@ -38,14 +38,13 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	usersTotal := len(models.Users)
 
-	PageNum, err := strconv.ParseInt(page, 10, 32)
-
+	PageNum, err := strconv.Atoi(page)
 	if err != nil {
 		w.WriteHeader(404)
 		return
 	}
 
-	if PageNum > int64(usersTotal/pagesPerList) || PageNum < 1 {
+	if PageNum > usersTotal/pagesPerList || PageNum < 1 {
 		helpers.Return400(&w, helpers.ErrorSet{`Invalid "Page" Value`})
 		return
 	}
