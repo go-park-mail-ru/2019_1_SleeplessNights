@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	DomainsCORS     = "https://sleeples-nights--frontend.herokuapp.com"
+	DomainsCORS     = "https://sleepless-nights--frontend.herokuapp.com"
 	MethodsCORS     = "GET, POST, PATCH, OPTIONS"
 	CredentialsCORS = "true"
 	//TODO FIX CORS HEADERS
