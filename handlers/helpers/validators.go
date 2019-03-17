@@ -164,6 +164,5 @@ func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) (err 
 		return errors.New("неизвестный формат файла")
 	}
 
-
 	return
 }

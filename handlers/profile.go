@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 )
-
-const AvatarPath string = "../static/img"
 
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie("session_token")
@@ -82,24 +82,57 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
-	models.Users[user.Email] = user
+	newEmail := r.MultipartForm.Value["email"][0]
+
+	oldEmail := user.Email
+	user.Email = newEmail
+
+	if newEmail != oldEmail {
+
+		delete(models.Users, oldEmail)
+
+		models.Users[newEmail] = user
+		models.UserKeyPairs[user.ID] = newEmail
+
+		sessionCookie, err := helpers.MakeSession(user)
+		if err != nil {
+			helpers.Return500(&w, err)
+			return
+		}
+		http.SetCookie(w, &sessionCookie)
+
+	}
 
 	newAvatar := r.MultipartForm.File["avatar"][0]
 	avatarFile, err := newAvatar.Open()
+
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	defer avatarFile.Close()
+	defer func() {
+		err := avatarFile.Close()
+		if err != nil {
+			helpers.Return500(&w, err)
+			return
+		}
+	}()
 	avatarBytes, err := ioutil.ReadAll(avatarFile)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	newAvatarName := r.MultipartForm.File["avatar"][0].Filename
-	file, err := os.Create(AvatarPrefix + newAvatarName)
+	avatarName := uuid.NewV4().String() + filepath.Ext(r.MultipartForm.File["avatar"][0].Filename)
 
-	defer file.Close()
+	file, err := os.Create(AvatarPrefix + avatarName)
+
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			helpers.Return500(&w, err)
+			return
+		}
+	}()
 
 	if err != nil {
 		helpers.Return500(&w, err)
@@ -112,9 +145,9 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return500(&w, err)
 		return
 	}
-	user.AvatarPath = newAvatarName
+	user.AvatarPath = avatarName
 	models.Users[user.Email] = user
-	_, err = w.Write([]byte(`{"avatar_path": "` + newAvatarName + `"}`))
+	_, err = w.Write([]byte(`{"avatar_path": "` + avatarName + `"}`))
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
