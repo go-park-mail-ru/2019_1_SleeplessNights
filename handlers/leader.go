@@ -14,13 +14,13 @@ const (
 )
 
 type LeaderBoard struct {
-	Pages_total int           `json:"pages_total"`
-	CurrenPage  int           `json:"page"`
+	PagesTotal  int           `json:"pages_total"`
+	CurrentPage int           `json:"page"`
 	Slice       []models.User `json:"data"`
 }
 
-func Paginate(data []models.User, skip int, size int) []models.User {
-
+func Paginate(data []interface{}, skip int) []interface{} {
+	//TODO MAKE UNIVERSAL AND MOVE TO HELPERS
 	if skip > len(data) {
 		skip = len(data)
 	}
@@ -48,16 +48,23 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return400(&w, helpers.ErrorSet{`Invalid "Page" Value`})
 		return
 	}
-	UserSlice := make([]models.User, usersTotal)
-	i := 0
-	for _, v := range models.Users {
-		UserSlice[i] = v
-		i += 1
-	}
-	sort.Slice(UserSlice, func(i, j int) bool { return UserSlice[i].Won > UserSlice[j].Won })
-	PageSlice := Paginate(UserSlice, int(pagesPerList*(PageNum-1)), len(UserSlice))
-	ResponseData, _ := json.Marshal(LeaderBoard{int(usersTotal / 4), int(PageNum), PageSlice})
-	w.Header().Set("Content-type", "application/json")
-	w.Write(ResponseData)
 
+	userSlice := make([]interface{}, 0, usersTotal)
+	for _, v := range models.Users {
+		userSlice = append(userSlice, v)
+	}
+
+	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })
+	paginatedSlice := Paginate(userSlice, int(pagesPerList*(PageNum-1)))
+	var pageSlice []models.User
+	for _, user := range paginatedSlice {
+		pageSlice = append(pageSlice, user.(models.User))
+	}
+
+	ResponseData, _ := json.Marshal(LeaderBoard{int(usersTotal / 4), int(PageNum), pageSlice})
+	_, err = w.Write(ResponseData)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
 }
