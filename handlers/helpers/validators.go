@@ -2,7 +2,10 @@ package helpers
 
 import (
 	"bytes"
+	"errors"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strings"
@@ -11,6 +14,43 @@ import (
 const (
 	MaxPhotoSize = 2 * 1024 * 1024
 )
+
+func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErrors ErrorSet, isValid bool, err error) {
+
+	newNickname := strings.ToLower(r.MultipartForm.Value["nickname"][0])
+	err = validateNickname(newNickname, &requestErrors)
+
+	if err != nil {
+		logger.Error.Println("Failed to update profile:", err)
+		return
+	}
+
+	newEmail := strings.ToLower(r.MultipartForm.Value["email"][0])
+	err = validateEmail(newEmail, &requestErrors)
+
+	if err != nil {
+		logger.Error.Println("Failed to update profile:", err)
+		return
+	}
+
+	if existingUser, userFound := models.Users[newEmail]; userFound && user.ID != existingUser.ID {
+		logger.Error.Println("Failed to update profile:", UniqueEmailErrorMsg)
+		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
+		return
+	}
+
+	avatar := r.MultipartForm.File["avatar"][0]
+
+	err = validateAvatar(avatar, &requestErrors)
+
+	if err != nil {
+		logger.Error.Println("Failed to update profile:", err)
+		return
+	}
+
+	isValid = true
+	return
+}
 
 func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
@@ -104,5 +144,26 @@ func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
 	if len(nickname) > 16 {
 		*requestErrors = append(*requestErrors, NicknameIsTooLongErrorMsg)
 	}
+	return
+}
+
+func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) (err error) {
+
+	if avatar.Size == 0 {
+		*requestErrors = append(*requestErrors, AvatarIsMissingError)
+		return errors.New("файл нового аватара пустой")
+	}
+	//File is bigger than 10 MBytes
+	if avatar.Size > 10e6 {
+		*requestErrors = append(*requestErrors, AvatarFileIsTooBig)
+		return errors.New("файл аватара слишком большой")
+	}
+
+	if contentType := avatar.Header.Get("content-type"); contentType != "image/jpeg" {
+		*requestErrors = append(*requestErrors, AvatarExtensionError)
+		return errors.New("неизвестный формат файла")
+	}
+
+
 	return
 }

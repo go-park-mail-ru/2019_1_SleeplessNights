@@ -71,19 +71,20 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r, user) //TODO WRITE VALIDATOR
+	requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r, user)
 	if err != nil {
 		helpers.Return500(&w, err)
+		return
 	}
 	if !isValid {
 		helpers.Return400(&w, requestErrors)
 		return
-	}*/
+	}
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	models.Users[user.Email] = user
 
-	newAvatar:= r.MultipartForm.File["avatar"][0]
+	newAvatar := r.MultipartForm.File["avatar"][0]
 	avatarFile, err := newAvatar.Open()
 	if err != nil {
 		helpers.Return500(&w, err)
@@ -113,7 +114,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user.AvatarPath = newAvatarName
 	models.Users[user.Email] = user
-	_, err = w.Write([]byte(`{"avatar_path": "`+newAvatarName+`"}`))
+	_, err = w.Write([]byte(`{"avatar_path": "` + newAvatarName + `"}`))
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
