@@ -16,7 +16,7 @@ func TestAuthHandler(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range models.Users{
+	for  _, user := range models.Users{
 		email := user.Email
 		password := faker.FakeUserPassword
 

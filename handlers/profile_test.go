@@ -46,25 +46,25 @@ func TestProfileHandler(t *testing.T) {
 	}
 }
 
-//func TestProfileUpdateHandler(t *testing.T) {
-//	req, err := http.NewRequest("PATCH", "/profile", nil)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	resp := httptest.NewRecorder()
-//	handler := http.HandlerFunc(handlers.ProfileUpdateHandler)
-//
-//	handler.ServeHTTP(resp, req)
-//
-//	if status := resp.Code; status != http.StatusOK {
-//		t.Errorf(WrongStatus+": got %v want %v",
-//			status, http.StatusOK)
-//	}
-//
-//	expected := `{}` //TODO expected
-//	if resp.Body.String() != expected {
-//		t.Errorf(UnexpectedBody+": got %v want %v",
-//			resp.Body.String(), expected)
-//	}
-//}
+func TestProfileUpdateHandler(t *testing.T) {
+	//req, err := http.NewRequest("PATCH", "/profile", nil)
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//
+	//resp := httptest.NewRecorder()
+	//handler := http.HandlerFunc(handlers.ProfileUpdateHandler)
+	//
+	//handler.ServeHTTP(resp, req)
+	//
+	//if status := resp.Code; status != http.StatusOK {
+	//	t.Errorf(WrongStatus+": got %v want %v",
+	//		status, http.StatusOK)
+	//}
+	//
+	//expected := `{}` //TODO expected
+	//if resp.Body.String() != expected {
+	//	t.Errorf(UnexpectedBody+": got %v want %v",
+	//		resp.Body.String(), expected)
+	//}
+}

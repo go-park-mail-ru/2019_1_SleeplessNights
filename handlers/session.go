@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func AuthHandler(w http.ResponseWriter, r *http.Request){
+func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		formErrorMessages := helpers.ErrorSet{
