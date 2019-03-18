@@ -13,36 +13,36 @@ import (
 
 func TestProfileHandler(t *testing.T) {
 
-	faker.CreateFakeData(1)
-	user := models.Users[models.UserKeyPairs[1]]
-
-	cookie, err := helpers.MakeSession(user)
-	if err != nil {
-		t.Errorf("MakeSession returned error: %s", err)
-		return
-	}
-
 	path := "/api/profile"
 
-	req := httptest.NewRequest(http.MethodGet, path, nil)
-	req.AddCookie(&cookie)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	faker.CreateFakeData(handlers.UserCounter)
 
-	resp := httptest.NewRecorder()
+	for _, user := range models.Users{
+		cookie, err := helpers.MakeSession(user)
+		if err != nil {
+			t.Errorf("MakeSession returned error: %s", err)
+			return
+		}
 
-	http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		req.AddCookie(&cookie)
 
-	if status := resp.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+		resp := httptest.NewRecorder()
 
-	expected :=
-		fmt.Sprintf("{\"email\":\"%s\",\"won\":%d,\"lost\":%d,\"play_time\":%d,\"nickname\":\"%s\",\"avatar_path\":\"%s\"}",
-			user.Email, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
-	if resp.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			resp.Body.String(), expected)
+		http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
+
+		if status := resp.Code; status != http.StatusOK {
+			t.Errorf("handler returned wrong status code:\n got %v\n want %v\n",
+				status, http.StatusOK)
+		}
+
+		expected :=
+			fmt.Sprintf("{\"email\":\"%s\",\"won\":%d,\"lost\":%d,\"play_time\":%d,\"nickname\":\"%s\",\"avatar_path\":\"%s\"}",
+				user.Email, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
+		if resp.Body.String() != expected {
+			t.Errorf("handler returned unexpected body:\n got %v\n want %v\n",
+				resp.Body.String(), expected)
+		}
 	}
 }
 

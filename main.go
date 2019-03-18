@@ -11,6 +11,15 @@ func main() {
 	//TODO MAKE SECRET MANAGER ?
 	//TODO WRITE TESTS
 
+	//i := 6
+	//y := 3
+	//
+	//s := i % y
+	//
+	//if s == 0{
+	//	fmt.Print(s)
+	//}
+
 	PORT :=os.Getenv("PORT")
 	if PORT == ""{
 		PORT="8080"
