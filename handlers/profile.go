@@ -64,6 +64,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+
 	user, err := helpers.Authorize(sessionCookie.Value)
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
@@ -76,6 +77,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return500(&w, err)
 		return
 	}
+
 	if !isValid {
 		helpers.Return400(&w, requestErrors)
 		return
@@ -104,12 +106,13 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newAvatar := r.MultipartForm.File["avatar"][0]
-	avatarFile, err := newAvatar.Open()
 
+	avatarFile, err := newAvatar.Open()
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
+
 	defer func() {
 		err := avatarFile.Close()
 		if err != nil {
@@ -125,6 +128,10 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	avatarName := uuid.NewV4().String() + filepath.Ext(r.MultipartForm.File["avatar"][0].Filename)
 
 	file, err := os.Create(AvatarPrefix + avatarName)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
 
 	defer func() {
 		err := file.Close()
@@ -134,17 +141,12 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
-
 	_, err = file.Write(avatarBytes)
-
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
+
 	user.AvatarPath = avatarName
 	models.Users[user.Email] = user
 	_, err = w.Write([]byte(`{"avatar_path": "` + avatarName + `"}`))
