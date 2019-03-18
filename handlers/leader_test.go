@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"sort"
@@ -25,12 +26,7 @@ func TestLeadersHandler(t *testing.T) {
 	}
 	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })
 
-	var pagesTotal int
-	if handlers.UserCounter % handlers.PagesPerList == 0{
-		pagesTotal = handlers.UserCounter/handlers.PagesPerList
-	} else{
-		pagesTotal = handlers.UserCounter/handlers.PagesPerList+1
-	}
+	pagesTotal := int(math.Ceil(float64(handlers.UserCounter / handlers.PagesPerList)))
 
 	for i := 1; i <= pagesTotal; i++ {
 

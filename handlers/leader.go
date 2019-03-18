@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -61,7 +62,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		pageSlice = append(pageSlice, user.(models.User))
 	}
 
-	ResponseData, _ := json.Marshal(LeaderBoard{int(usersTotal / 4), int(PageNum), pageSlice})
+	ResponseData, _ := json.Marshal(LeaderBoard{int(math.Ceil(float64(usersTotal / PagesPerList))) , int(PageNum), pageSlice})
 	_, err = w.Write(ResponseData)
 	if err != nil {
 		helpers.Return500(&w, err)
