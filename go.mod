@@ -2,10 +2,4 @@ module github.com/DragonF0rm/Technopark-DBMS-Forum
 
 go 1.12
 
-require (
-	github.com/gbrlsnchs/jwt/v3 v3.0.0-alpha.4
-	github.com/gorilla/mux v1.7.0
-	github.com/manveru/faker v0.0.0-20171103152722-9fbc68a78c4d
-	github.com/manveru/gobdd v0.0.0-20131210092515-f1a17fdd710b // indirect
-	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a // indirect
-)
+require github.com/gorilla/mux v1.7.0

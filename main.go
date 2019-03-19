@@ -13,7 +13,7 @@ func main() {
 
 	PORT :=os.Getenv("PORT")
 	if PORT == ""{
-		PORT="8080"
+		PORT="5000"
 	}
 	logger.Info.Println("Started listening on", PORT)
 	r := router.GetRouter()

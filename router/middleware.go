@@ -5,24 +5,6 @@ import (
 	"net/http"
 )
 
-const (
-	DomainsCORS     = "https://sleepless-nights--frontend.herokuapp.com"
-	MethodsCORS     = "GET, POST, PATCH, OPTIONS"
-	CredentialsCORS = "true"
-	//TODO FIX CORS HEADERS
-	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"
-)
-
-func MiddlewareCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", DomainsCORS)
-		w.Header().Set("Access-Control-Allow-Credentials", CredentialsCORS)
-		w.Header().Set("Access-Control-Allow-Methods", MethodsCORS)
-		w.Header().Set("Access-Control-Allow-Headers", HeadersCORS)
-		next.ServeHTTP(w, r)
-	})
-}
-
 func MiddlewareBasicHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
@@ -32,7 +14,17 @@ func MiddlewareBasicHeaders(next http.Handler) http.Handler {
 
 func MiddlewareLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Info.Println("Have some request on",r.URL)
+		logger.Info.Println("Have some request on", r.URL)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func MiddlewareRescue(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			logger.Fatal.Println("Unhandled handler panic:",recover())
+			w.WriteHeader(http.StatusInternalServerError)
+		}()
 		next.ServeHTTP(w, r)
 	})
 }
