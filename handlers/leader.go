@@ -41,7 +41,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 
 	PageNum, err := strconv.Atoi(page)
 	if err != nil {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

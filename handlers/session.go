@@ -27,7 +27,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionCookie, err := helpers.MakeSession(user)
 	if err != nil {
-		helpers.Return500(&w, err)
+		helpers.Return500(&w, err) //TODO test wrong cookie
 		return
 	}
 	http.SetCookie(w, &sessionCookie)

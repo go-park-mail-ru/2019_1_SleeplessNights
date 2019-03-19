@@ -13,9 +13,7 @@ import (
 	"testing"
 )
 
-func TestLeadersHandler(t *testing.T) {
-
-	path := "/api/leaders"
+func TestLeadersHandlerSuccessful(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 	usersTotal := len(models.Users)
@@ -48,7 +46,7 @@ func TestLeadersHandler(t *testing.T) {
 		}
 		expected = expected + "]}"
 
-		req := httptest.NewRequest(http.MethodGet, path, nil)
+		req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
 		qq := req.URL.Query()
 		qq.Add("page", strconv.Itoa(i))
 		req.URL.RawQuery = qq.Encode()
@@ -56,15 +54,69 @@ func TestLeadersHandler(t *testing.T) {
 		resp := httptest.NewRecorder()
 
 		http.HandlerFunc(handlers.LeadersHandler).ServeHTTP(resp, req)
+		if status := resp.Code; status == http.StatusInternalServerError {
+			t.Errorf("handler returned wrong status code: %v\nhandler can't write into responce \n",
+				status)
+		} else {
+			if status := resp.Code; status != http.StatusOK {
+				t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
+					status, http.StatusOK)
+			}
 
-		if status := resp.Code; status != http.StatusOK {
-			t.Errorf("handler returned wrong status code:\n got %v\n want %v\n",
-				status, http.StatusOK)
+			if resp.Body.String() != expected {
+				t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
+					resp.Body.String(), expected)
+			}
+		}
+	}
+}
+
+func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T){
+	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
+	qq := req.URL.Query()
+	qq.Add("page", "aa")
+	req.URL.RawQuery = qq.Encode()
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.LeadersHandler).ServeHTTP(resp, req)
+
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: %v\nhandler can't write into responce \n",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusNotFound {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
+				status, http.StatusNotFound)
+		}
+	}
+}
+
+func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T){
+	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
+	qq := req.URL.Query()
+	qq.Add("page", strconv.Itoa(1000))
+	req.URL.RawQuery = qq.Encode()
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.LeadersHandler).ServeHTTP(resp, req)
+
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: %v\nhandler can't write into responce \n",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusBadRequest {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n%s",
+				status, http.StatusBadRequest, resp.Body.String())
 		}
 
+		expected := `{"email":"","password":"","password2":"","nickname":"","error":["Invalid \"Page\" Value"]}`
 		if resp.Body.String() != expected {
-			t.Errorf("handler returned unexpected body:\n got %v\n want %v\n",
+			t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 				resp.Body.String(), expected)
 		}
 	}
 }
+
+

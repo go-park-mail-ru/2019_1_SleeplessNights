@@ -18,7 +18,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 	for _, user := range models.Users{
 		cookie, err := helpers.MakeSession(user)
 		if err != nil {
-			t.Errorf("MakeSession returned error: %s", err)
+			t.Errorf("\nMakeSession returned error: %s\n", err)
 			return
 		}
 
@@ -29,11 +29,11 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 		http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
 		if status := resp.Code; status == http.StatusInternalServerError {
-			t.Errorf("handler returned wrong status code: %v\n It can't write into responce or can't Marshal 'user' into json\n",
+			t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
 				status)
 		} else {
 			if status := resp.Code; status != http.StatusOK {
-				t.Errorf("handler returned wrong status code:\n got %v\n want %v\n",
+				t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 					status, http.StatusOK)
 			}
 
@@ -41,7 +41,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 				fmt.Sprintf("{\"email\":\"%s\",\"won\":%d,\"lost\":%d,\"play_time\":%d,\"nickname\":\"%s\",\"avatar_path\":\"%s\"}",
 					user.Email, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
 			if resp.Body.String() != expected {
-				t.Errorf("handler returned unexpected body:\n got %v\n want %v\n",
+				t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 					resp.Body.String(), expected)
 			}
 		}
@@ -57,17 +57,17 @@ func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 	http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: %v\n It can't write into responce or can't Marshal 'user' into json\n",
+		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
 			status)
 	} else {
 		if status := resp.Code; status != http.StatusUnauthorized {
-			t.Errorf("handler returned wrong status code:\n got %v\n want %v\n",
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusUnauthorized)
 		}
 
 		expected := `{}`
 		if resp.Body.String() != expected {
-			t.Errorf("handler returned unexpected body:\n got %v\n want %v\n",
+			t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 				resp.Body.String(), expected)
 		}
 	}
@@ -93,17 +93,17 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 	http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: %v\n It can't write into responce or can't Marshal 'user' into json\n",
+		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
 			status)
 	} else {
 		if status := resp.Code; status != http.StatusUnauthorized {
-			t.Errorf("handler returned wrong status code:\n got %v\n want %v\n",
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusUnauthorized)
 		}
 
 		expected := `{}`
 		if resp.Body.String() != expected {
-			t.Errorf("handler returned unexpected body:\n got %v\n want %v\n",
+			t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 				resp.Body.String(), expected)
 		}
 	}

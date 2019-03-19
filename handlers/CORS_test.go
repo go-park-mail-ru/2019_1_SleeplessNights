@@ -7,11 +7,9 @@ import (
 	"testing"
 )
 
-func TestOptionsHandler(t *testing.T) {
+func TestOptionsHandlerSuccessful(t *testing.T) {
 
-	path := "/api/register"
-
-	req := httptest.NewRequest(http.MethodOptions, path, nil)
+	req := httptest.NewRequest(http.MethodOptions, handlers.ApiRegister, nil)
 
 	resp := httptest.NewRecorder()
 
