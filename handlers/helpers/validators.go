@@ -2,7 +2,9 @@ package helpers
 
 import (
 	"bytes"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strings"
@@ -11,6 +13,41 @@ import (
 const (
 	MaxPhotoSize = 2 * 1024 * 1024
 )
+
+var avatarTypeWhiteList map[string]struct{}
+
+func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErrors ErrorSet, isValid bool, err error) {
+	newNickname := r.Form.Get("nickname")
+
+	err = validateNickname(newNickname, &requestErrors)
+	if err != nil {
+		logger.Error.Println("Failed to update profile:", err)
+		return
+	}
+
+	newEmail := strings.ToLower(r.Form.Get("email"))
+	r.Form.Set("email", newEmail)
+
+	err = validateEmail(newEmail, &requestErrors)
+	if err != nil {
+		logger.Error.Println("Failed to update profile:", err)
+		return
+	}
+
+	if existingUser, userFound := models.Users[newEmail]; userFound && user.ID != existingUser.ID {
+		logger.Error.Println("Failed to update profile:", UniqueEmailErrorMsg)
+		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
+	}
+
+	avatar := r.MultipartForm.File["avatar"][0]
+
+	err = validateAvatar(avatar, &requestErrors)
+	if err != nil {
+		logger.Error.Println("Failed to update profile:", err)
+		return
+	}
+	return requestErrors, len(requestErrors) == 0, nil
+}
 
 func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
@@ -105,4 +142,29 @@ func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
 		*requestErrors = append(*requestErrors, NicknameIsTooLongErrorMsg)
 	}
 	return
+}
+
+func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) (err error) {
+
+	if avatar.Size == 0 {
+		*requestErrors = append(*requestErrors, AvatarIsMissingError)
+	}
+	if avatar.Size > MaxPhotoSize {
+		*requestErrors = append(*requestErrors, AvatarFileIsTooBig)
+	}
+	contentType := avatar.Header.Get("content-type")
+	if _, found := avatarTypeWhiteList[contentType]; !found {
+		*requestErrors = append(*requestErrors, AvatarExtensionError)
+	}
+
+	return nil
+}
+func init() {
+	avatarTypeWhiteList = make(map[string]struct{})
+	avatarTypeWhiteList["image/gif"] = struct{}{}
+	avatarTypeWhiteList["image/png"] = struct{}{}
+	avatarTypeWhiteList["image/jpeg"] = struct{}{}
+	avatarTypeWhiteList["image/bmp"] = struct{}{}
+	avatarTypeWhiteList["image/tiff"] = struct{}{}
+	avatarTypeWhiteList["image/pjpeg"] = struct{}{}
 }
