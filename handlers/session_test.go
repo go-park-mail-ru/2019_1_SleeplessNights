@@ -11,17 +11,17 @@ import (
 )
 
 type TestCaseAuth struct {
-	number    int
-	email     string
+	number   int
+	email    string
 	password string
-	error string
+	error    string
 }
 
 func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for  _, user := range models.Users{
+	for _, user := range models.Users {
 		email := user.Email
 		password := faker.FakeUserPassword
 
@@ -54,80 +54,71 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 	}
 }
 
-func TestAuthHandlerUnsuccessfulWrongFormAndNotRegister(t *testing.T) {
+func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 	cases := []TestCaseAuth{
 		TestCaseAuth{
-			number: 1,
-			email:     "test@1.com",
+			number:   1,
+			email:    "test@1.com",
 			password: "asdasdasdsadasdQ",
-			error: "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
 		},
 		TestCaseAuth{
-			number: 2,
-			email:     "test@@test.com",
+			number:   2,
+			email:    "test@@test.com",
 			password: "asdasdasdsadasdQ",
-			error: "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
-
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
 		},
 		TestCaseAuth{
-			number: 3,
-			email:     "te&st@test.com",
+			number:   3,
+			email:    "te&st@test.com",
 			password: "asdasdasdsadasdQ",
-			error: "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
-
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
 		},
 		TestCaseAuth{
-			number: 4,
-			email:     "test@test.com",
+			number:   4,
+			email:    "test@test.com",
 			password: "asdsdQ",
-			error: "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
-
+			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
 		},
 		TestCaseAuth{
-			number: 5,
-			email:     "teesttest.com",
+			number:   5,
+			email:    "teesttest.com",
 			password: "asdasdasdsadasdQ",
-			error: "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
-
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
 		},
 		TestCaseAuth{
-			number: 6,
-			email:     "_____@test.com",
+			number:   6,
+			email:    "_____@test.com",
 			password: "asdasdasdsadasd",
-			error: "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
-
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
 		},
 		TestCaseAuth{
-			number: 7,
-			email:     "teest@test.com",
+			number:   7,
+			email:    "teest@test.com",
 			password: "",
-			error: "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
-
+			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
 		},
 		TestCaseAuth{
-			number: 8,
-			email:     "",
+			number:   8,
+			email:    "",
 			password: "asdasdasdsadasd",
-			error: "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
-
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
 		},
 		TestCaseAuth{
-			number: 9,
-			email:     "test@testcom",
+			number:   9,
+			email:    "test@testcom",
 			password: "asdasdasdsadasd",
-			error: "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
-
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
 		},
 		TestCaseAuth{
-			number: 10,
-			email:     "test@test.com",
+			number:   10,
+			email:    "test@test.com",
 			password: "asdasdasdsadasd",
-			error: "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}}",
-
+			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}}",
 		},
 	}
 
-	for  _, item := range cases{
+	for _, item := range cases {
 		email := item.email
 		password := item.password
 
@@ -161,31 +152,31 @@ func TestAuthHandlerUnsuccessfulWrongFormAndNotRegister(t *testing.T) {
 
 func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 
-		form := url.Values{}
-		form.Add("WRONG_mail", "test@test.com")
-		form.Add("WRONG_password", "asdasdasdsadasd")
+	form := url.Values{}
+	form.Add("WRONG_mail", "test@test.com")
+	form.Add("WRONG_password", "asdasdasdsadasd")
 
-		req := httptest.NewRequest(http.MethodPost, handlers.ApiAuth, nil)
-		req.PostForm = form
+	req := httptest.NewRequest(http.MethodPost, handlers.ApiAuth, nil)
+	req.PostForm = form
 
-		resp := httptest.NewRecorder()
+	resp := httptest.NewRecorder()
 
-		http.HandlerFunc(handlers.AuthHandler).ServeHTTP(resp, req)
+	http.HandlerFunc(handlers.AuthHandler).ServeHTTP(resp, req)
 
-		if status := resp.Code; status == http.StatusInternalServerError {
-			t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't make cookie or can't check validate",
-				status)
-		} else {
-			if status := resp.Code; status != http.StatusBadRequest {
-				t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v;\n",
-					status, http.StatusBadRequest)
-			}
-
-			//TODO change this expected
-			expected := `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий","password2":"","nickname":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`
-			if response := resp.Body.String(); response != expected {
-				t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
-					response, expected)
-			}
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't make cookie or can't check validate",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusBadRequest {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v;\n",
+				status, http.StatusBadRequest)
 		}
+
+		//TODO change this expected
+		expected := `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий","password2":"","nickname":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`
+		if response := resp.Body.String(); response != expected {
+			t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
+				response, expected)
+		}
+	}
 }
