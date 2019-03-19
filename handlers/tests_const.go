@@ -1,5 +1,6 @@
 package handlers
 
 const (
-	UserCounter = 10
+	UserCounter = 4
+	ApiProfile = "/api/profile"
 )
