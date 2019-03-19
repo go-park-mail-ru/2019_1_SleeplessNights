@@ -83,6 +83,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	newEmail := r.MultipartForm.Value["email"][0]
 
@@ -106,7 +107,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newAvatar := r.MultipartForm.File["avatar"][0]
-
+  
 	avatarFile, err := newAvatar.Open()
 	if err != nil {
 		helpers.Return500(&w, err)
@@ -120,18 +121,28 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}()
+
 	avatarBytes, err := ioutil.ReadAll(avatarFile)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
+
 	avatarName := uuid.NewV4().String() + filepath.Ext(r.MultipartForm.File["avatar"][0].Filename)
 
 	file, err := os.Create(AvatarPrefix + avatarName)
+
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
+	defer func(){
+		err := file.Close()
+		if err != nil {
+			helpers.Return500(&w, err)
+			return
+		}
+	}()
 
 	defer func() {
 		err := file.Close()

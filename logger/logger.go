@@ -19,7 +19,6 @@ var (
 )
 
 func init() {
-
 	Info = log.New(file,
 		"INFO: ",
 		log.Ldate|log.Ltime|log.Lshortfile,

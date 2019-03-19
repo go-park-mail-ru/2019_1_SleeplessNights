@@ -1,49 +1,44 @@
 package models
 
 import (
-	"bytes"
-	"crypto/sha512"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/manveru/faker"
 	"math/rand"
-	"time"
 )
 
 const (
-	saltLen        = 16
-	sessionLifeLen = 4 * time.Hour
+	FakeUserPassword = "1Q2W3e4r5t6y7u"
 )
 
-func MakeSalt() (salt []byte, err error) {
-	salt = make([]byte, saltLen)
-	rand.Read(salt) //Заполняем слайс случайными значениями по всей его длине
-	return
-}
+// Fills Users Map with user data
+func CreateFakeData(quantity int) {
+	fake, err := faker.New("en")
+	if err != nil {
+		logger.Fatal.Println(err)
+		return
+	}
+	for i := 1; i <= quantity; i++ {
+		salt, err := helpers.MakeSalt()
+		if err != nil {
+			logger.Error.Println(err)
+			continue
+		}
 
-func MakePasswordHash(password string, salt []byte) (hash []byte) {
-	saltedPassword := bytes.Join([][]byte{[]byte(password), salt}, nil)
-	hashedPassword := sha512.Sum512(saltedPassword) //sha512 возвращает массив, а слайс можно взять только по addressable массиву
-	hash = hashedPassword[0:]
-	return
-}
-
-// Fills Users Map with userdata
-func CreateFakeData(Quantity int) {
-	Fake, _ := faker.New("en")
-
-	Salt, _ := MakeSalt()
-	Password := "1Q2W3e4r5t6y7u"
-	TimeDuration, _ := time.ParseDuration("1h")
-
-	for i := 1; i <= Quantity; i++ {
+		email := fake.Email()
+		_, found := Users[email]
+		if found {
+			continue
+		}
 		user := User{
-			ID:         uint(i),
-			Email:      Fake.Email(),
-			Password:   MakePasswordHash(Password, Salt),
-			Salt:       Salt,
+			ID:       	MakeID(),
+			Email:    	email,
+			Password: 	helpers.MakePasswordHash(FakeUserPassword, salt),
+			Salt:       salt,
 			Won:        uint(rand.Uint32()),
 			Lost:       uint(rand.Uint32()),
-			PlayTime:   TimeDuration,
-			Nickname:   Fake.UserName(),
+			PlayTime:   0,
+			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
 		Users[user.Email] = user
