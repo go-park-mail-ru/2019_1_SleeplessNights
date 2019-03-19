@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/handlers/helpers"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/models"
 	"net/http"
 	"sort"
 	"strconv"

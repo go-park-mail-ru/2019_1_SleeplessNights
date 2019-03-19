@@ -1,5 +1,6 @@
 github.com/gbrlsnchs/jwt/v3 v3.0.0-alpha.4 h1:4ThUnSUa7yGk+niJvDbSPSuhF0Lww/iLdndvjBm/8Ec=
 github.com/gbrlsnchs/jwt/v3 v3.0.0-alpha.4/go.mod h1:TVblxrqSCH+1E5/cCnEt7sCDb1brRErn25lltKJBQAw=
+github.com/go-park-mail-ru/2019_1_SleeplessNights v1.0.6 h1:qGXX5S3Tfsolkz9jW9Yrrp7r5H3AN8KqOpr/af7LQ54=
 github.com/gorilla/mux v1.7.0 h1:tOSd0UKHQd6urX6ApfOn4XdBMY6Sh1MfxV3kmaazO+U=
 github.com/gorilla/mux v1.7.0/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/manveru/faker v0.0.0-20171103152722-9fbc68a78c4d h1:Zj+PHjnhRYWBK6RqCDBcAhLXoi3TzC27Zad/Vn+gnVQ=

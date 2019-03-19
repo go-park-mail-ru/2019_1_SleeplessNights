@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"bytes"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/models"
 	"net/http"
 	"regexp"
 	"strings"

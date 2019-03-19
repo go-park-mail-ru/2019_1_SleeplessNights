@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/models"
 	"log"
 	"math/rand"
 	"net/http"

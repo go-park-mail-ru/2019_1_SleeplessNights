@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/logger"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/router"
 	"net/http"
 	"os"
 )

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/helpers"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"

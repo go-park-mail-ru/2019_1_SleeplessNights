@@ -1,4 +1,4 @@
-module github.com/go-park-mail-ru/2019_1_SleeplessNights
+module github.com/DragonF0rm/Technopark-DBMS-Forum
 
 go 1.12
 

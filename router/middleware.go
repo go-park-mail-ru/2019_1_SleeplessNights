@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/logger"
 	"net/http"
 )
 

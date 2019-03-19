@@ -2,7 +2,7 @@ package router
 
 import (
 
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
+	"github.com/DragonF0rm/Technopark-DBMS-Forum/handlers"
 	"github.com/gorilla/mux"
 )
 
