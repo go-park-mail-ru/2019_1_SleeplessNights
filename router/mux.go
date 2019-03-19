@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/gorilla/mux"
+	"net/http"
 )
 
 func GetRouter()(router *mux.Router){
@@ -12,15 +13,15 @@ func GetRouter()(router *mux.Router){
 	//TODO ADD RECOVER MIDDLEWARE
 	router = mux.NewRouter()
 	api := router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/register", handlers.RegisterHandler).Methods("POST")
-	api.HandleFunc("/auth", handlers.AuthHandler).Methods("POST")
-	api.HandleFunc("/profile", handlers.OptionsHandler).Methods("OPTIONS")
-	api.HandleFunc("/profile", handlers.ProfileHandler).Methods("GET")
-	api.HandleFunc("/profile", handlers.ProfileUpdateHandler).Methods("PATCH")
-	api.HandleFunc("/leaders", handlers.OptionsHandler).Methods("OPTIONS")
-	api.HandleFunc("/leaders", handlers.LeadersHandler).Methods("GET")
-	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods("OPTIONS")
-	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods("GET")
+	api.HandleFunc("/register", handlers.RegisterHandler).Methods(http.MethodPost)
+	api.HandleFunc("/auth", handlers.AuthHandler).Methods(http.MethodPost)
+	api.HandleFunc("/profile", handlers.OptionsHandler).Methods(http.MethodOptions)
+	api.HandleFunc("/profile", handlers.ProfileHandler).Methods(http.MethodGet)
+	api.HandleFunc("/profile", handlers.ProfileUpdateHandler).Methods(http.MethodPatch)
+	api.HandleFunc("/leaders", handlers.OptionsHandler).Methods(http.MethodOptions)
+	api.HandleFunc("/leaders", handlers.LeadersHandler).Methods(http.MethodGet)
+	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods(http.MethodOptions)
+	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods(http.MethodGet)
 
 	router.Use(MiddlewareBasicHeaders)
 	router.Use(MiddlewareCORS)
@@ -28,4 +29,4 @@ func GetRouter()(router *mux.Router){
 	return
 }
 
-
+git
