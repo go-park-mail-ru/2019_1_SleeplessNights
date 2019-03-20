@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func AuthHandler(w http.ResponseWriter, r *http.Request){
+func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		formErrorMessages := helpers.ErrorSet{
@@ -27,7 +27,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request){
 
 	sessionCookie, err := helpers.MakeSession(user)
 	if err != nil {
-		helpers.Return500(&w, err)
+		helpers.Return500(&w, err) //TODO test wrong cookie
 		return
 	}
 	http.SetCookie(w, &sessionCookie)

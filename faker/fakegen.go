@@ -1,8 +1,9 @@
-package models
+package faker
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/manveru/faker"
 	"math/rand"
 )
@@ -26,12 +27,12 @@ func CreateFakeData(quantity int) {
 		}
 
 		email := fake.Email()
-		_, found := Users[email]
+		_, found := models.Users[email]
 		if found {
 			continue
 		}
-		user := User{
-			ID:       	MakeID(),
+		user := models.User{
+			ID:       	models.MakeID(),
 			Email:    	email,
 			Password: 	helpers.MakePasswordHash(FakeUserPassword, salt),
 			Salt:       salt,
@@ -41,8 +42,8 @@ func CreateFakeData(quantity int) {
 			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
-		Users[user.Email] = user
-		UserKeyPairs[user.ID] = user.Email
+		models.Users[user.Email] = user
+		models.UserKeyPairs[user.ID] = user.Email
 	}
 
 }

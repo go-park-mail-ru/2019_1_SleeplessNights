@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
 )
 
 const (
-	pagesPerList = 4
+	PagesPerList = 4
 )
 
 type LeaderBoard struct {
@@ -24,7 +25,7 @@ func Paginate(data []interface{}, skip int) []interface{} {
 	if skip > len(data) {
 		skip = len(data)
 	}
-	end := skip + pagesPerList
+	end := skip + PagesPerList
 	if end > len(data) {
 		end = len(data)
 	}
@@ -40,11 +41,11 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 
 	PageNum, err := strconv.Atoi(page)
 	if err != nil {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if PageNum > usersTotal/pagesPerList || PageNum < 1 {
+	if PageNum > usersTotal/PagesPerList || PageNum < 1 {
 		helpers.Return400(&w, helpers.ErrorSet{`Invalid "Page" Value`})
 		return
 	}
@@ -55,13 +56,13 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })
-	paginatedSlice := Paginate(userSlice, int(pagesPerList*(PageNum-1)))
+	paginatedSlice := Paginate(userSlice, int(PagesPerList*(PageNum-1)))
 	var pageSlice []models.User
 	for _, user := range paginatedSlice {
 		pageSlice = append(pageSlice, user.(models.User))
 	}
 
-	ResponseData, _ := json.Marshal(LeaderBoard{int(usersTotal / 4), int(PageNum), pageSlice})
+	ResponseData, _ := json.Marshal(LeaderBoard{int(math.Ceil(float64(usersTotal / PagesPerList))) , int(PageNum), pageSlice})
 	_, err = w.Write(ResponseData)
 	if err != nil {
 		helpers.Return500(&w, err)
