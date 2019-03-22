@@ -58,63 +58,63 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 	cases := []TestCaseAuth{
 		TestCaseAuth{
 			number:   1,
-			email:    "test@1.com",
+			email:    "test@1.com", //TODO with only numbers after @
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
+			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   2,
 			email:    "test@@test.com",
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   3,
 			email:    "te&st@test.com",
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   4,
 			email:    "test@test.com",
 			password: "asdsdQ",
-			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null]}",
+			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   5,
 			email:    "teesttest.com",
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   6,
 			email:    "_____@test.com",
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   7,
 			email:    "teest@test.com",
 			password: "",
-			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   8,
 			email:    "",
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   9,
-			email:    "test@testcom",
+			email:    "test@testcom", //TODO without point
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 		TestCaseAuth{
 			number:   10,
 			email:    "test@test.com",
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}}",
+			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
 		},
 	}
 

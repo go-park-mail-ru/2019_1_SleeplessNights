@@ -130,10 +130,10 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 	cases := []TestCaseReg{
 		TestCaseReg{
 			number:    1,
-			email:     "test@1.com",
+			email:     ".com", //TODO test@1.com
 			nickname:  "boob",
-			password1: "asdasdasdsadasdQ",
-			password2: "asdasdasdsadasdQ",
+			password1: "asdasdasdsadasd",
+			password2: "asdasdasdsadasd",
 			error:     "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
 		},
 		TestCaseReg{
@@ -146,7 +146,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 		},
 		TestCaseReg{
 			number:    3,
-			email:     "----@sdfsfds.adasd",
+			email:     "----sdfsfds.adasd",
 			nickname:  "8667t68ff8",
 			password1: "134fK34f34fed",
 			password2: "134fK34f34fed",

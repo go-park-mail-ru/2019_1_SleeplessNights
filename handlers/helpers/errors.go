@@ -87,7 +87,7 @@ func Return400(w *http.ResponseWriter, requestErrorMessages ErrorSet) {
 	}
 	_, err = (*w).Write(jsonData)
 	if err != nil {
-		log.Println("Error whigitle writing request body for 400 response")
+		log.Println("Error while writing request body for 400 response")
 		Return500(w, err)
 	}
 }

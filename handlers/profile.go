@@ -93,7 +93,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//TODO rename avatar name in server
 	newAvatarName := r.MultipartForm.File["avatar"][0].Filename
-	file, err := os.Create(AvatarPrefix + newAvatarName)
+	file, err := os.Create(avatarPrefix + newAvatarName)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
