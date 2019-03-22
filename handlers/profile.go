@@ -130,7 +130,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	avatarName := uuid.NewV4().String() + filepath.Ext(r.MultipartForm.File["avatar"][0].Filename)
 
-	file, err := os.Create(AvatarPrefix + avatarName)
+	file, err := os.Create(os.Getenv("BASEPATH") + AvatarPrefix + avatarName)
 
 	if err != nil {
 		helpers.Return500(&w, err)

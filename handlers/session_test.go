@@ -60,61 +60,61 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 			number:   1,
 			email:    "test@1.com", //TODO with only numbers after @
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   2,
 			email:    "test@@test.com",
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   3,
 			email:    "te&st@test.com",
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   4,
 			email:    "test@test.com",
 			password: "asdsdQ",
-			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"","password":"Пароль слишком короткий","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   5,
 			email:    "teesttest.com",
 			password: "asdasdasdsadasdQ",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   6,
 			email:    "_____@test.com",
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   7,
 			email:    "teest@test.com",
 			password: "",
-			error:    "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"","password":"Пароль слишком короткий","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   8,
 			email:    "",
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   9,
 			email:    "test@testcom", //TODO without point
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 		TestCaseAuth{
 			number:   10,
 			email:    "test@test.com",
 			password: "asdasdasdsadasd",
-			error:    "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":[\"Пользователь с таким адресом электронной почты не зарегистрирован\"]}",
+			error:    `{"email":"","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
 		},
 	}
 
@@ -173,7 +173,7 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 		}
 
 		//TODO change this expected
-		expected := `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий","password2":"","nickname":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`
+		expected := `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`
 		if response := resp.Body.String(); response != expected {
 			t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
 				response, expected)

@@ -13,13 +13,13 @@ func GetRouter()(router *mux.Router){
 	//TODO ADD RECOVER MIDDLEWARE
 	router = mux.NewRouter()
 	api := router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/register", handlers.RegisterHandler).Methods(http.MethodPost)
-	api.HandleFunc("/auth", handlers.AuthHandler).Methods(http.MethodPost)
+	api.HandleFunc("/user", handlers.RegisterHandler).Methods(http.MethodPost)
+	api.HandleFunc("/session", handlers.AuthHandler).Methods(http.MethodPost)
 	api.HandleFunc("/profile", handlers.OptionsHandler).Methods(http.MethodOptions)
 	api.HandleFunc("/profile", handlers.ProfileHandler).Methods(http.MethodGet)
 	api.HandleFunc("/profile", handlers.ProfileUpdateHandler).Methods(http.MethodPatch)
-	api.HandleFunc("/leaders", handlers.OptionsHandler).Methods(http.MethodOptions)
-	api.HandleFunc("/leaders", handlers.LeadersHandler).Methods(http.MethodGet)
+	api.HandleFunc("/leader", handlers.OptionsHandler).Methods(http.MethodOptions)
+	api.HandleFunc("/leader", handlers.LeadersHandler).Methods(http.MethodGet)
 	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods(http.MethodOptions)
 	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods(http.MethodGet)
 

@@ -33,9 +33,9 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 			pageSlice = append(pageSlice, user.(models.User))
 		}
 
-		expected := fmt.Sprintf("{\"pages_total\":%d,\"page\":%d,\"data\":[", pagesTotal, i)
+		expected := fmt.Sprintf(`{"pages_total":%d,"page":%d,"data":[`, pagesTotal, i)
 		for ii, user := range pageSlice {
-			str := fmt.Sprintf("{\"email\":\"%s\",\"won\":%d,\"lost\":%d,\"play_time\":%d,\"nickname\":\"%s\",\"avatar_path\":\"%s\"}",
+			str := fmt.Sprintf(`{"email":"%s","won":%d,"lost":%d,"play_time":%d,"nickname":"%s","avatar_path":"%s"}`,
 				user.Email, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
 			if ii == len(pageSlice)-1 {
 				expected = expected + str
@@ -43,7 +43,7 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 				expected = expected + str + ","
 			}
 		}
-		expected = expected + "]}"
+		expected = expected + `]}`
 
 		req := httptest.NewRequest(http.MethodGet, ApiLeader, nil)
 		qq := req.URL.Query()
@@ -110,7 +110,7 @@ func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
 				status, http.StatusBadRequest, resp.Body.String())
 		}
 
-		expected := `{"email":"","password":"","password2":"","nickname":"","error":["Invalid \"Page\" Value"]}`
+		expected := `{"email":"","password":"","password2":"","nickname":"","avatar":"","error":["Invalid \"Page\" Value"]}`
 		if resp.Body.String() != expected {
 			t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 				resp.Body.String(), expected)

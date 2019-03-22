@@ -134,7 +134,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "boob",
 			password1: "asdasdasdsadasd",
 			password2: "asdasdasdsadasd",
-			error:     "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:     `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    2,
@@ -142,7 +142,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "asdasdsdasds",
 			password1: "1209Qawsedbn",
 			password2: "1209Qawsedbn",
-			error:     "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:     `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    3,
@@ -150,7 +150,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "8667t68ff8",
 			password1: "134fK34f34fed",
 			password2: "134fK34f34fed",
-			error:     "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:     `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    4,
@@ -158,7 +158,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "scklopsdfdsfsdfsdfdsfdsfsdf",
 			password1: "JNJasadasdasdasdNJ",
 			password2: "JNJasadasdasdasdNJ",
-			error:     "{\"email\":\"Пользователь с таким адресом электронной почты уже зарегистрирован\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"Никнейм не может быть длиннее 16 символов\",\"error\":null}",
+			error:     `{"email":"Пользователь с таким адресом электронной почты уже зарегистрирован","password":"","password2":"","nickname":"Никнейм не может быть длиннее 16 символов","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    5,
@@ -166,7 +166,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "KKLKLLKKLKLKL",
 			password1: "120wsed",
 			password2: "120wsed",
-			error:     "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:     `{"email":"","password":"Пароль слишком короткий","password2":"","nickname":"","avatar":"","error":null}`,
 
 		},
 		TestCaseReg{
@@ -175,7 +175,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "CDCDCDCDCDC",
 			password1: "109238091839Qawsed",
 			password2: "1092380912830912830128390183091839Qawsed",
-			error:     "{\"email\":\"\",\"password\":\"\",\"password2\":\"Пароли не совпадают\",\"nickname\":\"\",\"error\":null}",
+			error:     `{"email":"","password":"","password2":"Пароли не совпадают","nickname":"","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    7,
@@ -183,7 +183,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "",
 			password1: "12938109238Hsdskdjhfksdhfkj",
 			password2: "12938109238Hsdskdjhfksdhfkj",
-			error:     "{\"email\":\"\",\"password\":\"\",\"password2\":\"\",\"nickname\":\"Никнейм не может быть короче 3 символов\",\"error\":null}",
+			error:     `{"email":"","password":"","password2":"","nickname":"Никнейм не может быть короче 3 символов","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    8,
@@ -191,7 +191,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "090909090909",
 			password1: "",
 			password2: "",
-			error:     "{\"email\":\"\",\"password\":\"Пароль слишком короткий\",\"password2\":\"\",\"nickname\":\"\",\"error\":null}",
+			error:     `{"email":"","password":"Пароль слишком короткий","password2":"","nickname":"","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    9,
@@ -199,7 +199,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "",
 			password1: "",
 			password2: "1",
-			error:     "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"Пароль слишком короткий\",\"password2\":\"Пароли не совпадают\",\"nickname\":\"Никнейм не может быть короче 3 символов\",\"error\":null}",
+			error:     `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий","password2":"Пароли не совпадают","nickname":"Никнейм не может быть короче 3 символов","avatar":"","error":null}`,
 		},
 		TestCaseReg{
 			number:    10,
@@ -207,7 +207,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			nickname:  "120912129Jsdfsdfsdfsdfsdfsdfsdfsdfsdf",
 			password1: "12129J",
 			password2: "120912129J",
-			error:     "{\"email\":\"Неверно введён адрес электронной почты\",\"password\":\"Пароль слишком короткий\",\"password2\":\"Пароли не совпадают\",\"nickname\":\"Никнейм не может быть длиннее 16 символов\",\"error\":null}",
+			error:     `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий","password2":"Пароли не совпадают","nickname":"Никнейм не может быть длиннее 16 символов","avatar":"","error":null}`,
 
 		},
 	}
