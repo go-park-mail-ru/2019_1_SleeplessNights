@@ -30,13 +30,7 @@ func ForumCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code, responseData, err := forum.Create(args.Slug, args.Title, args.User)
-	if err != nil {
-		fmt.Println("Error returned from model:", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
+	code, responseData := forum.Create(args.Slug, args.Title, args.User)
 	responseJSON, err := responseData.MarshalToJSON()
 	if err != nil {
 		fmt.Println("Error while marshaling response data:", err)

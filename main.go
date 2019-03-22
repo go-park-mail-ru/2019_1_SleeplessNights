@@ -8,9 +8,6 @@ import (
 )
 
 func main() {
-	//TODO MAKE SECRET MANAGER ?
-	//TODO WRITE TESTS
-
 	PORT :=os.Getenv("PORT")
 	if PORT == ""{
 		PORT="5000"

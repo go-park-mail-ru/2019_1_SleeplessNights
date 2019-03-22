@@ -9,7 +9,7 @@ type Forum struct {
 	ForumSlug    string `json:"slug"`
 	ThreadsCount uint32 `json:"threads"`
 	ForumTitle   string `json:"title"`
-	UserSlug     string `json:"user"`
+	UserNickname string `json:"user"`
 }
 
 func (forum *Forum)MarshalToJSON()([]byte, error) {
