@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/DragonF0rm/Technopark-DBMS-Forum/logger"
+	"fmt"
 	"github.com/DragonF0rm/Technopark-DBMS-Forum/router"
 	"net/http"
 	"os"
@@ -15,7 +15,7 @@ func main() {
 	if PORT == ""{
 		PORT="5000"
 	}
-	logger.Info.Println("Started listening on", PORT)
+	fmt.Println("Started listening on", PORT)
 	r := router.GetRouter()
-	logger.Fatal.Println(http.ListenAndServe(":"+PORT, r))
+	fmt.Println(http.ListenAndServe(":"+PORT, r))
 }

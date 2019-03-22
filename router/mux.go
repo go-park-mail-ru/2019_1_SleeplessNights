@@ -16,8 +16,8 @@ func GetRouter()(router *mux.Router){
 	forum.HandleFunc("/{slug}/users", handlers.ForumSlugUsers).Methods(http.MethodGet)
 
 	post    := router.PathPrefix("/post").Subrouter()
-	post.HandleFunc("/{id}/details", handlers.PostGetDeatails).Methods(http.MethodGet)
-	post.HandleFunc("/{id}/details", handlers.PostSetDeatails).Methods(http.MethodPost)
+	post.HandleFunc("/{id}/details", handlers.PostGetDetails).Methods(http.MethodGet)
+	post.HandleFunc("/{id}/details", handlers.PostSetDetails).Methods(http.MethodPost)
 
 	service := router.PathPrefix("/service").Subrouter()
 	service.HandleFunc("/clear", handlers.ServiceClear).Methods(http.MethodPost)
@@ -36,8 +36,8 @@ func GetRouter()(router *mux.Router){
 	user.HandleFunc("/{nickname}/profile", handlers.UserChangeProfile).Methods(http.MethodPost)
 
 	router.Use(MiddlewareBasicHeaders)
-	router.Use(MiddlewareRescue)
 	router.Use(MiddlewareLog)
+	router.Use(MiddlewareRescue)//ДОЛЖНА БЫТЬ ПОСЛЕДНЕЙ
 	return
 }
 
