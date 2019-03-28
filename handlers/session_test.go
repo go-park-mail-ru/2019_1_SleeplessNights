@@ -47,8 +47,8 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 			expected := `{}`
 			if resp.Body.String() != expected {
-				t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\nemail: %s",
-					resp.Body.String(), expected, user.Email)
+				t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\nemail: %s\nnickname: %s\npassword: %s\n ",
+					resp.Body.String(), expected, user.Email, user.Nickname, string(user.Password))
 			}
 		}
 	}

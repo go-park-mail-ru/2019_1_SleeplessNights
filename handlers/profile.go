@@ -83,7 +83,6 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	newEmail := r.MultipartForm.Value["email"][0]
 
@@ -92,7 +91,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if newEmail != oldEmail {
 
-		delete(models.Users, oldEmail)
+		delete(models.Users, oldEmail) //TODO delete in IDmap????
 
 		models.Users[newEmail] = user
 		models.UserKeyPairs[user.ID] = newEmail
@@ -103,26 +102,23 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.SetCookie(w, &sessionCookie)
-
 	}
 
 	newAvatar := r.MultipartForm.File["avatar"][0]
-  
+
 	avatarFile, err := newAvatar.Open()
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
 
-	defer func() {
-		err := avatarFile.Close()
-		if err != nil {
-			helpers.Return500(&w, err)
-			return
-		}
-	}()
-
 	avatarBytes, err := ioutil.ReadAll(avatarFile)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+
+	err = avatarFile.Close()
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
@@ -131,18 +127,10 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	avatarName := uuid.NewV4().String() + filepath.Ext(r.MultipartForm.File["avatar"][0].Filename)
 
 	file, err := os.Create(os.Getenv("BASEPATH") + AvatarPrefix + avatarName)
-
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	defer func(){
-		err := file.Close()
-		if err != nil {
-			helpers.Return500(&w, err)
-			return
-		}
-	}()
 
 	defer func() {
 		err := file.Close()

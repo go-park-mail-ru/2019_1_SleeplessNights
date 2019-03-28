@@ -161,6 +161,7 @@ func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) (err 
 }
 func init() {
 	avatarTypeWhiteList = make(map[string]struct{})
+	avatarTypeWhiteList["application/octet-stream"] = struct{}{} //TODO Is it correct?
 	avatarTypeWhiteList["image/gif"] = struct{}{}
 	avatarTypeWhiteList["image/png"] = struct{}{}
 	avatarTypeWhiteList["image/jpeg"] = struct{}{}
