@@ -1,13 +1,17 @@
 package handlers_test
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -15,7 +19,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range models.Users{
+	for _, user := range models.Users {
 		cookie, err := helpers.MakeSession(user)
 		if err != nil {
 			t.Errorf("\nMakeSession returned error: %s\n", err)
@@ -109,25 +113,237 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 	}
 }
 
-func TestProfileUpdateHandler(t *testing.T) {
-	//req, err := http.NewRequest("PATCH", "/profile", nil)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	//
-	//resp := httptest.NewRecorder()
-	//handler := http.HandlerFunc(handlers.ProfileUpdateHandler)
-	//
-	//handler.ServeHTTP(resp, req)
-	//
-	//if status := resp.Code; status != http.StatusOK {
-	//	t.Errorf(WrongStatus+": got %v want %v",
-	//		status, http.StatusOK)
-	//}
-	//
-	//expected := `{}` //TODO expected
-	//if resp.Body.String() != expected {
-	//	t.Errorf(UnexpectedBody+": got %v want %v",
-	//		resp.Body.String(), expected)
-	//}
+func TestProfileUpdateHandlerSuccessful(t *testing.T) {
+
+	user := models.User{
+		ID:         1000,
+		Email:      "first@mail.com",
+		Nickname:   "first",
+		Password:   []byte(faker.FakeUserPassword),
+		AvatarPath: "none",
+	}
+	models.Users[user.Email] = user
+	models.UserKeyPairs[user.ID] = user.Email
+
+	cookie, err := helpers.MakeSession(user)
+	if err != nil {
+		t.Errorf("MakeSession returned error: %s\n", err.Error())
+		return
+	}
+
+	img := "default_avatar.jpg"
+	path := os.Getenv("BASEPATH") + handlers.AvatarPrefix + img
+
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+
+	fileWriter, err := bodyWriter.CreateFormFile("avatar", path)
+	if err != nil {
+		t.Errorf("CreatFormFile returned error: %s\n", err.Error())
+		return
+	}
+
+	fh, err := os.Open(path)
+	if err != nil {
+		t.Errorf("Open file returned error: %s\n", err.Error())
+		return
+	}
+
+	_, err = io.Copy(fileWriter, fh)
+	if err != nil {
+		t.Errorf("Copy file returned error: %s\n", err.Error())
+		return
+	}
+
+	err = fh.Close()
+	if err != nil {
+		t.Errorf("Close file returned error: %s\n", err.Error())
+		return
+	}
+
+	newEmail := "second@mail.com"
+	newNickname := "second"
+
+	err = bodyWriter.WriteField("email", newEmail)
+	if err != nil {
+		t.Errorf("Added field returned error: %s\n", err.Error())
+		return
+	}
+
+	err = bodyWriter.WriteField("nickname", newNickname)
+	if err != nil {
+		t.Errorf("Added field returned error: %s\n", err.Error())
+		return
+	}
+
+	err = bodyWriter.Close()
+	if err != nil {
+		t.Errorf("Close file returned error: %s\n", err.Error())
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPatch, handlers.ApiProfile, bodyBuf)
+	req.Header.Set("Content-Type", bodyWriter.FormDataContentType())
+	err = req.ParseMultipartForm(helpers.MaxPhotoSize)
+	if err != nil {
+		if err != nil {
+			t.Errorf("Parsed returned error: %s\n", err.Error())
+			return
+		}
+	}
+	req.MultipartForm.File["avatar"][0].Header.Set("content-type", "image/jpeg")
+	req.AddCookie(&cookie)
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+
+	req.MultipartForm.File["avatar"][0].Header.Del("content-type")
+	req.MultipartForm.File["avatar"][0].Header.Add("content-type", "image/jpeg")
+
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code: %v\n",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusOK {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\nbody %v\n",
+				status, http.StatusOK, resp.Body)
+		}
+	}
+
+	user = models.Users[models.UserKeyPairs[1000]]
+
+	if user.Email != newEmail {
+		t.Errorf("\nDB returned wrong email:\ngot %v\nwant %v\n",
+			user.Email, newEmail)
+	}
+	if user.Nickname != newNickname {
+		t.Errorf("\nDB returned wrong nickname:\ngot %v\nwant %v\n",
+			user.Email, newEmail)
+	}
+
+	delete(models.Users, models.UserKeyPairs[1000])
+	delete(models.UserKeyPairs, 1000)
+}
+
+func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
+
+	user := models.User{
+		ID:         1000,
+		Email:      "first@mail.com",
+		Nickname:   "first",
+		Password:   []byte(faker.FakeUserPassword),
+		AvatarPath: "none",
+	}
+	models.Users[user.Email] = user
+	models.UserKeyPairs[user.ID] = user.Email
+
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+
+	err := bodyWriter.Close()
+	if err != nil {
+		t.Errorf("Close file returned error: %s\n", err.Error())
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPatch, handlers.ApiProfile, bodyBuf)
+	req.Header.Set("Content-Type", bodyWriter.FormDataContentType())
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code: %v\n",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusUnauthorized {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
+				status, http.StatusUnauthorized)
+		}
+	}
+
+	delete(models.Users, models.UserKeyPairs[1000])
+	delete(models.UserKeyPairs, 1000)
+}
+
+
+func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
+
+	user := models.User{
+		ID:         1000,
+		Email:      "first@mail.com",
+		Nickname:   "first",
+		Password:   []byte(faker.FakeUserPassword),
+		AvatarPath: "none",
+	}
+
+	cookie, err := helpers.MakeSession(user)
+	if err != nil {
+		t.Errorf("MakeSession returned error: %s\n", err.Error())
+		return
+	}
+
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+
+	err = bodyWriter.Close()
+	if err != nil {
+		t.Errorf("Close file returned error: %s\n", err.Error())
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPatch, handlers.ApiProfile, bodyBuf)
+	req.AddCookie(&cookie)
+
+	req.Header.Set("Content-Type", bodyWriter.FormDataContentType())
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code: %v\n",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusUnauthorized {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
+				status, http.StatusUnauthorized)
+		}
+	}
+}
+
+func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
+
+	user := models.User{
+		ID:         1000,
+		Email:      "first@mail.com",
+		Nickname:   "first",
+		Password:   []byte(faker.FakeUserPassword),
+		AvatarPath: "none",
+	}
+
+	cookie, err := helpers.MakeSession(user)
+	if err != nil {
+		t.Errorf("MakeSession returned error: %s\n", err.Error())
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPatch, handlers.ApiProfile, nil)
+	req.AddCookie(&cookie)
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code: %v\n",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusBadRequest {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
+				status, http.StatusBadRequest)
+		}
+	}
 }

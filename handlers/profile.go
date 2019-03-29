@@ -83,7 +83,6 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	newEmail := r.MultipartForm.Value["email"][0]
 
@@ -92,6 +91,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if newEmail != oldEmail {
 
+		delete(models.UserKeyPairs, user.ID)
 		delete(models.Users, oldEmail)
 
 		models.Users[newEmail] = user
@@ -103,11 +103,10 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.SetCookie(w, &sessionCookie)
-
 	}
 
 	newAvatar := r.MultipartForm.File["avatar"][0]
-  
+
 	avatarFile, err := newAvatar.Open()
 	if err != nil {
 		helpers.Return500(&w, err)
@@ -131,18 +130,10 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	avatarName := uuid.NewV4().String() + filepath.Ext(r.MultipartForm.File["avatar"][0].Filename)
 
 	file, err := os.Create(os.Getenv("BASEPATH") + AvatarPrefix + avatarName)
-
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	defer func(){
-		err := file.Close()
-		if err != nil {
-			helpers.Return500(&w, err)
-			return
-		}
-	}()
 
 	defer func() {
 		err := file.Close()
