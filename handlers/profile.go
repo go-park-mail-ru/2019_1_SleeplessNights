@@ -91,7 +91,8 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if newEmail != oldEmail {
 
-		delete(models.Users, oldEmail) //TODO delete in IDmap????
+		delete(models.UserKeyPairs, user.ID)
+		delete(models.Users, oldEmail)
 
 		models.Users[newEmail] = user
 		models.UserKeyPairs[user.ID] = newEmail
@@ -112,13 +113,15 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	avatarBytes, err := ioutil.ReadAll(avatarFile)
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
+	defer func() {
+		err := avatarFile.Close()
+		if err != nil {
+			helpers.Return500(&w, err)
+			return
+		}
+	}()
 
-	err = avatarFile.Close()
+	avatarBytes, err := ioutil.ReadAll(avatarFile)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

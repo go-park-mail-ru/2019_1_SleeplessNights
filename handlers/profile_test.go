@@ -183,12 +183,23 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodPatch, handlers.ApiProfile, bodyBuf)
-	req.AddCookie(&cookie)
 	req.Header.Set("Content-Type", bodyWriter.FormDataContentType())
+	err = req.ParseMultipartForm(helpers.MaxPhotoSize)
+	if err != nil {
+		if err != nil {
+			t.Errorf("Parsed returned error: %s\n", err.Error())
+			return
+		}
+	}
+	req.MultipartForm.File["avatar"][0].Header.Set("content-type", "image/jpeg")
+	req.AddCookie(&cookie)
 
 	resp := httptest.NewRecorder()
 
 	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+
+	req.MultipartForm.File["avatar"][0].Header.Del("content-type")
+	req.MultipartForm.File["avatar"][0].Header.Add("content-type", "image/jpeg")
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
