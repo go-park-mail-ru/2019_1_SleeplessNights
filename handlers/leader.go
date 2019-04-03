@@ -44,8 +44,8 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-
-	if PageNum > usersTotal/PagesPerList || PageNum < 1 {
+	pagesTotal := int(math.Ceil(float64(usersTotal) / PagesPerList))
+	if PageNum > pagesTotal || PageNum < 1 {
 		helpers.Return400(&w, helpers.ErrorSet{`Invalid "Page" Value`})
 		return
 	}
@@ -62,7 +62,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		pageSlice = append(pageSlice, user.(models.User))
 	}
 
-	ResponseData, _ := json.Marshal(LeaderBoard{int(math.Ceil(float64(usersTotal / PagesPerList))) , int(PageNum), pageSlice})
+	ResponseData, _ := json.Marshal(LeaderBoard{int(math.Ceil(float64(usersTotal / PagesPerList))), int(PageNum), pageSlice})
 	_, err = w.Write(ResponseData)
 	if err != nil {
 		helpers.Return500(&w, err)
