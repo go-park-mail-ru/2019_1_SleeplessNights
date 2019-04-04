@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/DragonF0rm/Technopark-DBMS-Forum/handlers"
+	forumDomain "github.com/DragonF0rm/Technopark-DBMS-Forum/domains/forum"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -9,10 +9,10 @@ import (
 func GetRouter()(router *mux.Router){
 	router = mux.NewRouter()
 	forum   := router.PathPrefix("/forum").Subrouter()
-	forum.HandleFunc("/create", handlers.ForumCreate).Methods(http.MethodPost)
-	forum.HandleFunc("/{slug}/create", handlers.ForumSlugCreate).Methods(http.MethodPost)
-	forum.HandleFunc("/{slug}/details", handlers.ForumSlugDetails).Methods(http.MethodGet)
-	forum.HandleFunc("/{slug}/threads", handlers.ForumSlugThreads).Methods(http.MethodGet)
+	forum.HandleFunc("/create", forumDomain.CreateHandler).Methods(http.MethodPost)
+	forum.HandleFunc("/{slug}/details", forumDomain.DetailsHandler).Methods(http.MethodGet)
+	forum.HandleFunc("/{slug}/create", forumDomain.CreateThreadHandler).Methods(http.MethodPost)
+	/*forum.HandleFunc("/{slug}/threads", handlers.ForumSlugThreads).Methods(http.MethodGet)
 	forum.HandleFunc("/{slug}/users", handlers.ForumSlugUsers).Methods(http.MethodGet)
 
 	post    := router.PathPrefix("/post").Subrouter()
@@ -33,11 +33,11 @@ func GetRouter()(router *mux.Router){
 	user    := router.PathPrefix("/user").Subrouter()
 	user.HandleFunc("/{nickname}/create", handlers.UserCreate).Methods(http.MethodPost)
 	user.HandleFunc("/{nickname}/profile", handlers.UserGetProfile).Methods(http.MethodGet)
-	user.HandleFunc("/{nickname}/profile", handlers.UserChangeProfile).Methods(http.MethodPost)
+	user.HandleFunc("/{nickname}/profile", handlers.UserChangeProfile).Methods(http.MethodPost)*/
 
 	router.Use(MiddlewareBasicHeaders)
 	router.Use(MiddlewareLog)
-	router.Use(MiddlewareRescue)//ДОЛЖНА БЫТЬ ПОСЛЕДНЕЙ
+	//router.Use(MiddlewareRescue)//ДОЛЖНА БЫТЬ ПОСЛЕДНЕЙ
 	return
 }
 

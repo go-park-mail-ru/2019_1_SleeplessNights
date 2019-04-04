@@ -1,7 +1,10 @@
+
 package database
 
 import (
+	"fmt"
 	"github.com/jackc/pgx"
+	"time"
 )
 
 var ConnConfig = pgx.ConnConfig {
@@ -22,3 +25,15 @@ var ConnConfig = pgx.ConnConfig {
 	CustomCancel: nil,
 }
 
+var poolConfig = pgx.ConnPoolConfig {
+	ConnConfig:     ConnConfig,
+	MaxConnections: 20,
+	AfterConnect:   afterConnect,
+	AcquireTimeout: 5 * time.Second,
+}
+
+func afterConnect(connection *pgx.Conn) error {
+	//TODO WRITE FUNC
+	fmt.Println("Connected")
+	return nil
+}

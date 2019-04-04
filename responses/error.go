@@ -1,11 +1,19 @@
 package responses
 
-import "encoding/json"
+import (
+	"fmt"
+	"net/http"
+)
 
 type Error struct {
 	Message string `json:"message"`
 }
 
-func (err *Error)MarshalToJSON()([]byte, error) {
-	return json.Marshal(err)
+func InternalError(msg string)(code int, errPtr *Error) {
+	fmt.Println(msg)
+	var err Error
+	err.Message = msg
+	errPtr = &err
+	code = http.StatusInternalServerError
+	return
 }
