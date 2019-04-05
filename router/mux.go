@@ -3,6 +3,7 @@ package router
 import (
 	forumDomain "github.com/DragonF0rm/Technopark-DBMS-Forum/domains/forum"
 	postDomain  "github.com/DragonF0rm/Technopark-DBMS-Forum/domains/post"
+	userDomain  "github.com/DragonF0rm/Technopark-DBMS-Forum/domains/user"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -29,12 +30,12 @@ func GetRouter()(router *mux.Router){
 	thread.HandleFunc("/{slug_or_id}/details", handlers.ThreadGetDetails).Methods(http.MethodGet)
 	thread.HandleFunc("/{slug_or_id}/details", handlers.ThreadSetDetails).Methods(http.MethodPost)
 	thread.HandleFunc("/{slug_or_id}/posts", handlers.ThreadPosts).Methods(http.MethodGet)
-	thread.HandleFunc("/{slug_or_id}/vote", handlers.ThreadVote).Methods(http.MethodPost)
+	thread.HandleFunc("/{slug_or_id}/vote", handlers.ThreadVote).Methods(http.MethodPost)*/
 
-	user    := router.PathPrefix("/user").Subrouter()
-	user.HandleFunc("/{nickname}/create", handlers.UserCreate).Methods(http.MethodPost)
-	user.HandleFunc("/{nickname}/profile", handlers.UserGetProfile).Methods(http.MethodGet)
-	user.HandleFunc("/{nickname}/profile", handlers.UserChangeProfile).Methods(http.MethodPost)*/
+	user := router.PathPrefix("/user").Subrouter()
+	user.HandleFunc("/{nickname}/create", userDomain.CreateHandler).Methods(http.MethodPost)
+	//user.HandleFunc("/{nickname}/profile", handlers.UserGetProfile).Methods(http.MethodGet)
+	//user.HandleFunc("/{nickname}/profile", handlers.UserChangeProfile).Methods(http.MethodPost)
 
 	router.Use(MiddlewareBasicHeaders)
 	router.Use(MiddlewareLog)
