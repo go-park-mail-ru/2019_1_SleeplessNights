@@ -29,7 +29,7 @@ func GetRouter()(router *mux.Router){
 	thread  := router.PathPrefix("/thread").Subrouter()
 	thread.HandleFunc("/{slug_or_id}/create", threadDomain.CreatePostsHandler).Methods(http.MethodPost)
 	thread.HandleFunc("/{slug_or_id}/details", threadDomain.DetailsHandler).Methods(http.MethodGet)
-	//thread.HandleFunc("/{slug_or_id}/details", handlers.ThreadSetDetails).Methods(http.MethodPost)
+	thread.HandleFunc("/{slug_or_id}/details", threadDomain.UpdateHandler).Methods(http.MethodPost)
 	//thread.HandleFunc("/{slug_or_id}/posts", handlers.ThreadPosts).Methods(http.MethodGet)
 	//thread.HandleFunc("/{slug_or_id}/vote", handlers.ThreadVote).Methods(http.MethodPost)
 
