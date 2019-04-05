@@ -50,3 +50,4 @@ func create(nickname, fullname, about, email string)(code int, response interfac
 	}
 	return
 }
+

@@ -34,7 +34,7 @@ func GetRouter()(router *mux.Router){
 
 	user := router.PathPrefix("/user").Subrouter()
 	user.HandleFunc("/{nickname}/create", userDomain.CreateHandler).Methods(http.MethodPost)
-	//user.HandleFunc("/{nickname}/profile", handlers.UserGetProfile).Methods(http.MethodGet)
+	user.HandleFunc("/{nickname}/profile", userDomain.ProfileHandler).Methods(http.MethodGet)
 	//user.HandleFunc("/{nickname}/profile", handlers.UserChangeProfile).Methods(http.MethodPost)
 
 	router.Use(MiddlewareBasicHeaders)
