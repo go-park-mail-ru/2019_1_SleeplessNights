@@ -33,9 +33,6 @@ func createThread(slug, title, author, message string, created time.Time)(code i
 	var thread responses.Thread
 	err = row.Scan(&thread.IsNew, &thread.ID, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
 	if err == nil {
-		if err != nil {
-			return responses.InternalError("Error while parsing DB row: " + err.Error())
-		}
 		if thread.IsNew {
 			code = 201
 		} else {

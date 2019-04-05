@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx"
 )
 
-func details(slug string)(code int, response interface{}) {
+func users(slug string, limit int32, since string, desc bool)(code int, response interface{}) {
 	conn, err := pgx.Connect(database.ConnConfig)
 	defer conn.Close()
 	tx, err := conn.Begin()
@@ -15,12 +15,33 @@ func details(slug string)(code int, response interface{}) {
 	}
 	defer tx.Rollback()
 
-	row := conn.QueryRow(`SELECT * FROM func_forum_details($1)`, slug)
-	var forum responses.Forum
-	err = row.Scan(&forum.ForumTitle, &forum.UserNickname, &forum.ForumSlug, &forum.PostsCount, &forum.ThreadsCount, &forum.IsNew)
+	var sincePtr *string
+	if since == "" {
+		sincePtr = nil
+	} else {
+		sincePtr = &since
+	}
+
+	var rows *pgx.Rows
+	rows, err = conn.Query(`SELECT * FROM func_forum_users($1, $2, $3, $4)`, slug, sincePtr, desc, limit)
+	defer rows.Close()
+
 	if err == nil {
+		var users []responses.User
+		for rows.Next() {
+			var user responses.User
+			err = rows.Scan(&user.IsNew, &user.Nickname, &user.Fullname, &user.About, &user.Email)
+			if err != nil {
+				return responses.InternalError("Error while scanning row: " + err.Error())
+			}
+			users = append(users, user)
+		}
+		if rows.Err() != nil {
+			return responses.InternalError("Error returned by rows: " + err.Error())
+		}
+
 		code = 200
-		response = &forum
+		response = &users
 		err = tx.Commit()
 		if err != nil {
 			return responses.InternalError("Error while committing transaction: " + err.Error())

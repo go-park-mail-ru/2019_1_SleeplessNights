@@ -8,14 +8,14 @@ import (
 
 func GetRouter()(router *mux.Router){
 	router = mux.NewRouter()
-	forum   := router.PathPrefix("/forum").Subrouter()
+	forum := router.PathPrefix("/forum").Subrouter()
 	forum.HandleFunc("/create", forumDomain.CreateHandler).Methods(http.MethodPost)
 	forum.HandleFunc("/{slug}/details", forumDomain.DetailsHandler).Methods(http.MethodGet)
 	forum.HandleFunc("/{slug}/create", forumDomain.CreateThreadHandler).Methods(http.MethodPost)
-	/*forum.HandleFunc("/{slug}/threads", handlers.ForumSlugThreads).Methods(http.MethodGet)
-	forum.HandleFunc("/{slug}/users", handlers.ForumSlugUsers).Methods(http.MethodGet)
+	forum.HandleFunc("/{slug}/users", forumDomain.UsersHandler).Methods(http.MethodGet)
+	forum.HandleFunc("/{slug}/threads", forumDomain.ThreadsHandler).Methods(http.MethodGet)
 
-	post    := router.PathPrefix("/post").Subrouter()
+	/*post    := router.PathPrefix("/post").Subrouter()
 	post.HandleFunc("/{id}/details", handlers.PostGetDetails).Methods(http.MethodGet)
 	post.HandleFunc("/{id}/details", handlers.PostSetDetails).Methods(http.MethodPost)
 

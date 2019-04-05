@@ -31,8 +31,6 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("JSON PARSED")
-
 	code, response := create(args.Title, args.UserNickname, args.Slug)
 	responseJSON, err := json.Marshal(response)
 	if err != nil {
