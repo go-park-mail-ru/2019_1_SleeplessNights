@@ -24,7 +24,7 @@ func GetRouter()(router *mux.Router){
 	post.HandleFunc("/{id}/details", postDomain.EditHandler).Methods(http.MethodPost)
 
 	service := router.PathPrefix("/service").Subrouter()
-	//service.HandleFunc("/clear", handlers.ServiceClear).Methods(http.MethodPost)
+	service.HandleFunc("/clear", statusDomain.ClearHandler).Methods(http.MethodPost)
 	service.HandleFunc("/status", statusDomain.StatusHandler).Methods(http.MethodGet)
 
 	thread  := router.PathPrefix("/thread").Subrouter()
