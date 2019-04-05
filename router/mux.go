@@ -2,6 +2,7 @@ package router
 
 import (
 	forumDomain "github.com/DragonF0rm/Technopark-DBMS-Forum/domains/forum"
+	postDomain  "github.com/DragonF0rm/Technopark-DBMS-Forum/domains/post"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -15,15 +16,15 @@ func GetRouter()(router *mux.Router){
 	forum.HandleFunc("/{slug}/users", forumDomain.UsersHandler).Methods(http.MethodGet)
 	forum.HandleFunc("/{slug}/threads", forumDomain.ThreadsHandler).Methods(http.MethodGet)
 
-	/*post    := router.PathPrefix("/post").Subrouter()
-	post.HandleFunc("/{id}/details", handlers.PostGetDetails).Methods(http.MethodGet)
-	post.HandleFunc("/{id}/details", handlers.PostSetDetails).Methods(http.MethodPost)
+	post := router.PathPrefix("/post").Subrouter()
+	post.HandleFunc("/{id}/details", postDomain.DetailsHandler).Methods(http.MethodGet)
+	//post.HandleFunc("/{id}/details", handlers.PostSetDetails).Methods(http.MethodPost)
 
-	service := router.PathPrefix("/service").Subrouter()
+	/*service := router.PathPrefix("/service").Subrouter()
 	service.HandleFunc("/clear", handlers.ServiceClear).Methods(http.MethodPost)
-	service.HandleFunc("/status", handlers.ServiceStatus).Methods(http.MethodGet)
+	service.HandleFunc("/status", handlers.ServiceStatus).Methods(http.MethodGet)*/
 
-	thread  := router.PathPrefix("/thread").Subrouter()
+	/*thread  := router.PathPrefix("/thread").Subrouter()
 	thread.HandleFunc("/{slug_or_id}/create", handlers.ThreadCreate).Methods(http.MethodPost)
 	thread.HandleFunc("/{slug_or_id}/details", handlers.ThreadGetDetails).Methods(http.MethodGet)
 	thread.HandleFunc("/{slug_or_id}/details", handlers.ThreadSetDetails).Methods(http.MethodPost)
