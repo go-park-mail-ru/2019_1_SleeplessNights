@@ -1,14 +1,12 @@
 package user
 
 import (
-	"fmt"
 	"github.com/DragonF0rm/Technopark-DBMS-Forum/database"
 	"github.com/DragonF0rm/Technopark-DBMS-Forum/responses"
 	"github.com/jackc/pgx"
 )
 
 func create(nickname, fullname, about, email string)(code int, response interface{}) {
-	fmt.Println(nickname)
 	conn, err := pgx.Connect(database.ConnConfig)
 	defer conn.Close()
 	tx, err := conn.Begin()
