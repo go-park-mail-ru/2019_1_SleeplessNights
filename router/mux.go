@@ -31,7 +31,7 @@ func GetRouter()(router *mux.Router){
 	thread.HandleFunc("/{slug_or_id}/details", threadDomain.DetailsHandler).Methods(http.MethodGet)
 	thread.HandleFunc("/{slug_or_id}/details", threadDomain.UpdateHandler).Methods(http.MethodPost)
 	//thread.HandleFunc("/{slug_or_id}/posts", handlers.ThreadPosts).Methods(http.MethodGet)
-	//thread.HandleFunc("/{slug_or_id}/vote", handlers.ThreadVote).Methods(http.MethodPost)
+	thread.HandleFunc("/{slug_or_id}/vote", threadDomain.VoteHandler).Methods(http.MethodPost)
 
 	user := router.PathPrefix("/user").Subrouter()
 	user.HandleFunc("/{nickname}/create", userDomain.CreateHandler).Methods(http.MethodPost)
