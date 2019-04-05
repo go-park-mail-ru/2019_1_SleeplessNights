@@ -24,7 +24,7 @@ func threads(slug string, limit int32, since time.Time, desc bool)(code int, res
 	}
 
 	var rows *pgx.Rows
-	rows, err = conn.Query(`SELECT * FROM func_forum_threads($1, $2, $3, $4)`, slug, sincePtr, desc, limit)
+	rows, err = tx.Query(`SELECT * FROM func_forum_threads($1, $2, $3, $4)`, slug, sincePtr, desc, limit)
 	defer rows.Close()
 
 	if err == nil {

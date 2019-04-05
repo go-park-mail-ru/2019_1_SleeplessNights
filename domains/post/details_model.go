@@ -28,7 +28,7 @@ func details(id int64, related []string)(code int, response interface{}) {
 		Forum  *responses.Forum  `json:"forum,omitempty"`
 	}{Author: nil, Thread: nil, Forum: nil}
 
-	row := conn.QueryRow(`SELECT * FROM func_post_details($1)`, id)
+	row := tx.QueryRow(`SELECT * FROM func_post_details($1)`, id)
 	err = row.Scan(&postInfo.Post.ID, &postInfo.Post.Parent, &postInfo.Post.Author, &postInfo.Post.Message,
 		&postInfo.Post.IsEdited, &postInfo.Post.Forum, &postInfo.Post.Thread, &postInfo.Post.Created, &postInfo.Post.IsNew)
 	if err != nil{
@@ -47,7 +47,7 @@ func details(id int64, related []string)(code int, response interface{}) {
 		switch key {
 		case keyUser:
 			postInfo.Author = &responses.User{}
-			row := conn.QueryRow(`SELECT * FROM func_user_details($1)`, postInfo.Post.Author)
+			row := tx.QueryRow(`SELECT * FROM func_user_details($1)`, postInfo.Post.Author)
 			err = row.Scan(&postInfo.Author.IsNew, &postInfo.Author.Nickname, &postInfo.Author.Fullname, &postInfo.Author.About, &postInfo.Author.Email)
 			if err != nil{
 				switch err.Error() {
@@ -62,7 +62,7 @@ func details(id int64, related []string)(code int, response interface{}) {
 			}
 		case keyForum:
 			postInfo.Forum = &responses.Forum{}
-			row := conn.QueryRow(`SELECT * FROM func_forum_details($1)`, postInfo.Post.Forum)
+			row := tx.QueryRow(`SELECT * FROM func_forum_details($1)`, postInfo.Post.Forum)
 			err = row.Scan(&postInfo.Forum.ForumTitle, &postInfo.Forum.UserNickname, &postInfo.Forum.ForumSlug, &postInfo.Forum.PostsCount, &postInfo.Forum.ThreadsCount, &postInfo.Forum.IsNew)
 			if err != nil{
 				switch err.Error() {
@@ -77,7 +77,7 @@ func details(id int64, related []string)(code int, response interface{}) {
 			}
 		case keyThread:
 			postInfo.Thread = &responses.Thread{}
-			row := conn.QueryRow(`SELECT * FROM func_thread_details($1)`, postInfo.Post.Thread)
+			row := tx.QueryRow(`SELECT * FROM func_thread_details($1)`, postInfo.Post.Thread)
 			err = row.Scan(&postInfo.Thread.IsNew, &postInfo.Thread.ID, &postInfo.Thread.Title, &postInfo.Thread.Author,
 				&postInfo.Thread.Forum, &postInfo.Thread.Message, &postInfo.Thread.Votes, &postInfo.Thread.Slug, &postInfo.Thread.Created)
 			if err != nil{

@@ -16,7 +16,7 @@ func create(nickname, fullname, about, email string)(code int, response interfac
 	defer tx.Rollback()
 
 	var rows *pgx.Rows
-	rows, err = conn.Query(`SELECT * FROM func_user_create($1, $2, $3, $4)`, nickname, fullname, about, email)
+	rows, err = tx.Query(`SELECT * FROM func_user_create($1, $2, $3, $4)`, nickname, fullname, about, email)
 	defer rows.Close()
 
 	if err != nil {

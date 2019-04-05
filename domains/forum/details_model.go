@@ -15,7 +15,7 @@ func details(slug string)(code int, response interface{}) {
 	}
 	defer tx.Rollback()
 
-	row := conn.QueryRow(`SELECT * FROM func_forum_details($1)`, slug)
+	row := tx.QueryRow(`SELECT * FROM func_forum_details($1)`, slug)
 	var forum responses.Forum
 	err = row.Scan(&forum.ForumTitle, &forum.UserNickname, &forum.ForumSlug, &forum.PostsCount, &forum.ThreadsCount, &forum.IsNew)
 	if err == nil {

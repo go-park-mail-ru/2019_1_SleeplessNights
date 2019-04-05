@@ -15,7 +15,7 @@ func editProfile(nickname, fullname, about, email string)(code int, response int
 	}
 	defer tx.Rollback()
 
-	row := conn.QueryRow(`SELECT * FROM func_user_change_profile($1, $2, $3, $4)`, nickname, fullname, about, email)
+	row := tx.QueryRow(`SELECT * FROM func_user_change_profile($1, $2, $3, $4)`, nickname, fullname, about, email)
 	var user responses.User
 	err = row.Scan(&user.IsNew, &user.Nickname, &user.Fullname, &user.About, &user.Email)
 	if err == nil {

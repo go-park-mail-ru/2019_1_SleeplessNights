@@ -28,7 +28,7 @@ func createThread(slug, title, author, message string, created time.Time)(code i
 	if created.IsZero() {
 		created = time.Now()
 	}
-	row := conn.QueryRow(`SELECT * FROM func_forum_create_thread($1, $2, $3, $4, $5, $6)`,
+	row := tx.QueryRow(`SELECT * FROM func_forum_create_thread($1, $2, $3, $4, $5, $6)`,
 		slug, threadSlug, title, author, message, created)
 	var thread responses.Thread
 	err = row.Scan(&thread.IsNew, &thread.ID, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)

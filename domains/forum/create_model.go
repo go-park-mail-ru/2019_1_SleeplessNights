@@ -15,7 +15,7 @@ func create(title, user, slug string)(code int, response interface{}) {
 	}
 	defer tx.Rollback()
 
-	row := conn.QueryRow(`SELECT * FROM func_forum_create($1, $2, $3)`, title, user, slug)
+	row := tx.QueryRow(`SELECT * FROM func_forum_create($1, $2, $3)`, title, user, slug)
 	var forum responses.Forum
 	err = row.Scan(&forum.IsNew, &forum.ForumTitle, &forum.UserNickname, &forum.ForumSlug, &forum.PostsCount, &forum.ThreadsCount)
 	if err == nil {

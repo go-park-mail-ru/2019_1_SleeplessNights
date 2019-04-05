@@ -15,7 +15,7 @@ func profile(nickname string)(code int, response interface{}) {
 	}
 	defer tx.Rollback()
 
-	row := conn.QueryRow(`SELECT * FROM func_user_details($1)`, nickname)
+	row := tx.QueryRow(`SELECT * FROM func_user_details($1)`, nickname)
 	var user responses.User
 	err = row.Scan(&user.IsNew, &user.Nickname, &user.Fullname, &user.About, &user.Email)
 	if err == nil {

@@ -15,7 +15,7 @@ func edit(id int64, message string)(code int, response interface{}) {
 	}
 	defer tx.Rollback()
 
-	row := conn.QueryRow(`SELECT * FROM func_post_change($1, $2)`, id, message)
+	row := tx.QueryRow(`SELECT * FROM func_post_change($1, $2)`, id, message)
 	var post responses.Post
 	err = row.Scan(&post.ID, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created, &post.IsNew)
 	if err == nil {
