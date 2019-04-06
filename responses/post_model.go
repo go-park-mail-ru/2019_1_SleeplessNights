@@ -3,7 +3,7 @@ package responses
 import "time"
 
 type Post struct {
-	ID       uint64    `json:"id"`
+	ID       int64    `json:"id"`
 	Parent   int64     `json:"parent"`
 	Author   string    `json:"author"`
 	Message  string    `json:"message"`

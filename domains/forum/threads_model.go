@@ -29,6 +29,7 @@ func threads(slug string, limit int32, since time.Time, desc bool)(code int, res
 
 	if err == nil {
 		var threads []responses.Thread
+		threads = make([]responses.Thread, 0)
 		for rows.Next() {
 			var thread responses.Thread
 			err = rows.Scan(&thread.IsNew, &thread.ID, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
@@ -37,8 +38,18 @@ func threads(slug string, limit int32, since time.Time, desc bool)(code int, res
 			}
 			threads = append(threads, thread)
 		}
-		if rows.Err() != nil {
-			return responses.InternalError("Error returned by rows: " + err.Error())
+		err = rows.Err()
+		if err != nil {
+			switch err.Error() {
+			case "ERROR: no_data_found (SQLSTATE P0002)":
+				code = 404
+				var msg responses.Error
+				msg.Message = "Can't find forum"
+				response = &msg
+				return
+			default:
+				return responses.InternalError("Database returned unexpected error: " + err.Error())
+			}
 		}
 
 		code = 200

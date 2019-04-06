@@ -34,6 +34,17 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(args) == 0 {
+		w.WriteHeader(201)
+		_, err = w.Write(bodyContent)
+		if err != nil {
+			fmt.Println("Error while writing response body:", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
 	parents := make([]int64, len(args))
 	authors := make([]string, len(args))
 	messages := make([]string, len(args))

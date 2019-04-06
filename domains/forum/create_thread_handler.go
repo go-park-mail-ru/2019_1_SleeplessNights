@@ -25,6 +25,7 @@ func CreateThreadHandler(w http.ResponseWriter, r *http.Request) {
 		Title   string    `json:"title"`
 		Author  string    `json:"author"`
 		Message string    `json:"message"`
+		Slug    string    `json:"slug"`
 		Created time.Time `json:"created"`
 	}{}
 
@@ -39,7 +40,7 @@ func CreateThreadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	code, response := createThread(mux.Vars(r)["slug"], args.Title, args.Author, args.Message, args.Created)
+	code, response := createThread(mux.Vars(r)["slug"], args.Title, args.Author, args.Message, args.Slug, args.Created)
 	responseJSON, err := json.Marshal(response)
 	if err != nil {
 		fmt.Println("Error while marshaling response to JSON:", err)

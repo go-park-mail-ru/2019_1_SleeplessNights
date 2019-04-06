@@ -36,7 +36,8 @@ func users(slug string, limit int32, since string, desc bool)(code int, response
 			}
 			users = append(users, user)
 		}
-		if rows.Err() != nil {
+		err = rows.Err()
+		if err != nil {
 			return responses.InternalError("Error returned by rows: " + err.Error())
 		}
 

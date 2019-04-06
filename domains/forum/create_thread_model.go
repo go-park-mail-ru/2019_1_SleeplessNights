@@ -4,19 +4,18 @@ import (
 	"github.com/DragonF0rm/Technopark-DBMS-Forum/database"
 	"github.com/DragonF0rm/Technopark-DBMS-Forum/responses"
 	"github.com/jackc/pgx"
-	"strings"
 	"time"
 )
 
-func createThread(slug, title, author, message string, created time.Time)(code int, response interface{}) {
-	removeSpaces := func(r rune) rune{
+func createThread(slug, title, author, message, threadSlug string, created time.Time)(code int, response interface{}) {
+	/*removeSpaces := func(r rune) rune{
 		if r == ' ' {
 			return '-'
 		} else {
 			return r
 		}
 	}
-	threadSlug := strings.Map(removeSpaces, strings.ToLower(title))
+	threadSlug := strings.Map(removeSpaces, strings.ToLower(title))*/
 
 	conn, err := pgx.Connect(database.ConnConfig)
 	defer conn.Close()

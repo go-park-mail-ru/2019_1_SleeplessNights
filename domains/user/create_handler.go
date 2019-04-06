@@ -17,7 +17,6 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	fmt.Println(string(bodyContent))
 	args := struct {
 		Fullname string `json:"fullname"`
 		About    string `json:"about"`
