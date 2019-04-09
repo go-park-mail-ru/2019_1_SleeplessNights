@@ -15,8 +15,12 @@ import (
 //Из неигровых задач комната должна уметь
 //* Собираться и пересобираться, не выкидывая игроков, если оба решили сыграть ещё партию вместе или это лобби
 //* Поддерживать обработку отвалившегося игрока
+const (
+	tickInterval = 0.5
+)
 
 type Room struct {
+	//Channel to exchage event messages between Room and GameField
 	p1          player.Player
 	p2          player.Player
 	field       game_field.GameField
@@ -28,7 +32,8 @@ type Room struct {
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно
 }
 
-func (r *Room)TryJoin(p player.Player)(success bool) {
+func (r *Room) TryJoin(p player.Player) (success bool) {
+
 	//Здесь нам нужно под мьютексом проверить наличие свободных мест. Варианты:
 	//1. 2 места свободно -> занимаем первое место
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
@@ -36,18 +41,18 @@ func (r *Room)TryJoin(p player.Player)(success bool) {
 	return
 }
 
-func (r *Room)BuildEnv() {
+func (r *Room) BuildEnv() {
 	//Процедура должна пересоздавать игровое поле, запрашивать новый список тем из БД и готовить комнату к новой игре
 	//При этом она должна уметь работать асинхронно и не выбрасывать пользователей из комнаты во время работы
 	//TODO develop
 }
 
-func (r *Room)notify(msg messge.Message) {
+func (r *Room) notifyAll(msg messge.Message) {
 	//Процедуры должна отправить сообщение всем игрокам комнаты
 	//TODO develop
 }
 
-func (r *Room)grantGodMod(p player.Player, token []byte)  {
+func (r *Room) grantGodMod(p player.Player, token []byte) {
 	//РЕАЛИЗОВЫВАТЬ ПОСЛЕДНЕЙ
 	//Это чисто техническая процедура, она нужна не для реальных игроков, а, в основном, для ботов, которые должны знать
 	//правильный ответ, чтобы отвечать верно более чем на 25% вопросов
@@ -60,7 +65,13 @@ func (r *Room)grantGodMod(p player.Player, token []byte)  {
 	//TODO develop
 }
 
-func (r *Room)startMatch() {
+func (r *Room) startMatch() {
+	go func() {
+		for event := range r.field.Out {
+			println(event)
+		}
+	}()
+
 	//Эта процедура запускает игровой процесс
 	//Здесь мы будем слушать все сообщения пользователей асинхронно и складывать их в очередь для обработки
 	//В цикле мы будем обрабатывать все входные сообщения, выполнять нашу бизнес логику (менять значение таймера,
