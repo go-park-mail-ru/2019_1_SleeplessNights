@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"mime/multipart"
@@ -34,7 +35,7 @@ func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErr
 		return
 	}
 
-	if existingUser, userFound := models.Users[newEmail]; userFound && user.ID != existingUser.ID {
+	if existingUser, userFound := database.GetUserViaEmail(newEmail); userFound && user.ID != existingUser.ID {
 		logger.Error.Println("Failed to update profile:", UniqueEmailErrorMsg)
 		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
 	}
@@ -74,7 +75,7 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid b
 		return
 	}
 
-	_, userExist := models.Users[r.Form.Get("email")]
+	_, userExist := database.GetUserViaEmail(r.Form.Get("email"))
 	if userExist {
 		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
 		return
@@ -97,7 +98,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool,
 		return
 	}
 
-	user, found := models.Users[email]
+	user, found := database.GetUserViaEmail(email)
 	if !found {
 		requestErrors = append(requestErrors, MissedUserErrorMsg)
 		return requestErrors, false, user, nil

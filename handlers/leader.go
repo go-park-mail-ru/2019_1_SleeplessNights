@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"math"
@@ -37,7 +38,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "1"
 	}
-	usersTotal := len(models.Users)
+	usersTotal := database.GetLenUsers()
 
 	PageNum, err := strconv.Atoi(page)
 	if err != nil {
@@ -51,7 +52,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userSlice := make([]interface{}, 0, usersTotal)
-	for _, v := range models.Users {
+	for _, v := range database.GetUsers() {
 		userSlice = append(userSlice, v)
 	}
 

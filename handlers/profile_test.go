@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
@@ -19,7 +20,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range models.Users {
+	for _, user := range database.GetUsers() {
 		cookie, err := helpers.MakeSession(user)
 		if err != nil {
 			t.Errorf("\nMakeSession returned error: %s\n", err)
@@ -122,8 +123,8 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	models.Users[user.Email] = user
-	models.UserKeyPairs[user.ID] = user.Email
+	database.AddIntoUsers(user, user.Email)
+	database.AddIntoUserKeyPairs(user.Email, user.ID)
 
 	cookie, err := helpers.MakeSession(user)
 	if err != nil {
@@ -211,7 +212,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		}
 	}
 
-	user = models.Users[models.UserKeyPairs[1000]]
+	user, _ = database.GetUserViaID(1000)
 
 	if user.Email != newEmail {
 		t.Errorf("\nDB returned wrong email:\ngot %v\nwant %v\n",
@@ -222,8 +223,8 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 			user.Email, newEmail)
 	}
 
-	delete(models.Users, models.UserKeyPairs[1000])
-	delete(models.UserKeyPairs, 1000)
+	database.DeleteIntoUsers(database.GetUserKeyPair(1000))
+	database.DeleteIntoUserKeyPairs(1000)
 }
 
 func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
@@ -235,8 +236,8 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	models.Users[user.Email] = user
-	models.UserKeyPairs[user.ID] = user.Email
+	database.AddIntoUsers(user, user.Email)
+	database.AddIntoUserKeyPairs(user.Email, user.ID)
 
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
@@ -264,8 +265,8 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		}
 	}
 
-	delete(models.Users, models.UserKeyPairs[1000])
-	delete(models.UserKeyPairs, 1000)
+	database.DeleteIntoUsers(database.GetUserKeyPair(1000))
+	database.DeleteIntoUserKeyPairs(1000)
 }
 
 

@@ -22,13 +22,13 @@ type UserPk struct {
 }
 
 var idSource uint
-var Users map[string]User
-var UserKeyPairs map[uint]string
-
-func init() {
-	Users = make(map[string]User, 0)
-	UserKeyPairs = make(map[uint]string, 0)
-}
+//var Users map[string]User
+//var UserKeyPairs map[uint]string
+//
+//func init() {
+//	Users = make(map[string]User, 0)
+//	UserKeyPairs = make(map[uint]string, 0)
+//}
 
 func MakeID() uint {
 	idSource++

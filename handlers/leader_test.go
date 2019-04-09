@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"math"
@@ -15,10 +16,10 @@ import (
 func TestLeadersHandlerSuccessful(t *testing.T) {
 
 	faker.CreateFakeData(UserCounter)
-	usersTotal := len(models.Users)
+	usersTotal := database.GetLenUsers()
 
 	userSlice := make([]interface{}, 0, usersTotal)
-	for _, v := range models.Users {
+	for _, v := range database.GetUsers() {
 		userSlice = append(userSlice, v)
 	}
 	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })

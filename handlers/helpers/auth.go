@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"log"
 	"math/rand"
@@ -99,7 +100,7 @@ func Authorize(sessionToken string)(user models.User, err error){
 	if err != nil {
 		return
 	}
-	user, found := models.Users[models.UserKeyPairs[uint(userID)]]
+	user, found := database.GetUserViaID(uint(userID))
 	if !found {
 		return user, errors.New(NoTokenOwner)
 	}

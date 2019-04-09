@@ -1,6 +1,7 @@
 package faker
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
@@ -27,7 +28,7 @@ func CreateFakeData(quantity int) {
 		}
 
 		email := fake.Email()
-		_, found := models.Users[email]
+		_, found := database.GetUserViaEmail(email)
 		if found {
 			continue
 		}
@@ -42,8 +43,8 @@ func CreateFakeData(quantity int) {
 			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
-		models.Users[user.Email] = user
-		models.UserKeyPairs[user.ID] = user.Email
+		database.AddIntoUsers(user, user.Email)
+		database.AddIntoUserKeyPairs(user.Email, user.ID)
 	}
 
 }

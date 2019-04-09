@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
@@ -91,11 +91,11 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if newEmail != oldEmail {
 
-		delete(models.UserKeyPairs, user.ID)
-		delete(models.Users, oldEmail)
+		database.DeleteIntoUserKeyPairs(user.ID)
+		database.DeleteIntoUsers(oldEmail)
 
-		models.Users[newEmail] = user
-		models.UserKeyPairs[user.ID] = newEmail
+		database.AddIntoUsers(user, newEmail)
+		database.AddIntoUserKeyPairs(newEmail, user.ID)
 
 		sessionCookie, err := helpers.MakeSession(user)
 		if err != nil {
@@ -150,7 +150,8 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.AvatarPath = avatarName
-	models.Users[user.Email] = user
+	database.AddIntoUsers(user, user.Email)
+	//TODO Почему тут нету связки с userKeyPairs ???
 	_, err = w.Write([]byte(`{"avatar_path": "` + avatarName + `"}`))
 	if err != nil {
 		helpers.Return500(&w, err)

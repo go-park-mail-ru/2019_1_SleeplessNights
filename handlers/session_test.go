@@ -1,9 +1,9 @@
 package handlers_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -21,7 +21,7 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range models.Users {
+	for _, user := range database.GetUsers() {
 		email := user.Email
 		password := faker.FakeUserPassword
 
