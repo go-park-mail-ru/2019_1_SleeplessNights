@@ -28,7 +28,7 @@ func CreateFakeData(quantity int) {
 		}
 
 		email := fake.Email()
-		_, found := database.GetUserViaEmail(email)
+		_, found := database.GetInstance().GetUserViaEmail(email)
 		if found {
 			continue
 		}
@@ -43,8 +43,8 @@ func CreateFakeData(quantity int) {
 			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
-		database.AddIntoUsers(user, user.Email)
-		database.AddIntoUserKeyPairs(user.Email, user.ID)
+		database.GetInstance().AddIntoUsers(user, user.Email)
+		database.GetInstance().AddIntoUserKeyPairs(user.Email, user.ID)
 	}
 
 }

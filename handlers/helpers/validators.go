@@ -35,7 +35,7 @@ func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErr
 		return
 	}
 
-	if existingUser, userFound := database.GetUserViaEmail(newEmail); userFound && user.ID != existingUser.ID {
+	if existingUser, userFound := database.GetInstance().GetUserViaEmail(newEmail); userFound && user.ID != existingUser.ID {
 		logger.Error.Println("Failed to update profile:", UniqueEmailErrorMsg)
 		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
 	}
@@ -75,7 +75,7 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid b
 		return
 	}
 
-	_, userExist := database.GetUserViaEmail(r.Form.Get("email"))
+	_, userExist := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
 	if userExist {
 		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
 		return
@@ -98,7 +98,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool,
 		return
 	}
 
-	user, found := database.GetUserViaEmail(email)
+	user, found := database.GetInstance().GetUserViaEmail(email)
 	if !found {
 		requestErrors = append(requestErrors, MissedUserErrorMsg)
 		return requestErrors, false, user, nil

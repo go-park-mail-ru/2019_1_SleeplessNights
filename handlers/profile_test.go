@@ -20,7 +20,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range database.GetUsers() {
+	for _, user := range database.GetInstance().GetUsers() {
 		cookie, err := helpers.MakeSession(user)
 		if err != nil {
 			t.Errorf("\nMakeSession returned error: %s\n", err)
@@ -123,8 +123,8 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	database.AddIntoUsers(user, user.Email)
-	database.AddIntoUserKeyPairs(user.Email, user.ID)
+	database.GetInstance().AddIntoUsers(user, user.Email)
+	database.GetInstance().AddIntoUserKeyPairs(user.Email, user.ID)
 
 	cookie, err := helpers.MakeSession(user)
 	if err != nil {
@@ -212,7 +212,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		}
 	}
 
-	user, _ = database.GetUserViaID(1000)
+	user, _ = database.GetInstance().GetUserViaID(1000)
 
 	if user.Email != newEmail {
 		t.Errorf("\nDB returned wrong email:\ngot %v\nwant %v\n",
@@ -223,8 +223,8 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 			user.Email, newEmail)
 	}
 
-	database.DeleteIntoUsers(database.GetUserKeyPair(1000))
-	database.DeleteIntoUserKeyPairs(1000)
+	database.GetInstance().DeleteIntoUsers(database.GetInstance().GetUserKeyPair(1000))
+	database.GetInstance().DeleteIntoUserKeyPairs(1000)
 }
 
 func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
@@ -236,8 +236,8 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	database.AddIntoUsers(user, user.Email)
-	database.AddIntoUserKeyPairs(user.Email, user.ID)
+	database.GetInstance().AddIntoUsers(user, user.Email)
+	database.GetInstance().AddIntoUserKeyPairs(user.Email, user.ID)
 
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
@@ -265,8 +265,8 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		}
 	}
 
-	database.DeleteIntoUsers(database.GetUserKeyPair(1000))
-	database.DeleteIntoUserKeyPairs(1000)
+	database.GetInstance().DeleteIntoUsers(database.GetInstance().GetUserKeyPair(1000))
+	database.GetInstance().DeleteIntoUserKeyPairs(1000)
 }
 
 

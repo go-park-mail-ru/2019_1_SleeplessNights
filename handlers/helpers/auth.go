@@ -100,7 +100,7 @@ func Authorize(sessionToken string)(user models.User, err error){
 	if err != nil {
 		return
 	}
-	user, found := database.GetUserViaID(uint(userID))
+	user, found := database.GetInstance().GetUserViaID(uint(userID))
 	if !found {
 		return user, errors.New(NoTokenOwner)
 	}

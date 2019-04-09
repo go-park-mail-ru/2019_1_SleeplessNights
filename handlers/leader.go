@@ -38,7 +38,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "1"
 	}
-	usersTotal := database.GetLenUsers()
+	usersTotal := database.GetInstance().GetLenUsers()
 
 	PageNum, err := strconv.Atoi(page)
 	if err != nil {
@@ -52,7 +52,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userSlice := make([]interface{}, 0, usersTotal)
-	for _, v := range database.GetUsers() {
+	for _, v := range database.GetInstance().GetUsers() {
 		userSlice = append(userSlice, v)
 	}
 

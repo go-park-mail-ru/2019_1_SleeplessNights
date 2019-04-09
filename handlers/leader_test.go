@@ -16,10 +16,10 @@ import (
 func TestLeadersHandlerSuccessful(t *testing.T) {
 
 	faker.CreateFakeData(UserCounter)
-	usersTotal := database.GetLenUsers()
+	usersTotal := database.GetInstance().GetLenUsers()
 
 	userSlice := make([]interface{}, 0, usersTotal)
-	for _, v := range database.GetUsers() {
+	for _, v := range database.GetInstance().GetUsers() {
 		userSlice = append(userSlice, v)
 	}
 	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })

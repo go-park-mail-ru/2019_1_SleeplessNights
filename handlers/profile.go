@@ -91,11 +91,11 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if newEmail != oldEmail {
 
-		database.DeleteIntoUserKeyPairs(user.ID)
-		database.DeleteIntoUsers(oldEmail)
+		database.GetInstance().DeleteIntoUserKeyPairs(user.ID)
+		database.GetInstance().DeleteIntoUsers(oldEmail)
 
-		database.AddIntoUsers(user, newEmail)
-		database.AddIntoUserKeyPairs(newEmail, user.ID)
+		database.GetInstance().AddIntoUsers(user, newEmail)
+		database.GetInstance().AddIntoUserKeyPairs(newEmail, user.ID)
 
 		sessionCookie, err := helpers.MakeSession(user)
 		if err != nil {
@@ -150,8 +150,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.AvatarPath = avatarName
-	database.AddIntoUsers(user, user.Email)
-	//TODO Почему тут нету связки с userKeyPairs ???
+	database.GetInstance().AddIntoUsers(user, user.Email)
 	_, err = w.Write([]byte(`{"avatar_path": "` + avatarName + `"}`))
 	if err != nil {
 		helpers.Return500(&w, err)

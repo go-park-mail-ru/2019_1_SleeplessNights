@@ -21,7 +21,7 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range database.GetUsers() {
+	for _, user := range database.GetInstance().GetUsers() {
 		email := user.Email
 		password := faker.FakeUserPassword
 

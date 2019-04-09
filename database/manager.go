@@ -18,42 +18,46 @@ func init() {
 	}
 }
 
-func GetUserViaID(userID uint) (models.User, bool) {
+func GetInstance() *dbManager {
+	return db
+}
+
+func(db *dbManager) GetUserViaID(userID uint) (models.User, bool) {
 	user, found := db.users[db.userKeyPairs[userID]]
 	return user, found
 }
 
-func GetUserViaEmail(email string) (models.User, bool) {
+func(db *dbManager) GetUserViaEmail(email string) (models.User, bool) {
 	user, found := db.users[email]
 	return user, found
 }
 
-func GetUserKeyPair(userID uint) string {
+func(db *dbManager) GetUserKeyPair(userID uint) string {
 	email:= db.userKeyPairs[userID]
 	return email
 }
 
-func AddIntoUsers(user models.User, email string)  {
+func(db *dbManager) AddIntoUsers(user models.User, email string)  {
 	db.users[email] = user
 }
 
-func AddIntoUserKeyPairs(email string, id uint) {
+func(db *dbManager) AddIntoUserKeyPairs(email string, id uint) {
 	db.userKeyPairs[id] = email
 }
 
-func DeleteIntoUsers(email string) {
+func(db *dbManager) DeleteIntoUsers(email string) {
 	delete(db.users, email)
 }
 
-func DeleteIntoUserKeyPairs(id uint) {
+func(db *dbManager) DeleteIntoUserKeyPairs(id uint) {
 	delete(db.userKeyPairs, id)
 }
 
-func GetLenUsers() int {
+func(db *dbManager) GetLenUsers() int {
 	return len(db.users)
 }
 
-func GetUsers() map[string]models.User {
+func(db *dbManager) GetUsers() map[string]models.User {
 	duplicate := db.users
 	return duplicate
 }
