@@ -9,6 +9,7 @@ type websocketPlayer struct {
 	//С помощью этой структуры будем делать игрока по вебсокету на фабрике
 	//Она уже реализует интерфейс Player, поэтому нам нужно будет просто сделатьинстанс этой структуры
 	id   uint64
+	uid  uint64
 	in   chan messge.Message
 	conn *websocket.Conn
 }
@@ -45,4 +46,8 @@ func (wsPlayer *websocketPlayer) Subscribe() chan messge.Message {
 
 func (wsPlayer *websocketPlayer) ID() uint64 {
 	return wsPlayer.id
+}
+
+func (wsPlayer *websocketPlayer) UID() uint64 {
+	return wsPlayer.uid
 }

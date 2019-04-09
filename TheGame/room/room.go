@@ -4,7 +4,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/questions"
 	"sync"
 )
 
@@ -24,7 +23,6 @@ type Room struct {
 	p1          player.Player
 	p2          player.Player
 	field       game_field.GameField
-	questions   questions.QuestionPack
 	IsAvailable bool       //Флаг, того, что комната уже наполнена и балансировщику сюда не надо стучаться
 	mu          sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
@@ -42,9 +40,16 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 }
 
 func (r *Room) BuildEnv() {
+
+	//Get questions from database
+
+	//CAll GameField.build
+
 	//Процедура должна пересоздавать игровое поле, запрашивать новый список тем из БД и готовить комнату к новой игре
 	//При этом она должна уметь работать асинхронно и не выбрасывать пользователей из комнаты во время работы
 	//TODO develop
+
+	//Notify all about start of game
 }
 
 func (r *Room) notifyAll(msg messge.Message) {

@@ -13,4 +13,5 @@ type Player interface {
 	Send(msg messge.Message) error
 	Subscribe() chan messge.Message
 	ID() uint64
+	UID() uint64
 }

@@ -2,7 +2,6 @@ package game_field
 
 import (
 	"errors"
-	"math"
 )
 
 type queue struct {
@@ -31,7 +30,5 @@ func (q *queue) dequeue() (cell *gameCell, err error) {
 }
 
 func CheckCellReachability(currenCell, goalCell *gameCell) {
-
-	q := queue{make(chan *gameCell, 64), 0, 64}
 
 }
