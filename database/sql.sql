@@ -9,7 +9,7 @@ CREATE TABLE users
   salt       BYTEA            NOT NULL,
   won        BIGINT DEFAULT 0 NOT NULL,
   lost       BIGINT DEFAULT 0 NOT NULL,
-  playtime   BIGINT           NOT NULL,
+  playtime   BIGINT DEFAULT 0 NOT NULL,
   nickname   CITEXT           NOT NULL,
   avatarpath CITEXT           NOT NULL
 );

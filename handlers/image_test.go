@@ -20,6 +20,10 @@ func TestImgHandlerSuccessful(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -47,6 +51,7 @@ func TestImgHandlerSuccessful(t *testing.T) {
 
 		expected, err := ioutil.ReadFile(img)
 		if err != nil {
+			t.Error(err.Error())
 			return
 		}
 
@@ -63,6 +68,10 @@ func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())

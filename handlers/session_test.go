@@ -26,6 +26,10 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -80,6 +84,10 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -188,6 +196,10 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -196,7 +208,7 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 
 	form := url.Values{}
 	form.Add("WRONG_mail", "test@test.com")
-	form.Add("WRONG_password", "asdasdasdsadasd")
+	form.Add("WRONG_password", "asasdsadasd")
 
 	req := httptest.NewRequest(http.MethodPost, handlers.ApiAuth, nil)
 	req.PostForm = form

@@ -3,7 +3,6 @@ package handlers
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/lib/pq"
 	"net/http"
@@ -30,12 +29,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := models.User{
-		ID:        models.MakeID(),
-		Email:     r.Form.Get("email"),
-		Won:       0,
-		Lost:      0,
-		PlayTime:  0,
-		Nickname: r.Form.Get("nickname"),
+		ID:         models.MakeID(),
+		Email:      r.Form.Get("email"),
+		Won:        0,
+		Lost:       0,
+		PlayTime:   0,
+		Nickname:   r.Form.Get("nickname"),
 		AvatarPath: "default_avatar.jpg",
 	}
 	salt, err := helpers.MakeSalt()
@@ -50,9 +49,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		//Однако, с ним ещё можно произвести полезную работу, которая может вызвать ошибки
 		err = database.GetInstance().AddUser(user)
 		if _err, ok := err.(*pq.Error); ok {
-			logger.Error.Print(_err.Code.Class())
-			logger.Error.Print(_err.Error())
-			helpers.Return500(&w, err)
+			helpers.Return500(&w, _err)
 			return
 		}
 	}()

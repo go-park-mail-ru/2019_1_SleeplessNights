@@ -21,6 +21,10 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -100,6 +104,10 @@ func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -133,6 +141,10 @@ func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())

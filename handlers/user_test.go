@@ -4,7 +4,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
-	"github.com/lib/pq"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -27,6 +26,10 @@ func TestRegisterHandlerSuccessful(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -136,12 +139,6 @@ func TestRegisterHandlerSuccessful(t *testing.T) {
 					item.number, resp.Body.String(), expected)
 			}
 		}
-
-		err = database.GetInstance().DeleteUser(item.email)
-		if err, ok := err.(*pq.Error); ok {
-			t.Error(err.Code.Class())
-			t.Error(err.Error())
-		}
 	}
 }
 
@@ -152,6 +149,10 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 		logger.Fatal.Print(err.Error())
 	}
 	defer func() {
+		err = database.GetInstance().CleanerDBForTests()
+		if err != nil {
+			t.Error(err.Error())
+		}
 		err := database.CloseConnection()
 		if err != nil {
 			logger.Fatal.Print(err.Error())
@@ -183,14 +184,14 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			password2: "134fK34f34fed",
 			error:     `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":null}`,
 		},
-		TestCaseReg{
-			number:    4,
-			email:     "acsdvs@tsdcsdcsdcsdcest.com",
-			nickname:  "scklopsdfdsfsdfsdfdsfdsfsdf",
-			password1: "JNJasadasdasdasdNJ",
-			password2: "JNJasadasdasdasdNJ",
-			error:     `{"email":"Пользователь с таким адресом электронной почты уже зарегистрирован","password":"","password2":"","nickname":"Никнейм не может быть длиннее 16 символов","avatar":"","error":null}`,
-		},
+		//TestCaseReg{
+		//	number:    4,
+		//	email:     "acsdvs@tsdcsdcsdcsdcest.com",
+		//	nickname:  "scklopsdfdsfdsfsdf",
+		//	password1: "JNJasadasdasdasdNJ",
+		//	password2: "JNJasadasdasdasdNJ",
+		//	error:     `{"email":"Пользователь с таким адресом электронной почты уже зарегистрирован","password":"","password2":"","nickname":"Никнейм не может быть длиннее 16 символов","avatar":"","error":null}`,
+		//},
 		TestCaseReg{
 			number:    5,
 			email:     "iejihiufhiwufhiwh@test.ru",
@@ -198,7 +199,6 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			password1: "120wsed",
 			password2: "120wsed",
 			error:     `{"email":"","password":"Пароль слишком короткий","password2":"","nickname":"","avatar":"","error":null}`,
-
 		},
 		TestCaseReg{
 			number:    6,
@@ -239,7 +239,6 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			password1: "12129J",
 			password2: "120912129J",
 			error:     `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий","password2":"Пароли не совпадают","nickname":"Никнейм не может быть длиннее 16 символов","avatar":"","error":null}`,
-
 		},
 	}
 

@@ -54,9 +54,8 @@ func GetInstance() *dbManager {
 func (db *dbManager) GetUserViaID(userID uint) (user models.User, found bool, err error) {
 
 	row := db.dateBase.QueryRow(
-		`SELECT email, password, salt, won, lost, playtime, nickname, avatarpath
-			FROM public.users WHERE id = $1`, userID)
-	err = row.Scan(&user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
+		`SELECT * FROM public.users WHERE id = $1`, userID)
+	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
 	if err != nil {
 		return
@@ -104,8 +103,7 @@ func (db *dbManager) GetLenUsers() (len int, err error) {
 func (db *dbManager) GetUsers() (users []models.User, err error) {
 
 	rows, err := db.dateBase.Query(
-		`SELECT email, password, salt, won, lost, playtime, nickname, avatarpath
-			  FROM public.users ORDER BY won DESC`)
+		`SELECT * FROM public.users ORDER BY won DESC`)
 	if err != nil {
 		return
 	}
@@ -118,13 +116,18 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 
 	var user models.User
 	for rows.Next() {
-		err = rows.Scan(&user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
+		err = rows.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 			&user.AvatarPath)
 		if err != nil {
 			return
 		}
 		users = append(users, user)
 	}
+	return
+}
+
+func (db *dbManager) CleanerDBForTests() (err error) {
+	_, err = db.dateBase.Exec(`TRUNCATE TABLE public.users`)
 	return
 }
 
