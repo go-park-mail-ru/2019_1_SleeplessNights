@@ -6,12 +6,13 @@ import (
 	"net/http"
 )
 
-func GetRouter()(router *mux.Router){
+func GetRouter() (router *mux.Router) {
 	//TODO REWORK AUTH AND MOVE IT TO MIDDLEWARE
 	//TODO REORGANIZE STATIC FILES ACCESS
 	//TODO ADD AMAZON S3
 	//TODO ADD RECOVER MIDDLEWARE
 	router = mux.NewRouter()
+
 	api := router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/user", handlers.RegisterHandler).Methods(http.MethodPost)
 	api.HandleFunc("/session", handlers.AuthHandler).Methods(http.MethodPost)
@@ -20,6 +21,9 @@ func GetRouter()(router *mux.Router){
 	api.HandleFunc("/profile", handlers.ProfileUpdateHandler).Methods(http.MethodPatch)
 	api.HandleFunc("/leader", handlers.OptionsHandler).Methods(http.MethodOptions)
 	api.HandleFunc("/leader", handlers.LeadersHandler).Methods(http.MethodGet)
+
+	ws := router.PathPrefix("/ws").Subrouter()
+	ws.HandleFunc("/connect", handlers.UpgradeWs)
 	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods(http.MethodOptions)
 	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods(http.MethodGet)
 
@@ -28,4 +32,3 @@ func GetRouter()(router *mux.Router){
 	router.Use(MiddlewareLog)
 	return
 }
-

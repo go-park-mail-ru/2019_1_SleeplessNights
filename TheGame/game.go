@@ -49,7 +49,6 @@ func GetInstance() *gameFacade {
 }
 
 func (g *gameFacade) startBalance() {
-
 	//Процедура запускает балансировщик игроков
 	//Она в цикле читает канал in и, когда туда приходит игрок, распределяет его в комнату
 	//Если свободных комнат нет, то создаёт новую
@@ -58,47 +57,46 @@ func (g *gameFacade) startBalance() {
 	//и ищем в каждой комнате свободное место, если дошли до конца и не нашли, то создаём свою комнату
 	//и занимаем место в ней, а если достигнут maxRooms, то заново входим в цикл
 	//TODO develop
-	roomFound := true
-	for {
-		select {
-		case p := <-g.in:
-			logger.Info.Println("player %s joined the game", p.ID())
-			//Search for  room aplayer can join
-			roomsCounter := 0
-			roomFound = false
-			for _, v := range g.rooms {
-				if v.IsAvailable {
-					if v.TryJoin(p) {
-						roomFound = true
-						break
-					}
-				}
-				roomsCounter++
+	roomFound := false
+
+	for p := range g.in {
+
+		logger.Info.Println("player %s joined the game", p.ID())
+		//Search for  room a player can join
+		roomsCounter := 0
+		roomFound = false
+
+		for _, v := range g.rooms {
+			if v.TryJoin(p) {
+				roomFound = true
+				break
 			}
-
-			if roomsCounter != maxRooms && !roomFound {
-				g.mu.Lock()
-				g.idSource += 1
-				roomId := g.idSource
-				g.rooms[roomId] = room.Room{}
-				if !g.rooms[roomId].TryJoin(p) {
-					logger.Fatal.Println("Failed to join just created Room with id %d", roomId)
-					//Notify player
-				}
-				g.mu.Unlock()
-				logger.Info.Println("Successfully created Room with id %d", roomId)
-				logger.Info.Println("Player with id %d added to room %d", p.ID(), roomId)
-
-				//NotifyPlayer
-			} else {
-				logger.Info.Println("Couldn't create new room for player %d. Number of rooms has reached the limit ", p.ID())
-
-				//Send Message to Player
-			}
+			roomsCounter++
 		}
+
+		g.mu.Lock()
+		var roomId uint64
+		if roomsCounter != maxRooms {
+			g.idSource += 1
+			roomId := g.idSource
+			g.rooms[roomId] = room.Room{}
+			if !g.rooms[roomId].TryJoin(p) {
+				logger.Fatal.Println("Failed to join just created Room with id %d", roomId)
+				//Notify player
+			}
+			roomFound = true
+			//NotifyPlayer
+		}
+		if roomFound {
+			logger.Info.Println("Successfully created Room with id %d", roomId)
+			logger.Info.Println("Player with id %d added to room %d", p.ID(), roomId)
+		}
+
+		//maybe should notify about rooms
+		g.mu.Unlock()
+
 	}
 }
-
 func (g *gameFacade) PlayByWebsocket(conn *websocket.Conn, uid uint64) {
 	//Начинаем игру по вебсокет соединению
 	g.in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
