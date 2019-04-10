@@ -184,7 +184,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			password2: "134fK34f34fed",
 			error:     `{"email":"Неверно введён адрес электронной почты","password":"","password2":"","nickname":"","avatar":"","error":null}`,
 		},
-		//TestCaseReg{
+		//TestCaseReg{ //TODO не для этого теста
 		//	number:    4,
 		//	email:     "acsdvs@tsdcsdcsdcsdcest.com",
 		//	nickname:  "scklopsdfdsfdsfsdf",

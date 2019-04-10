@@ -6,12 +6,20 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 )
 
+//const (
+//	host     = "localhost"
+//	port     = 5432
+//	user     = "postgres"
+//	password = "1209qawsed"
+//	dbName   = "postgres"
+//)
+
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "1209qawsed"
-	dbName   = "postgres"
+	host     = ""
+	port     = 0
+	user     = ""
+	password = ""
+	dbName   = ""
 )
 
 var db *dbManager
@@ -67,9 +75,8 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, found bool, er
 func (db *dbManager) GetUserViaEmail(email string) (user models.User, found bool, err error) {
 
 	row := db.dateBase.QueryRow(
-		`SELECT email, password, salt, won, lost, playtime, nickname, avatarpath
-			FROM public.users WHERE email = $1`, email)
-	err = row.Scan(&user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
+		`SELECT * FROM public.users WHERE email = $1`, email)
+	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
 	if err != nil {
 		return

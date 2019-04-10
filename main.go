@@ -24,7 +24,7 @@ func main() {
 			logger.Fatal.Print(err.Error())
 		}
 	}()
-	logger.Info.Printf("\nSuccessfully connected to database at: %s", "5432") //TODO PORT
+	logger.Info.Printf("\nSuccessfully connected to database on: %s", "...") //TODO PORT
 
 	faker.CreateFakeData(10)
 

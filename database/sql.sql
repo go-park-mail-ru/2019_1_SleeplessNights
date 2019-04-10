@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
--- table person
+-- table user
 CREATE TABLE users
 (
   id         SERIAL           NOT NULL,
