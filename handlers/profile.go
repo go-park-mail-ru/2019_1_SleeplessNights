@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"github.com/lib/pq"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
@@ -91,11 +93,21 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if newEmail != oldEmail {
 
-		database.GetInstance().DeleteIntoUserKeyPairs(user.ID)
-		database.GetInstance().DeleteIntoUsers(oldEmail)
+		err = database.GetInstance().DeleteUser(oldEmail)
+		if _err, ok := err.(*pq.Error); ok {
+			logger.Error.Print(_err.Code.Class())
+			logger.Error.Print(_err.Error())
+			helpers.Return500(&w, err)
+			return
+		}
 
-		database.GetInstance().AddIntoUsers(user, newEmail)
-		database.GetInstance().AddIntoUserKeyPairs(newEmail, user.ID)
+		err = database.GetInstance().AddUser(user)
+		if _err, ok := err.(*pq.Error); ok {
+			logger.Error.Print(_err.Code.Class())
+			logger.Error.Print(_err.Error())
+			helpers.Return500(&w, err)
+			return
+		}
 
 		sessionCookie, err := helpers.MakeSession(user)
 		if err != nil {
@@ -150,7 +162,14 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.AvatarPath = avatarName
-	database.GetInstance().AddIntoUsers(user, user.Email)
+	err = database.GetInstance().AddUser(user)
+	if _err, ok := err.(*pq.Error); ok {
+		logger.Error.Print(_err.Code.Class())
+		logger.Error.Print(_err.Error())
+		helpers.Return500(&w, err)
+		return
+	}
+
 	_, err = w.Write([]byte(`{"avatar_path": "` + avatarName + `"}`))
 	if err != nil {
 		helpers.Return500(&w, err)

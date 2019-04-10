@@ -13,6 +13,7 @@ const (
 )
 
 func ImgHandler(w http.ResponseWriter, r *http.Request) {
+
 	vars := mux.Vars(r)
 	pathToFile, found := vars["path"]
 	if !found {

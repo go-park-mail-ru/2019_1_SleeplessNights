@@ -4,6 +4,8 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"github.com/lib/pq"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -19,9 +21,26 @@ type TestCaseAuth struct {
 
 func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
+
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range database.GetInstance().GetUsers() {
+	users, err := database.GetInstance().GetUsers()
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
+	for _, user := range users {
+
 		email := user.Email
 		password := faker.FakeUserPassword
 
@@ -55,6 +74,18 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 }
 
 func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
+
 	cases := []TestCaseAuth{
 		TestCaseAuth{
 			number:   1,
@@ -151,6 +182,17 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 }
 
 func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
 
 	form := url.Values{}
 	form.Add("WRONG_mail", "test@test.com")

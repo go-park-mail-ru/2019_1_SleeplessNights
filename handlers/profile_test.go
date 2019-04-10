@@ -7,7 +7,9 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/lib/pq"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -20,7 +22,12 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range database.GetInstance().GetUsers() {
+	users, err := database.GetInstance().GetUsers()
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
+	for _, user := range users {
 		cookie, err := helpers.MakeSession(user)
 		if err != nil {
 			t.Errorf("\nMakeSession returned error: %s\n", err)
@@ -123,8 +130,11 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	database.GetInstance().AddIntoUsers(user, user.Email)
-	database.GetInstance().AddIntoUserKeyPairs(user.Email, user.ID)
+	err := database.GetInstance().AddUser(user)
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
 
 	cookie, err := helpers.MakeSession(user)
 	if err != nil {
@@ -212,7 +222,11 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		}
 	}
 
-	user, _ = database.GetInstance().GetUserViaID(1000)
+	user, _, err = database.GetInstance().GetUserViaID(1000)
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
 
 	if user.Email != newEmail {
 		t.Errorf("\nDB returned wrong email:\ngot %v\nwant %v\n",
@@ -223,8 +237,11 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 			user.Email, newEmail)
 	}
 
-	database.GetInstance().DeleteIntoUsers(database.GetInstance().GetUserKeyPair(1000))
-	database.GetInstance().DeleteIntoUserKeyPairs(1000)
+	err = database.GetInstance().DeleteUser(user.Email)
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
 }
 
 func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
@@ -236,13 +253,16 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	database.GetInstance().AddIntoUsers(user, user.Email)
-	database.GetInstance().AddIntoUserKeyPairs(user.Email, user.ID)
+	err := database.GetInstance().AddUser(user)
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
 
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 
-	err := bodyWriter.Close()
+	err = bodyWriter.Close()
 	if err != nil {
 		t.Errorf("Close file returned error: %s\n", err.Error())
 		return
@@ -265,12 +285,26 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		}
 	}
 
-	database.GetInstance().DeleteIntoUsers(database.GetInstance().GetUserKeyPair(1000))
-	database.GetInstance().DeleteIntoUserKeyPairs(1000)
+	err = database.GetInstance().DeleteUser(user.Email)
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
 }
 
 
 func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
 
 	user := models.User{
 		ID:         1000,
@@ -316,6 +350,17 @@ func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 }
 
 func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
 
 	user := models.User{
 		ID:         1000,

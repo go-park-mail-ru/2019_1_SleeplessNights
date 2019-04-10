@@ -4,25 +4,47 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/lib/pq"
 	"math"
 	"net/http"
 	"net/http/httptest"
-	"sort"
 	"strconv"
 	"testing"
 )
 
 func TestLeadersHandlerSuccessful(t *testing.T) {
 
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
+
 	faker.CreateFakeData(UserCounter)
-	usersTotal := database.GetInstance().GetLenUsers()
+	usersTotal, err := database.GetInstance().GetLenUsers()
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
 
 	userSlice := make([]interface{}, 0, usersTotal)
-	for _, v := range database.GetInstance().GetUsers() {
+	users, err := database.GetInstance().GetUsers()
+	if err, ok := err.(*pq.Error); ok {
+		t.Error(err.Code.Class())
+		t.Error(err.Error())
+	}
+	for _, v := range users {
 		userSlice = append(userSlice, v)
 	}
-	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })
+
+	//sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won }) //TODO Я отсортировал при запросе
 
 	pagesTotal := int(math.Ceil(float64(UserCounter / PagesPerList)))
 
@@ -72,6 +94,18 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 }
 
 func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
+
 	req := httptest.NewRequest(http.MethodGet, ApiLeader, nil)
 	qq := req.URL.Query()
 	qq.Add("page", "aa")
@@ -93,6 +127,18 @@ func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
 }
 
 func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
+
 	req := httptest.NewRequest(http.MethodGet, ApiLeader, nil)
 	qq := req.URL.Query()
 	qq.Add("page", strconv.Itoa(1000))

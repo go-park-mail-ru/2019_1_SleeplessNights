@@ -1,7 +1,10 @@
 package handlers_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"github.com/lib/pq"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -18,6 +21,17 @@ type TestCaseReg struct {
 }
 
 func TestRegisterHandlerSuccessful(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
 
 	cases := []TestCaseReg{
 		TestCaseReg{
@@ -122,10 +136,27 @@ func TestRegisterHandlerSuccessful(t *testing.T) {
 					item.number, resp.Body.String(), expected)
 			}
 		}
+
+		err = database.GetInstance().DeleteUser(item.email)
+		if err, ok := err.(*pq.Error); ok {
+			t.Error(err.Code.Class())
+			t.Error(err.Error())
+		}
 	}
 }
 
 func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
+
+	err := database.OpenConnection()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
+	defer func() {
+		err := database.CloseConnection()
+		if err != nil {
+			logger.Fatal.Print(err.Error())
+		}
+	}()
 
 	cases := []TestCaseReg{
 		TestCaseReg{

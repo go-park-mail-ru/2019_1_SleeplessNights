@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/lib/pq"
 	"mime/multipart"
 	"net/http"
 	"regexp"
@@ -35,7 +36,13 @@ func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErr
 		return
 	}
 
-	if existingUser, userFound := database.GetInstance().GetUserViaEmail(newEmail); userFound && user.ID != existingUser.ID {
+	existingUser, userFound, err := database.GetInstance().GetUserViaEmail(newEmail)
+	if _err, ok := err.(*pq.Error); ok {
+		logger.Error.Print(_err.Code.Class())
+		logger.Error.Print(_err.Error())
+		return
+	}
+	if  userFound && user.ID != existingUser.ID {
 		logger.Error.Println("Failed to update profile:", UniqueEmailErrorMsg)
 		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
 	}
@@ -75,7 +82,12 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid b
 		return
 	}
 
-	_, userExist := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
+	_, userExist, err := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
+	if _err, ok := err.(*pq.Error); ok {
+		logger.Error.Print(_err.Code.Class())
+		logger.Error.Print(_err.Error())
+		return
+	}
 	if userExist {
 		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
 		return
@@ -98,7 +110,12 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool,
 		return
 	}
 
-	user, found := database.GetInstance().GetUserViaEmail(email)
+	user, found, err := database.GetInstance().GetUserViaEmail(email)
+	if _err, ok := err.(*pq.Error); ok {
+		logger.Error.Print(_err.Code.Class())
+		logger.Error.Print(_err.Error())
+		return
+	}
 	if !found {
 		requestErrors = append(requestErrors, MissedUserErrorMsg)
 		return requestErrors, false, user, nil

@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/lib/pq"
 	"github.com/manveru/faker"
 	"math/rand"
 )
@@ -28,7 +29,11 @@ func CreateFakeData(quantity int) {
 		}
 
 		email := fake.Email()
-		_, found := database.GetInstance().GetUserViaEmail(email)
+		_, found, err := database.GetInstance().GetUserViaEmail(email)
+		if err, ok := err.(*pq.Error); ok {
+			logger.Error.Print(err.Code.Class())
+			logger.Error.Print(err.Error())
+		}
 		if found {
 			continue
 		}
@@ -43,8 +48,10 @@ func CreateFakeData(quantity int) {
 			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
-		database.GetInstance().AddIntoUsers(user, user.Email)
-		database.GetInstance().AddIntoUserKeyPairs(user.Email, user.ID)
+		err = database.GetInstance().AddUser(user)
+		if _err, ok := err.(*pq.Error); ok {
+			logger.Error.Print(_err.Code.Class())
+			logger.Error.Print(_err.Error())
+		}
 	}
-
 }
