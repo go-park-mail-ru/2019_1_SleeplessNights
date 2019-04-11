@@ -17,10 +17,6 @@ const (
 	dbName   = ""
 )
 
-const (
-	CountOfPacks = 10
-)
-
 var db *dbManager
 
 type dbManager struct {
