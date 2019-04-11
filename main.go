@@ -10,7 +10,6 @@ import (
 
 func main() {
 	//TODO MAKE SECRET MANAGER ?
-
 	//TODO DELETE DATA CREATOR
 	faker.CreateFakeData(10)
 

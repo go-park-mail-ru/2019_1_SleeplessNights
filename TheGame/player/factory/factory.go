@@ -36,11 +36,12 @@ func GetInstance() *playerFactory {
 	return factory
 }
 
-func (pf *playerFactory)BuildWebsocketPlayer(conn *websocket.Conn) player.Player {
+func (pf *playerFactory) BuildWebsocketPlayer(conn *websocket.Conn, uid uint64) player.Player {
 	//Метод построения игрока из вебсокет соединения
 	wsPlayer := websocketPlayer{
-		id: atomic.AddUint64(&pf.idSource, 1),//Атомик необходим для обеспечения потокобезопасности
+		id:   atomic.AddUint64(&pf.idSource, 1), //Атомик необходим для обеспечения потокобезопасности
 		conn: conn,
+		uid:  uid,
 	}
 	go wsPlayer.StartListen()
 	return &wsPlayer
