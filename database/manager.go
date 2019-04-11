@@ -6,9 +6,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/lib/pq"
-	"math/rand"
-	"strconv"
-	"time"
 )
 
 const (
@@ -161,14 +158,9 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 
 func (db *dbManager) GetPackOfQuestions(theme string) (pack []models.Question, err error) {
 
-	rand.Seed(time.Now().UnixNano())
-	number := rand.Intn(CountOfPacks)
-	resultTheme := fmt.Sprintf(theme + strconv.Itoa(number))
-
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.question WHERE pack_id = 
-        (SELECT id FROM public.question_pack WHERE theme = $1)`,
-		resultTheme)
+        (SELECT id FROM (SELECT * FROM public.question_pack WHERE theme = $1) AS pa ORDER BY RANDOM() LIMIT 1)`, theme)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 		return

@@ -69,17 +69,6 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	if err != nil {
 		return
 	}
-
-	//_, err = database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
-	//if err != nil {
-	//	if err.Error() == SQLNoRows{
-	//		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
-	//		return
-	//	} else {
-	//		return
-	//	}
-	//}
-
 	return requestErrors, nil
 }
 
