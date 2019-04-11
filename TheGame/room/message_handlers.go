@@ -4,6 +4,7 @@ import "github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 
 func (r *Room) MessageHandlerMux(m messge.Message) {
 	switch m.Title {
+	//TODO fix (я убрал CommandName)
 	case "COMMAND":
 		{
 			if m.CommandName == messge.CommandMove {

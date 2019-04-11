@@ -17,12 +17,11 @@ import (
 //* Собираться и пересобираться, не выкидывая игроков, если оба решили сыграть ещё партию вместе или это лобби
 //* Поддерживать обработку отвалившегося игрока
 const (
-	tickInterval     = 0.5
 	responseInterval = 500
 )
 
 type Room struct {
-	//Channel to exchage event messages between Room and GameField
+	//Channel to exchange event messages between Room and GameField
 	p1     player.Player
 	p2     player.Player
 	active *player.Player
@@ -39,35 +38,36 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	//1. 2 места свободно -> занимаем первое место
 
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
-	//TODO develop
 
 	r.mu.Lock()
 	found := false
 
 	if r.p1 == nil {
-		found = true
 		r.p1 = p
-	}
-	if r.p2 == nil && !found {
 		found = true
+	} else if r.p2 == nil {
 		r.p2 = p
+		found = true
 	}
-	r.mu.Unlock()
 
+	if r.p1 != nil && r.p2 != nil {
+		go r.startMatch()
+	}
+
+	r.mu.Unlock()
 	return found
 }
 
-func (r *Room) BuildEnv() {
+func (r *Room) buildEnv() {
 
-	//Get questions from database
+	//TODO Get questions from database
 
-	//CAll GameField.build
+	//TODO CAll GameField.build
 
 	//Процедура должна пересоздавать игровое поле, запрашивать новый список тем из БД и готовить комнату к новой игре
 	//При этом она должна уметь работать асинхронно и не выбрасывать пользователей из комнаты во время работы
 	//TODO develop
 
-	//Notify all about start of game
 }
 
 func (r *Room) notifyAll(msg messge.Message) {
@@ -98,6 +98,9 @@ func (r *Room) startMatch() {
 	//   (цифра примерная, может поменяться и должна быть вынесена в костанту)
 	//TODO develop
 
+	r.buildEnv()
+	//TODO Notify all about start of game
+
 	RequestsQueue := make(chan messge.Message, 50)
 	ResponsesQueue := make(chan messge.Message, 50)
 
@@ -108,22 +111,24 @@ func (r *Room) startMatch() {
 	go func() {
 		for msgP1 := range p1Chan {
 			logger.Info.Println("got message from P1", msgP1)
-			RequestsQueue <- msgP1
+			RequestsQueue <- msgP1 //TODO only if msgP1 is valid and (p1 is active or msgP1 is ASYNC)
 		}
 	}()
 
 	go func() {
 		for msgP2 := range p2Chan {
 			logger.Info.Println("got message from P2", msgP2)
-			RequestsQueue <- msgP2
+			RequestsQueue <- msgP2 //TODO only if msgP2 is valid and (p2 is active or msgP2 is ASYNC)
 		}
 	}()
 
 	go func() {
-		for serverResponse := range ResponsesQueue {
-			logger.Info.Println("Got message to Send", serverResponse)
+		for {
+			for serverResponse := range ResponsesQueue {
+				logger.Info.Println("Got message to Send", serverResponse)
 
-			//Send Message Here
+				//TODO Send Message Here
+			}
 			time.Sleep(responseInterval * time.Millisecond)
 		}
 	}()
@@ -131,11 +136,11 @@ func (r *Room) startMatch() {
 	go func() {
 		for event := range r.field.Out {
 			logger.Info.Println("Got event from game_field", event)
-			//Handle Event Here
+			//TODO Handle Event Here
 		}
 	}()
 
-	//Handler players requests
+	//TODO Handler players requests
 	for msg := range RequestsQueue {
 		r.MessageHandlerMux(msg)
 	}

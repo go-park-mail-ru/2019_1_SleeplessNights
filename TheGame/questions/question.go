@@ -20,6 +20,6 @@ func (q *Question) CheckAnswer(answerId int) (result bool) {
 	return q.CorrectAnswerId == answerId
 }
 
-func (q *Question) GetAnswerId() (answer_id int) {
+func (q *Question) GetAnswerId() int {
 	return q.CorrectAnswerId
 }

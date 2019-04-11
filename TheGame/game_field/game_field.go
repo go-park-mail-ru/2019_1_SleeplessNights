@@ -13,7 +13,7 @@ const (
 )
 
 var prizePos []pair
-var playersPos []pair
+//В начале иры й игроков не существует никаких позиций, они находятся как бы вне поля
 
 func init() {
 	prizePos = []pair{{3, 3}, {3, 4}, {4, 3}, {4, 4}}
@@ -25,12 +25,12 @@ type gameCell struct {
 }
 
 type pair struct {
-	X int `json:"X"`
-	Y int `json:"Y"`
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 type gfPlayer struct {
-	pos pair
+	pos *pair//Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
 	id  uint64
 }
 
@@ -70,16 +70,16 @@ func (gf *GameField) Build(qArray [questionsNum]questions.Question) {
 			if isPrizePosition(rowIdx, colIdx) {
 				gf.field[rowIdx][colIdx] = gameCell{true, nil}
 			} else {
-				rand.Seed(time.Now().UnixNano())
-				index := rand.Intn(questionsNum)
+				rand.Seed(time.Now().UnixNano())//TODO еспли я правильно помню, то seed нужно скормить 1 раз, а не в цикле. Погугли, пожалуйста
+				index := rand.Intn(len(qSlice))
 				gf.field[rowIdx][colIdx] = gameCell{true, qSlice[index]}
 				qSlice = append(qSlice[:index], qSlice[index+1:]...)
 			}
 		}
 	}
-	gf.p1.pos = pair{-1, -1}
+	gf.p1.pos = nil
 
-	gf.p2.pos = pair{-1, -1}
+	gf.p2.pos = nil
 }
 
 func (gf *GameField) checkWinner(player pair) (hasWon bool) {
@@ -92,7 +92,8 @@ func (gf *GameField) checkWinner(player pair) (hasWon bool) {
 //Пока не трогать
 func (gf *GameField) checkRouteAvailable(player pair) (isAvailable bool) {
 	//Call some Dijkstra algorithm
-	return
+	//Для заглушки игрок всегда достижим относительно приза
+	return true
 }
 
 /*
@@ -131,7 +132,7 @@ func (gf *GameField) GetAvailableCells(player *gfPlayer) (cellsCoordinates []pai
 	}
 
 	//Get rows
-	if (player.pos == pair{-1, -1}) {
+	if player.pos == nil {
 		for x := 0; x < fieldSize; x++ {
 			cellsCoordinates = append(cellsCoordinates, pair{x, rowIdx})
 		}
@@ -143,9 +144,9 @@ func (gf *GameField) GetAvailableCells(player *gfPlayer) (cellsCoordinates []pai
 
 	for rowIdx := currRow; rowIdx < currRow+3; rowIdx++ {
 		for colIdx := currCol; colIdx < currCol+3; colIdx++ {
-			if rowIdx >= 0 && rowIdx <= 7 && colIdx >= 0 || colIdx <= 7 {
+			if rowIdx >= 0 && rowIdx < fieldSize && colIdx >= 0 && colIdx < fieldSize {
 				if gf.field[rowIdx][colIdx].isAvailable {
-					if (pair{colIdx, rowIdx} != player.pos) && (pair{colIdx, rowIdx} != secondPlayer.pos) {
+					if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
 						cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
 					}
 				}
@@ -157,11 +158,11 @@ func (gf *GameField) GetAvailableCells(player *gfPlayer) (cellsCoordinates []pai
 }
 
 func (gf *GameField) Move(player *gfPlayer) {
-
+	//TODO этот метод должен получать ответ на regQuestion и проверять правильноть этого ответа
 	player.pos.X = gf.regX
 	player.pos.Y = gf.regY
 
-	if gf.checkWinner(player.pos) {
+	if gf.checkWinner(*player.pos) {
 		gf.Out <- event.Event{Etype: event.WinPrize, Edata: player.id}
 		return
 	}
@@ -173,14 +174,17 @@ func (gf *GameField) Move(player *gfPlayer) {
 
 func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) {
 
-	if nextX > 7 || nextY > 7 || nextX < 0 || nextY < 0 {
-		//Make logging of invalid commands instead of sending  events
+	if nextX >= fieldSize || nextY >= fieldSize || nextX < 0 || nextY < 0 {
+		//TODO Make logging of invalid commands instead of sending  events
 		gf.Out <- event.Event{Etype: event.Warning, Edata: player.id}
 		return
 	}
 
-	if (pair{nextX, nextY}) == player.pos {
-		//Make logging of invalid commands instead of sending  events
+	destination := pair{nextX, nextY}
+	//TODO проверить, что destination isAvailable
+	//TODO проверить, что модуль разницы по обеим координатом между player.pos и destination не превышает еденицы
+	if destination == *player.pos {
+		//TODO Make logging of invalid commands instead of sending  events
 		gf.Out <- event.Event{Etype: event.Warning, Edata: player.id}
 		return
 	}
@@ -189,8 +193,9 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) {
 	gf.regX = nextX
 
 	//Пока не трогать
-	if gf.checkRouteAvailable(gf.p1.pos) {
-
+	if !gf.checkRouteAvailable(*gf.p1.pos) {
+		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
+		//TODO переместить в начало метода GetAvailableCells
 	}
 
 	ms := struct {
@@ -204,6 +209,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) {
 }
 
 func (gf *GameField) GetQuestionByCell(x, y int) (question string) {
+	//А почему y, x? Разве не gf.field[x][y]?
 	question = gf.field[y][x].question.QuestionJson
 	return
 }

@@ -9,6 +9,7 @@ func (r *Room) changeTurn() {
 }
 
 //Maybe Remove this, GameField already has a validation
+//Да, возможно А может быть, просто вынести все валидации координат внутри GameField в отдельный метод и вызывать его
 func (r *Room) validateCoordinates(x, y int) {
 
 }
