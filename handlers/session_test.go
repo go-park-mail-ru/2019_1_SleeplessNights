@@ -4,7 +4,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -19,21 +18,6 @@ type TestCaseAuth struct {
 }
 
 func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
-
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
 
 	faker.CreateFakeData(handlers.UserCounter)
 
@@ -73,24 +57,14 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 			}
 		}
 	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
-
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
 
 	cases := []TestCaseAuth{
 		TestCaseAuth{
@@ -185,24 +159,14 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 			}
 		}
 	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
-
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
 
 	form := url.Values{}
 	form.Add("WRONG_mail", "test@test.com")
@@ -230,5 +194,10 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 			t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
 				response, expected)
 		}
+	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }

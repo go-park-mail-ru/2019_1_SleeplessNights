@@ -11,6 +11,7 @@ require (
 	github.com/manveru/faker v0.0.0-20171103152722-9fbc68a78c4d
 	github.com/manveru/gobdd v0.0.0-20131210092515-f1a17fdd710b // indirect
 	github.com/satori/go.uuid v1.2.0
+	github.com/xlab/closer v0.0.0-20190328110542-03326addb7c2
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )

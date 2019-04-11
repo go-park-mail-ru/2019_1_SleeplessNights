@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
@@ -15,23 +14,8 @@ import (
 
 func TestImgHandlerSuccessful(t *testing.T) {
 
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
-
 	img := "default_avatar.jpg"
-	path := fmt.Sprintf("%s%s",handlers.Img ,img)
+	path := fmt.Sprintf("%s%s", handlers.Img, img)
 	req := httptest.NewRequest(http.MethodGet, path, nil)
 
 	resp := httptest.NewRecorder()
@@ -59,27 +43,17 @@ func TestImgHandlerSuccessful(t *testing.T) {
 			t.Errorf("handler returned unexpected body\n")
 		}
 	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
-
 	img := "WRONG_default_avatar.jpg"
-	path := fmt.Sprintf("%s%s",handlers.Img ,img)
+	path := fmt.Sprintf("%s%s", handlers.Img, img)
 	req := httptest.NewRequest(http.MethodGet, path, nil)
 
 	resp := httptest.NewRecorder()
@@ -96,5 +70,10 @@ func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 			t.Errorf("handler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusNotFound)
 		}
+	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }

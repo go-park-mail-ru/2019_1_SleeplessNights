@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
+	"github.com/xlab/closer"
 	"net/http"
 	"os"
 )
@@ -14,16 +14,8 @@ func main() {
 
 	//TODO DELETE DATA CREATOR
 
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
+	defer closer.Close()
+
 	logger.Info.Printf("\nSuccessfully connected to database on: %s", "...") //TODO PORT
 
 	faker.CreateFakeData(10)

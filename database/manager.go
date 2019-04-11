@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/lib/pq"
+	"github.com/xlab/closer"
 )
 
 const (
@@ -34,31 +35,33 @@ type dbManager struct {
 	dataBase *sql.DB
 }
 
-func OpenConnection() (err error) {
+func init(){
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName)
 
 	dateBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		return
+		logger.Fatal.Print(err.Error())
 	}
 
 	err = dateBase.Ping()
 	if err != nil {
-		return
+		logger.Fatal.Print(err.Error())
 	}
 
 	db = &dbManager{
 		dataBase: dateBase,
 	}
 
-	return
+	closer.Bind(CloseConnection)
 }
 
-func CloseConnection() (err error) {
-	err = db.dataBase.Close()
-	return
+func CloseConnection()  {
+	err := db.dataBase.Close()
+	if err != nil {
+		logger.Fatal.Print(err.Error())
+	}
 }
 
 func GetInstance() *dbManager {

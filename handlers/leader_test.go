@@ -1,10 +1,10 @@
-package handlers
+package handlers_test
 
 import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"math"
 	"net/http"
@@ -15,22 +15,7 @@ import (
 
 func TestLeadersHandlerSuccessful(t *testing.T) {
 
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
-
-	faker.CreateFakeData(UserCounter)
+	faker.CreateFakeData(handlers.UserCounter)
 	usersTotal, err := database.GetInstance().GetLenUsers()
 	if err != nil {
 		t.Error(err.Error())
@@ -46,13 +31,11 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 		userSlice = append(userSlice, v)
 	}
 
-	//sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won }) //TODO Я отсортировал при запросе
-
-	pagesTotal := int(math.Ceil(float64(UserCounter / PagesPerList)))
+	pagesTotal := int(math.Ceil(float64(handlers.UserCounter / handlers.PagesPerList)))
 
 	for i := 1; i <= pagesTotal; i++ {
 
-		paginatedSlice := Paginate(userSlice, int(PagesPerList*(i-1)))
+		paginatedSlice := handlers.Paginate(userSlice, int(handlers.PagesPerList*(i-1)))
 		var pageSlice []models.User
 		for _, user := range paginatedSlice {
 			pageSlice = append(pageSlice, user.(models.User))
@@ -70,14 +53,14 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 		}
 		expected = expected + `]}`
 
-		req := httptest.NewRequest(http.MethodGet, ApiLeader, nil)
+		req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
 		qq := req.URL.Query()
 		qq.Add("page", strconv.Itoa(i))
 		req.URL.RawQuery = qq.Encode()
 
 		resp := httptest.NewRecorder()
 
-		http.HandlerFunc(LeadersHandler).ServeHTTP(resp, req)
+		http.HandlerFunc(handlers.LeadersHandler).ServeHTTP(resp, req)
 		if status := resp.Code; status == http.StatusInternalServerError {
 			t.Errorf("handler returned wrong status code: %v\nhandler can't write into responce \n",
 				status)
@@ -93,33 +76,23 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 			}
 		}
 	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
 
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
-
-	req := httptest.NewRequest(http.MethodGet, ApiLeader, nil)
+	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
 	qq := req.URL.Query()
 	qq.Add("page", "aa")
 	req.URL.RawQuery = qq.Encode()
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(LeadersHandler).ServeHTTP(resp, req)
+	http.HandlerFunc(handlers.LeadersHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("handler returned wrong status code: %v\nhandler can't write into responce \n",
@@ -130,33 +103,23 @@ func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
 				status, http.StatusNotFound)
 		}
 	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
 
-	err := database.OpenConnection()
-	if err != nil {
-		logger.Fatal.Print(err.Error())
-	}
-	defer func() {
-		err = database.GetInstance().CleanerDBForTests()
-		if err != nil {
-			t.Error(err.Error())
-		}
-		err := database.CloseConnection()
-		if err != nil {
-			logger.Fatal.Print(err.Error())
-		}
-	}()
-
-	req := httptest.NewRequest(http.MethodGet, ApiLeader, nil)
+	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
 	qq := req.URL.Query()
 	qq.Add("page", strconv.Itoa(1000))
 	req.URL.RawQuery = qq.Encode()
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(LeadersHandler).ServeHTTP(resp, req)
+	http.HandlerFunc(handlers.LeadersHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("handler returned wrong status code: %v\nhandler can't write into responce \n",
@@ -172,5 +135,10 @@ func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
 			t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 				resp.Body.String(), expected)
 		}
+	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }
