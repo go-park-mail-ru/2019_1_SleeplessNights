@@ -1,8 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
-
-
 -- table user
 CREATE TABLE users
 (
@@ -24,16 +22,15 @@ ALTER TABLE ONLY public.users
   ADD CONSTRAINT users_pk PRIMARY KEY (id);
 
 
-
-
 -- table question
 CREATE TABLE question
 (
-  id      SERIAL  NOT NULL,
-  answer  VARCHAR(100)[]    NOT NULL,
-  correct INTEGER NOT NULL,
-  text    TEXT    NOT NULL,
-  pack_id BIGINT  NOT NULL
+  id         SERIAL         NOT NULL,
+  answer     VARCHAR(100)[] NOT NULL,
+  correct    INTEGER        NOT NULL,
+  text       TEXT           NOT NULL,
+  pack_id    BIGINT         NOT NULL,
+  pack_theme VARCHAR(100)   NOT NULL
 );
 
 ALTER TABLE ONLY public.question
@@ -41,8 +38,6 @@ ALTER TABLE ONLY public.question
 
 ALTER TABLE ONLY public.question
   ADD CONSTRAINT question_users_fk FOREIGN KEY (pack_id) REFERENCES public.question_pack (id);
-
-
 
 
 -- table Question'sPack

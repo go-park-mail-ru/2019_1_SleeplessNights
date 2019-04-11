@@ -29,6 +29,11 @@ type Question struct {
 	PackID  uint
 }
 
+type Pack struct {
+	Question []Question
+	Theme    string
+}
+
 var idSource uint
 //var Users map[string]User
 //var UserKeyPairs map[uint]string

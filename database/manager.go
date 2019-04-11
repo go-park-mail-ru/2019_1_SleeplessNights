@@ -35,7 +35,7 @@ type dbManager struct {
 	dataBase *sql.DB
 }
 
-func init(){
+func init() {
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName)
@@ -57,7 +57,7 @@ func init(){
 	closer.Bind(CloseConnection)
 }
 
-func CloseConnection()  {
+func CloseConnection() {
 	err := db.dataBase.Close()
 	if err != nil {
 		logger.Fatal.Print(err.Error())
@@ -159,25 +159,28 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	return
 }
 
-func (db *dbManager) GetPackOfQuestions(theme string) (pack []models.Question, err error) {
+func (db *dbManager) GetPacksOfQuestions(theme string) (packs map[string][]models.Question, err error) {
 
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.question WHERE pack_id = 
-        (SELECT id FROM (SELECT * FROM public.question_pack WHERE theme = $1) AS pa ORDER BY RANDOM() LIMIT 1)`, theme)
+        (SELECT DISTINCT ON (theme) id FROM public.question_pack ORDER BY theme, random() LIMIT 10 )`, theme)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 		return
 	}
+	for rows.Next() {
 
-	var question models.Question
-	for rows.Next(){
-		err = rows.Scan(&question.ID, &question.Answers, &question.Correct, &question.Text, &question.PackID)
+		var question models.Question
+		var theme string
+		err = rows.Scan(&question.ID, &question.Answers, &question.Correct, &question.Text, &question.PackID, &theme)
 		err = rows.Close()
 		if err != nil {
 			return
 		}
 
+		pack := packs[theme]
 		pack = append(pack, question)
+		packs[theme] = pack
 	}
 
 	err = rows.Close()
