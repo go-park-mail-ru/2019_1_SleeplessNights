@@ -56,7 +56,7 @@ func GetInstance() *dbManager {
 	return db
 }
 
-func (db *dbManager) GetUserViaID(userID uint) (user models.User, found bool, err error) {
+func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 
 	row := db.dataBase.QueryRow(
 		`SELECT * FROM public.users WHERE id = $1`, userID)
@@ -65,7 +65,6 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, found bool, er
 	if err != nil {
 		return
 	}
-	found = true
 	return
 }
 
