@@ -16,9 +16,17 @@ type User struct {
 	AvatarPath string        `json:"avatar_path"`
 }
 
-type UserPk struct {
-	ID    uint
-	Email string
+//type UserPk struct {
+//	ID    uint
+//	Email string
+//}
+
+type Question struct {
+	ID      uint
+	Answers []string
+	Correct int
+	Text    string
+	PackID  uint
 }
 
 var idSource uint

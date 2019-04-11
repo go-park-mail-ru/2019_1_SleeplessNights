@@ -5,7 +5,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/lib/pq"
 	"mime/multipart"
 	"net/http"
 	"regexp"
@@ -18,7 +17,7 @@ const (
 
 var avatarTypeWhiteList map[string]struct{}
 
-func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErrors ErrorSet, isValid bool, err error) {
+func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, err error) {
 	newNickname := r.Form.Get("nickname")
 
 	err = validateNickname(newNickname, &requestErrors)
@@ -36,17 +35,6 @@ func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErr
 		return
 	}
 
-	existingUser, userFound, err := database.GetInstance().GetUserViaEmail(newEmail)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Code.Class())
-		logger.Error.Print(_err.Error())
-		return
-	}
-	if  userFound && user.ID != existingUser.ID {
-		logger.Error.Println("Failed to update profile:", UniqueEmailErrorMsg)
-		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
-	}
-
 	avatar := r.MultipartForm.File["avatar"][0]
 
 	err = validateAvatar(avatar, &requestErrors)
@@ -57,7 +45,7 @@ func ValidateUpdateProfileRequest(r *http.Request, user models.User) (requestErr
 	return requestErrors, len(requestErrors) == 0, nil
 }
 
-func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, err error) {
+func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
 	err = validateEmail(email, &requestErrors)
@@ -82,21 +70,20 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid b
 		return
 	}
 
-	_, userExist, err := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Code.Class())
-		logger.Error.Print(_err.Error())
-		return
-	}
-	if userExist {
-		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
-		return
-	}
+	//_, err = database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
+	//if err != nil {
+	//	if err.Error() == SQLNoRows{
+	//		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
+	//		return
+	//	} else {
+	//		return
+	//	}
+	//}
 
-	return requestErrors, len(requestErrors) == 0, nil
+	return requestErrors, nil
 }
 
-func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, user models.User, err error) {
+func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.User, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
 	err = validateEmail(email, &requestErrors)
@@ -110,15 +97,14 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool,
 		return
 	}
 
-	user, found, err := database.GetInstance().GetUserViaEmail(email)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Code.Class())
-		logger.Error.Print(_err.Error())
-		return
-	}
-	if !found {
-		requestErrors = append(requestErrors, MissedUserErrorMsg)
-		return requestErrors, false, user, nil
+	user, err = database.GetInstance().GetUserViaEmail(email)
+	if err != nil {
+		if err.Error() == SQLNoRows{
+			requestErrors = append(requestErrors, MissedUserErrorMsg)
+			return
+		} else {
+			return
+		}
 	}
 
 	hashedPassword := MakePasswordHash(password, user.Salt)
@@ -126,7 +112,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool,
 		requestErrors = append(requestErrors, WrongPassword)
 	}
 
-	return requestErrors, len(requestErrors) == 0, user, nil
+	return requestErrors, user, nil
 }
 
 func validateEmail(email string, requestErrors *ErrorSet) (err error) {

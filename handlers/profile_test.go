@@ -9,7 +9,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/lib/pq"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -38,8 +37,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 	faker.CreateFakeData(handlers.UserCounter)
 
 	users, err := database.GetInstance().GetUsers()
-	if err, ok := err.(*pq.Error); ok {
-		t.Error(err.Code.Class())
+	if err != nil {
 		t.Error(err.Error())
 	}
 	for _, user := range users {
@@ -184,15 +182,14 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 	}()
 
 	user := models.User{
-		ID:         1000,
+		ID:         1,
 		Email:      "first@mail.com",
 		Nickname:   "first",
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
 	err = database.GetInstance().AddUser(user)
-	if err, ok := err.(*pq.Error); ok {
-		t.Error(err.Code.Class())
+	if err != nil {
 		t.Error(err.Error())
 	}
 
@@ -203,7 +200,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 	}
 
 	img := "default_avatar.jpg"
-	path := os.Getenv("BASEPATH") + handlers.AvatarPrefix + img
+	path := "/Users/mac/Desktop/back-end/2019_1_SleeplessNights" + handlers.AvatarPrefix + img
 
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
@@ -262,15 +259,13 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 			return
 		}
 	}
+
 	req.MultipartForm.File["avatar"][0].Header.Set("content-type", "image/jpeg")
 	req.AddCookie(&cookie)
 
 	resp := httptest.NewRecorder()
 
 	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
-
-	req.MultipartForm.File["avatar"][0].Header.Del("content-type")
-	req.MultipartForm.File["avatar"][0].Header.Add("content-type", "image/jpeg")
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
@@ -282,9 +277,8 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		}
 	}
 
-	user, _, err = database.GetInstance().GetUserViaID(1000)
-	if err, ok := err.(*pq.Error); ok {
-		t.Error(err.Code.Class())
+	user, err = database.GetInstance().GetUserViaEmail("second@mail.com")
+	if err != nil {
 		t.Error(err.Error())
 	}
 
@@ -323,8 +317,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		AvatarPath: "none",
 	}
 	err = database.GetInstance().AddUser(user)
-	if err, ok := err.(*pq.Error); ok {
-		t.Error(err.Code.Class())
+	if err != nil {
 		t.Error(err.Error())
 	}
 
@@ -354,7 +347,6 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		}
 	}
 }
-
 
 func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 

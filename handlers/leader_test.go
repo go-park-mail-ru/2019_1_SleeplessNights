@@ -6,7 +6,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/lib/pq"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -33,17 +32,16 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 
 	faker.CreateFakeData(UserCounter)
 	usersTotal, err := database.GetInstance().GetLenUsers()
-	if err, ok := err.(*pq.Error); ok {
-		t.Error(err.Code.Class())
+	if err != nil {
 		t.Error(err.Error())
 	}
 
 	userSlice := make([]interface{}, 0, usersTotal)
 	users, err := database.GetInstance().GetUsers()
-	if err, ok := err.(*pq.Error); ok {
-		t.Error(err.Code.Class())
+	if err != nil {
 		t.Error(err.Error())
 	}
+
 	for _, v := range users {
 		userSlice = append(userSlice, v)
 	}

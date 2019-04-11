@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
-	"github.com/lib/pq"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
@@ -61,11 +59,13 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sessionCookie, err := r.Cookie("session_token")
+
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+
 
 	user, err := helpers.Authorize(sessionCookie.Value)
 	if err != nil {
@@ -74,12 +74,11 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r, user)
+	requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-
 	if !isValid {
 		helpers.Return400(&w, requestErrors)
 		return
@@ -87,37 +86,26 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	newEmail := r.MultipartForm.Value["email"][0]
-
 	oldEmail := user.Email
 	user.Email = newEmail
 
-	if newEmail != oldEmail {
+	newAvatar := r.MultipartForm.File["avatar"][0]
+	avatarName := uuid.NewV4().String() + filepath.Ext(newAvatar.Filename)
+	user.AvatarPath = avatarName
 
-		err = database.GetInstance().DeleteUser(oldEmail)
-		if _err, ok := err.(*pq.Error); ok {
-			logger.Error.Print(_err.Code.Class())
-			logger.Error.Print(_err.Error())
-			helpers.Return500(&w, err)
-			return
-		}
 
-		err = database.GetInstance().AddUser(user)
-		if _err, ok := err.(*pq.Error); ok {
-			logger.Error.Print(_err.Code.Class())
-			logger.Error.Print(_err.Error())
-			helpers.Return500(&w, err)
-			return
-		}
-
-		sessionCookie, err := helpers.MakeSession(user)
-		if err != nil {
-			helpers.Return500(&w, err)
-			return
-		}
-		http.SetCookie(w, &sessionCookie)
+	err = database.GetInstance().UpdateUser(user, oldEmail)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
 	}
 
-	newAvatar := r.MultipartForm.File["avatar"][0]
+	cookie, err := helpers.MakeSession(user)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+	http.SetCookie(w, &cookie)
 
 	avatarFile, err := newAvatar.Open()
 	if err != nil {
@@ -139,9 +127,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	avatarName := uuid.NewV4().String() + filepath.Ext(r.MultipartForm.File["avatar"][0].Filename)
-
-	file, err := os.Create(os.Getenv("BASEPATH") + AvatarPrefix + avatarName)
+	file, err := os.Create("/Users/mac/Desktop/back-end/2019_1_SleeplessNights" + AvatarPrefix + avatarName)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
@@ -157,15 +143,6 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = file.Write(avatarBytes)
 	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
-
-	user.AvatarPath = avatarName
-	err = database.GetInstance().AddUser(user)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Code.Class())
-		logger.Error.Print(_err.Error())
 		helpers.Return500(&w, err)
 		return
 	}

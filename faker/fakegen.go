@@ -5,7 +5,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/lib/pq"
 	"github.com/manveru/faker"
 	"math/rand"
 )
@@ -18,23 +17,19 @@ const (
 func CreateFakeData(quantity int) {
 	fake, err := faker.New("en")
 	if err != nil {
-		logger.Fatal.Println(err)
+		logger.Fatal.Println(err.Error())
 		return
 	}
 	for i := 1; i <= quantity; i++ {
 		salt, err := helpers.MakeSalt()
 		if err != nil {
-			logger.Error.Println(err)
+			logger.Error.Println(err.Error())
 			continue
 		}
 
 		email := fake.Email()
-		_, found, err := database.GetInstance().GetUserViaEmail(email)
-		if err, ok := err.(*pq.Error); ok {
-			logger.Error.Print(err.Code.Class())
-			logger.Error.Print(err.Error())
-		}
-		if found {
+		_, err = database.GetInstance().GetUserViaEmail(email)
+		if err == nil {
 			continue
 		}
 		user := models.User{
@@ -48,10 +43,6 @@ func CreateFakeData(quantity int) {
 			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
-		err = database.GetInstance().AddUser(user)
-		if _err, ok := err.(*pq.Error); ok {
-			logger.Error.Print(_err.Code.Class())
-			logger.Error.Print(_err.Error())
-		}
+		_ = database.GetInstance().AddUser(user)
 	}
 }

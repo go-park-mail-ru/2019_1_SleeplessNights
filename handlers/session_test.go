@@ -5,7 +5,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
-	"github.com/lib/pq"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -39,8 +38,7 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 	faker.CreateFakeData(handlers.UserCounter)
 
 	users, err := database.GetInstance().GetUsers()
-	if err, ok := err.(*pq.Error); ok {
-		t.Error(err.Code.Class())
+	if err != nil {
 		t.Error(err.Error())
 	}
 	for _, user := range users {

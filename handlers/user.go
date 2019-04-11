@@ -4,7 +4,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/lib/pq"
 	"net/http"
 )
 
@@ -19,14 +18,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, isValid, err := helpers.ValidateRegisterRequest(r)
-	if err != nil {
+	requestErrors, err := helpers.ValidateRegisterRequest(r)
+	if err != nil{
 		helpers.Return500(&w, err)
+		return
 	}
-	if !isValid {
+	if requestErrors != nil {
 		helpers.Return400(&w, requestErrors)
 		return
 	}
+
 
 	user := models.User{
 		ID:         models.MakeID(),
@@ -48,8 +49,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		//Пользователь уже успешно создан, поэтому его в любом случае следует добавить в БД
 		//Однако, с ним ещё можно произвести полезную работу, которая может вызвать ошибки
 		err = database.GetInstance().AddUser(user)
-		if _err, ok := err.(*pq.Error); ok {
-			helpers.Return500(&w, _err)
+		if err != nil {
+			helpers.Return500(&w, err)
 			return
 		}
 	}()

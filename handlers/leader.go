@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/lib/pq"
 	"math"
 	"net/http"
 	"strconv"
@@ -40,9 +38,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		page = "1"
 	}
 	usersTotal, err := database.GetInstance().GetLenUsers()
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Code.Class())
-		logger.Error.Print(_err.Error())
+	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
@@ -60,9 +56,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 
 	userSlice := make([]interface{}, 0, usersTotal)
 	users, err := database.GetInstance().GetUsers()
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Code.Class())
-		logger.Error.Print(_err.Error())
+	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}

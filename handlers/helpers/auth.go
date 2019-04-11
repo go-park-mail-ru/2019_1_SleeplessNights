@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"github.com/lib/pq"
 	"log"
 	"math/rand"
 	"net/http"
@@ -26,7 +24,8 @@ const (
 var secret []byte
 
 func init() {
-	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
+	//secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
+	secretFile, err := os.Open( "secret")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {
@@ -103,9 +102,7 @@ func Authorize(sessionToken string)(user models.User, err error){
 		return
 	}
 	user, found, err := database.GetInstance().GetUserViaID(uint(userID))
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Code.Class())
-		logger.Error.Print(_err.Error())
+	if err != nil {
 		return
 	}
 	if !found {
