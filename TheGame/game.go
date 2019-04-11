@@ -1,5 +1,10 @@
 package TheGame
 
+//TODO ADD TO PACKAGE:
+//TODO - panic handling
+//TODO - channels closing
+//TODO - goroutines exits
+
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player/factory"
@@ -56,47 +61,44 @@ func (g *gameFacade) startBalance() {
 	//Стратегий распределения может быть много, в самом простом варианте мы идём в цикле по мапе комнат
 	//и ищем в каждой комнате свободное место, если дошли до конца и не нашли, то создаём свою комнату
 	//и занимаем место в ней, а если достигнут maxRooms, то заново входим в цикл
-	//TODO develop
-	roomFound := false
 
 	for p := range g.in {
+		go func() {
+			roomFound := false
+			for !roomFound {
+				roomsCounter := 0
+				roomFound = false
 
-		logger.Info.Println("player %s joined the game", p.ID())
-		//Search for  room a player can join
-		roomsCounter := 0
-		roomFound = false
+				logger.Info.Println("player", p.ID(), "joined the game")
+				//Search for  room a player can join
+				for _, v := range g.rooms {
+					if v.TryJoin(p) {
+						roomFound = true
+						break
+					}
+					roomsCounter++
+				}
 
-		for _, v := range g.rooms {
-			if v.TryJoin(p) {
-				roomFound = true
-				break
+				g.mu.Lock()
+				var roomId uint64
+				if roomsCounter != maxRooms {
+					g.idSource += 1
+					roomId := g.idSource
+					g.rooms[roomId] = room.Room{}
+					roomFound = g.rooms[roomId].TryJoin(p)
+				}
+				g.mu.Unlock()
+				if roomFound {
+					logger.Info.Println("Successfully created Room with id", roomId)
+					logger.Info.Println("Player with id", p.ID(), "added to room", roomId)
+				} else {
+					logger.Fatal.Println("Failed to join just created Room with id", roomId)
+				}
 			}
-			roomsCounter++
-		}
-
-		g.mu.Lock()
-		var roomId uint64
-		if roomsCounter != maxRooms {
-			g.idSource += 1
-			roomId := g.idSource
-			g.rooms[roomId] = room.Room{}
-			if !g.rooms[roomId].TryJoin(p) {
-				logger.Fatal.Println("Failed to join just created Room with id %d", roomId)
-				//Notify player
-			}
-			roomFound = true
-			//NotifyPlayer
-		}
-		if roomFound {
-			logger.Info.Println("Successfully created Room with id %d", roomId)
-			logger.Info.Println("Player with id %d added to room %d", p.ID(), roomId)
-		}
-
-		//maybe should notify about rooms
-		g.mu.Unlock()
-
+		}()
 	}
 }
+
 func (g *gameFacade) PlayByWebsocket(conn *websocket.Conn, uid uint64) {
 	//Начинаем игру по вебсокет соединению
 	g.in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
