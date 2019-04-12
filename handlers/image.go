@@ -21,6 +21,7 @@ func ImgHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	path := os.Getenv("BASEPATH") + AvatarPrefix + pathToFile
+
 	_, err := os.Stat(path)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)

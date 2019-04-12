@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	saltLen = 16
+	saltLen        = 16
 	sessionLifeLen = 4 * time.Hour
 )
 
@@ -41,26 +41,26 @@ func init() {
 	}
 }
 
-func MakeSalt()(salt []byte, err error) {
+func MakeSalt() (salt []byte, err error) {
 	salt = make([]byte, saltLen)
-	_, err = rand.Read(salt)//Заполняем слайс случайными значениями по всей его длине
+	_, err = rand.Read(salt) //Заполняем слайс случайными значениями по всей его длине
 	return
 }
 
-func MakePasswordHash(password string, salt []byte)(hash []byte){
-	saltedPassword:= bytes.Join([][]byte {[]byte(password), salt}, nil)
-	hashedPassword := sha512.Sum512(saltedPassword)//sha512 возвращает массив, а слайс можно взять только по addressable массиву
+func MakePasswordHash(password string, salt []byte) (hash []byte) {
+	saltedPassword := bytes.Join([][]byte{[]byte(password), salt}, nil)
+	hashedPassword := sha512.Sum512(saltedPassword) //sha512 возвращает массив, а слайс можно взять только по addressable массиву
 	hash = hashedPassword[0:]
 	return
 }
 
-func MakeSession(user models.User)(sessionCookie http.Cookie, err error){
+func MakeSession(user models.User) (sessionCookie http.Cookie, err error) {
 	signer := jwt.NewHMAC(jwt.SHA512, secret)
 	header := jwt.Header{}
 	expiresAt := time.Now().Add(sessionLifeLen)
 	payload := jwt.Payload{
 		ExpirationTime: expiresAt.Unix(),
-		JWTID: strconv.FormatUint(uint64(user.ID), 10),
+		JWTID:          strconv.FormatUint(uint64(user.ID), 10),
 	}
 	token, err := jwt.Sign(header, payload, signer)
 	if err != nil {
@@ -77,7 +77,7 @@ func MakeSession(user models.User)(sessionCookie http.Cookie, err error){
 	return
 }
 
-func Authorize(sessionToken string)(user models.User, err error){
+func Authorize(sessionToken string) (user models.User, err error) {
 	rawToken, err := jwt.Parse([]byte(sessionToken))
 	if err != nil {
 		return
@@ -103,7 +103,7 @@ func Authorize(sessionToken string)(user models.User, err error){
 	}
 	user, err = database.GetInstance().GetUserViaID(uint(userID))
 	if err != nil {
-		if err.Error() == SQLNoRows{
+		if err.Error() == NoUserFound {
 			return user, errors.New(NoTokenOwner)
 		} else {
 			return

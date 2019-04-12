@@ -70,15 +70,14 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 		return
 	}
 
-	_, err = database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
-	if err != nil {
-		if err.Error() != NoUserFound{
-			requestErrors = append(requestErrors, UniqueEmailErrorMsg)
-			return
-		} else {
-			return
-		}
+	user, err := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
+	if err != nil && err.Error() != NoUserFound{
+		return
 	}
+	if user.ID != 0{
+		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
+	}
+
 	return requestErrors, nil
 }
 
@@ -98,7 +97,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.U
 
 	user, err = database.GetInstance().GetUserViaEmail(email)
 	if err != nil {
-		if err.Error() == NoUserFound{
+		if err.Error() == NoUserFound {
 			requestErrors = append(requestErrors, MissedUserErrorMsg)
 			return
 		} else {

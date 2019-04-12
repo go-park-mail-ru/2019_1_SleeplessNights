@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/lib/pq"
@@ -11,16 +10,33 @@ import (
 )
 
 const (
-	host     = ""
-	port     = 0
-	user     = ""
-	password = ""
-	dbName   = ""
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "1209qawsed"
+	dbName   = "postgres"
 )
 
+
+//const (
+//	host     = ""
+//	port     = 0
+//	user     = ""
+//	password = ""
+//	dbName   = ""
+//)
+
 const (
-	SQLNoRows = "sql: no rows in result set"
+	SQLNoRows   = "sql: no rows in result set"
+	NoUserFound = "БД: Не был найден юзер"
 )
+
+type customError struct {
+	str string
+}
+func (error *customError) Error() string {
+	return error.str
+}
 
 var db *dbManager
 
@@ -67,8 +83,8 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 		`SELECT * FROM public.users WHERE id = $1`, userID)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
-	if err.Error() == SQLNoRows {
-		err.Error() = helpers.NoUserFound
+	if err != nil && err.Error() == SQLNoRows {
+		err =  &customError{NoUserFound}
 	}
 	return
 }
@@ -79,8 +95,8 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 		`SELECT * FROM public.users WHERE email = $1`, email)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
-	if err.Error() == SQLNoRows {
-		err.Error() = helpers.NoUserFound
+	if err != nil {
+		err =  &customError{NoUserFound}
 	}
 	return
 }
@@ -97,17 +113,17 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 	return
 }
 
-func (db *dbManager) UpdateUser(user models.User, userID int) (err error) {
+func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
 
 	_, err = db.dataBase.Exec(
 		`UPDATE public.users 
 			SET email = CASE
-				WHEN $1 = "" THEN email ELSE $1 END,
+				WHEN $1 = '' THEN email ELSE $1 END,
 			    nickname = CASE
-				WHEN $2 = "" THEN nickname ELSE $2 END,
+				WHEN $2 = '' THEN nickname ELSE $2 END,
 			    avatarpath = CASE
-				WHEN $3 = "" THEN avatarpath ELSE $3 END
-			WHERE id = $4`, user.Email, user.Password, user.Salt, user.Nickname, user.AvatarPath, userID)
+				WHEN $3 = '' THEN avatarpath ELSE $3 END
+			WHERE id = $4 `, user.Email, user.Nickname, user.AvatarPath, userID)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 	}

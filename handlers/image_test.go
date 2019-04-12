@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -33,7 +34,7 @@ func TestImgHandlerSuccessful(t *testing.T) {
 				status, http.StatusOK)
 		}
 
-		expected, err := ioutil.ReadFile(img)
+		expected, err := ioutil.ReadFile(os.Getenv("BASEPATH") + handlers.AvatarPrefix + img)
 		if err != nil {
 			t.Error(err.Error())
 			return

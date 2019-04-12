@@ -93,7 +93,6 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	avatarName := uuid.NewV4().String() + filepath.Ext(newAvatar.Filename)
 	user.AvatarPath = avatarName
 
-
 	err = database.GetInstance().UpdateUser(user, userID)
 	if err != nil {
 		helpers.Return500(&w, err)
