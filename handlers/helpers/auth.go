@@ -24,9 +24,8 @@ const (
 var secret []byte
 
 func init() {
-	//secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
-	secretFile, err := os.Open("secret")
 
+	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {

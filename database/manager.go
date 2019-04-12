@@ -10,20 +10,12 @@ import (
 )
 
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "1209qawsed"
-	dbName   = "postgres"
+	host     = ""
+	port     = 0
+	user     = ""
+	password = ""
+	dbName   = ""
 )
-
-//const (
-//	host     = ""
-//	port     = 0
-//	user     = ""
-//	password = ""
-//	dbName   = ""
-//)
 
 var db *dbManager
 
