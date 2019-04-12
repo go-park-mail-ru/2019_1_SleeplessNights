@@ -32,7 +32,7 @@ func MiddlewareBasicHeaders(next http.Handler) http.Handler {
 
 func MiddlewareLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Info.Println("Have some request on",r.URL)
+		logger.Info.Println("Have some request on", r.URL)
 		next.ServeHTTP(w, r)
 	})
 }

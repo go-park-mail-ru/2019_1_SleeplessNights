@@ -66,7 +66,6 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	user, err := helpers.Authorize(sessionCookie.Value)
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())

@@ -71,10 +71,10 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	}
 
 	user, err := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
-	if err != nil && err.Error() != NoUserFound{
+	if err != nil && err.Error() != NoUserFound {
 		return
 	}
-	if user.ID != 0{
+	if user.ID != 0 {
 		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
 	}
 

@@ -19,7 +19,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestErrors, err := helpers.ValidateRegisterRequest(r)
-	if err != nil{
+	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
@@ -27,7 +27,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return400(&w, requestErrors)
 		return
 	}
-
 
 	user := models.User{
 		Email:      r.Form.Get("email"),

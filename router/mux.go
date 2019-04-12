@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func GetRouter()(router *mux.Router){
+func GetRouter() (router *mux.Router) {
 	//TODO REWORK AUTH AND MOVE IT TO MIDDLEWARE
 	//TODO REORGANIZE STATIC FILES ACCESS
 	//TODO ADD AMAZON S3
@@ -28,4 +28,3 @@ func GetRouter()(router *mux.Router){
 	router.Use(MiddlewareLog)
 	return
 }
-

@@ -17,7 +17,6 @@ const (
 	dbName   = "postgres"
 )
 
-
 //const (
 //	host     = ""
 //	port     = 0
@@ -34,6 +33,7 @@ const (
 type customError struct {
 	str string
 }
+
 func (error *customError) Error() string {
 	return error.str
 }
@@ -95,7 +95,7 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
 	if err != nil && err.Error() == SQLNoRows {
-		err =  &customError{NoUserFound}
+		err = &customError{NoUserFound}
 		return
 	}
 
@@ -125,7 +125,7 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
 	if err != nil {
-		err =  &customError{NoUserFound}
+		err = &customError{NoUserFound}
 		return
 	}
 
