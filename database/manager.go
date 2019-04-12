@@ -79,17 +79,46 @@ func GetInstance() *dbManager {
 
 func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
+
 	row := db.dataBase.QueryRow(
 		`SELECT * FROM public.users WHERE id = $1`, userID)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
 	if err != nil && err.Error() == SQLNoRows {
 		err =  &customError{NoUserFound}
+		return
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
 
 	row := db.dataBase.QueryRow(
 		`SELECT * FROM public.users WHERE email = $1`, email)
@@ -97,11 +126,29 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 		&user.AvatarPath)
 	if err != nil {
 		err =  &customError{NoUserFound}
+		return
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) AddUser(user models.User) (err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
 
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.users (email, password, salt, won, lost, playtime, nickname, avatarpath)
@@ -109,11 +156,29 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 		user.Email, user.Password, user.Salt, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
+		return
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
 
 	_, err = db.dataBase.Exec(
 		`UPDATE public.users 
@@ -126,18 +191,56 @@ func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
 			WHERE id = $4 `, user.Email, user.Nickname, user.AvatarPath, userID)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
+		return
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) GetLenUsers() (len int, err error) {
 
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
+
 	row := db.dataBase.QueryRow(`SELECT COUNT(*) FROM public.users`)
 	err = row.Scan(&len)
+	if err != nil {
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) GetUsers() (users []models.User, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
 
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.users ORDER BY won DESC`)
@@ -156,20 +259,63 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 
 		users = append(users, user)
 	}
+	err = rows.Err()
+	if err != nil {
+		return
+	}
 
 	err = rows.Close()
+	if err != nil {
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) CleanerDBForTests() (err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
+
 	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users, public.question, public.question_pack RESTART IDENTITY`)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
+		return
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) GetPacksOfQuestions(theme string) (packs map[string][]models.Question, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
 
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.question WHERE pack_id = 
@@ -182,37 +328,82 @@ func (db *dbManager) GetPacksOfQuestions(theme string) (packs map[string][]model
 
 		var question models.Question
 		err = rows.Scan(&question.ID, &question.Answers, &question.Correct, &question.Text, &question.PackID, &question.Theme)
-		err = rows.Close()
-		if err != nil {
-			return
-		}
 
 		pack := packs[question.Theme]
 		pack = append(pack, question)
 		packs[question.Theme] = pack
 	}
+	err = rows.Err()
+	if err != nil {
+		return
+	}
 
 	err = rows.Close()
+	if err != nil {
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) AddQuestionPack(theme string) (err error) {
 
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
+
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
+		return
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
 func (db *dbManager) AddQuestion(question models.Question) (err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
 
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question (answers, correct, text, pack_id, pack_theme)
 			  VALUES ($1, $2, $3, $4, $5)`, pq.Array(question.Answers), question.Correct, question.Text, question.PackID, question.Theme)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
+		return
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
