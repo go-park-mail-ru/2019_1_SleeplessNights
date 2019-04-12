@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/lib/pq"
@@ -15,6 +16,10 @@ const (
 	user     = ""
 	password = ""
 	dbName   = ""
+)
+
+const (
+	SQLNoRows = "sql: no rows in result set"
 )
 
 var db *dbManager
@@ -62,6 +67,9 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 		`SELECT * FROM public.users WHERE id = $1`, userID)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
+	if err.Error() == SQLNoRows {
+		err.Error() = helpers.NoUserFound
+	}
 	return
 }
 
@@ -71,6 +79,9 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 		`SELECT * FROM public.users WHERE email = $1`, email)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
+	if err.Error() == SQLNoRows {
+		err.Error() = helpers.NoUserFound
+	}
 	return
 }
 
@@ -90,8 +101,13 @@ func (db *dbManager) UpdateUser(user models.User, email string) (err error) {
 
 	_, err = db.dataBase.Exec(
 		`UPDATE public.users 
-			SET email = $1, password = $2, salt = $3, nickname = $4, avatarpath = $5
-			WHERE email = $6`, user.Email, user.Password, user.Salt, user.Nickname, user.AvatarPath, email)
+			SET email = CASE
+				WHEN $1 = "" THEN email ELSE $1 END,
+			    nickname = CASE
+				WHEN $2 = "" THEN nickname ELSE $2 END,
+			    avatarpath = CASE
+				WHEN $3 = "" THEN avatarpath ELSE $3 END
+			WHERE email = $4`, user.Email, user.Password, user.Salt, user.Nickname, user.AvatarPath, email)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 	}
@@ -130,7 +146,7 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 }
 
 func (db *dbManager) CleanerDBForTests() (err error) {
-	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users RESTART IDENTITY`)
+	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users, public.question, public.question_pack RESTART IDENTITY`)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 	}
@@ -164,8 +180,7 @@ func (db *dbManager) GetPacksOfQuestions(theme string) (packs map[string][]model
 	return
 }
 
-
-func (db *dbManager) AddQuestionPack(theme string) (err error){
+func (db *dbManager) AddQuestionPack(theme string) (err error) {
 
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)

@@ -64,7 +64,6 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		userSlice = append(userSlice, v)
 	}
 
-	//sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won }) //TODO Я отсортировал при запросе
 	paginatedSlice := Paginate(userSlice, int(PagesPerList*(PageNum-1)))
 	var pageSlice []models.User
 	for _, user := range paginatedSlice {

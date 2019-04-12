@@ -20,7 +20,7 @@ const (
 	AvatarExtensionError        = "Файл имеет неподдерживаемый формат"
 	AvatarIsMissingError        = "Файл аватара не содержит данных"
 	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 10МБайт)"
-	SQLNoRows                   = "sql: no rows in result set"
+	NoUserFound                 = "БД: Не был найден юзер"
 )
 
 const (
