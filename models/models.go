@@ -29,10 +29,3 @@ type Pack struct {
 	Question []Question
 	Theme    string
 }
-
-var idSource uint
-
-func MakeID() uint {
-	idSource++
-	return idSource
-}

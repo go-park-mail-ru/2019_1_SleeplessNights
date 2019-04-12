@@ -17,7 +17,7 @@ const (
 
 var avatarTypeWhiteList map[string]struct{}
 
-func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, err error) {
+func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, err error) {
 	newNickname := r.Form.Get("nickname")
 
 	err = validateNickname(newNickname, &requestErrors)
@@ -42,7 +42,7 @@ func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, isVa
 		logger.Error.Println("Failed to update profile:", err)
 		return
 	}
-	return requestErrors, len(requestErrors) == 0, nil
+	return requestErrors, nil
 }
 
 func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error) {
@@ -68,6 +68,16 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	err = validateNickname(nickname, &requestErrors)
 	if err != nil {
 		return
+	}
+
+	_, err = database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
+	if err != nil {
+		if err.Error() != SQLNoRows{
+			requestErrors = append(requestErrors, UniqueEmailErrorMsg)
+			return
+		} else {
+			return
+		}
 	}
 	return requestErrors, nil
 }

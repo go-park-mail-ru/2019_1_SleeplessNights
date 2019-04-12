@@ -154,7 +154,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 	}
 
 	img := "default_avatar.jpg"
-	path := "/Users/mac/Desktop/back-end/2019_1_SleeplessNights" + handlers.AvatarPrefix + img
+	path := os.Getenv("BASEPATH") + handlers.AvatarPrefix + img
 
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)

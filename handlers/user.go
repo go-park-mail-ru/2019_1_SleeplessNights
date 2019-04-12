@@ -30,7 +30,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 
 	user := models.User{
-		ID:         models.MakeID(),
 		Email:      r.Form.Get("email"),
 		Won:        0,
 		Lost:       0,

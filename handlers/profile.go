@@ -74,12 +74,12 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, isValid, err := helpers.ValidateUpdateProfileRequest(r)
+	requestErrors, err := helpers.ValidateUpdateProfileRequest(r)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	if !isValid {
+	if requestErrors != nil {
 		helpers.Return400(&w, requestErrors)
 		return
 	}
@@ -127,7 +127,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := os.Create("/Users/mac/Desktop/back-end/2019_1_SleeplessNights" + AvatarPrefix + avatarName)
+	file, err := os.Create(os.Getenv("BASEPATH") + AvatarPrefix + avatarName)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

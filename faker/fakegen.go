@@ -10,7 +10,10 @@ import (
 )
 
 const (
-	FakeUserPassword = "1Q2W3e4r5t6y7u"
+	FakeUserPassword             = "1Q2W3e4r5t6y7u"
+	NumberOfPacks                = 10
+	NumberOfQuestionsInOnePack   = 10
+	NumberOfAnswersInOneQuestion = 4
 )
 
 // Fills Users Map with user data
@@ -33,7 +36,6 @@ func CreateFakeData(quantity int) {
 			continue
 		}
 		user := models.User{
-			ID:         models.MakeID(),
 			Email:      email,
 			Password:   helpers.MakePasswordHash(FakeUserPassword, salt),
 			Salt:       salt,
@@ -67,11 +69,11 @@ func CreateFakePacks() {
 	}
 
 	var packID uint = 1
-	for i := 0; i < 10; i++ {
+	for i := 0; i < NumberOfPacks; i++ {
 		for _, theme := range themes {
-			for i := 0; i < 10; i++ {
+			for i := 0; i < NumberOfQuestionsInOnePack; i++ {
 				var answers []string
-				for j := 0; j < 4; j++ {
+				for j := 0; j < NumberOfAnswersInOneQuestion; j++ {
 					answer := fake.Paragraph(1, true)
 					answers = append(answers, answer)
 				}
