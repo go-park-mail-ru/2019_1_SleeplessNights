@@ -97,5 +97,4 @@ func CreateFakePacks() {
 			packID++
 		}
 	}
-
 }

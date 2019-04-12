@@ -16,13 +16,6 @@ type User struct {
 	AvatarPath string        `json:"avatar_path"`
 }
 
-type Answer struct {
-	first  string
-	second string
-	third  string
-	forth  string
-}
-
 type Question struct {
 	ID      uint
 	Answers []string
