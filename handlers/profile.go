@@ -86,7 +86,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
 	newEmail := r.MultipartForm.Value["email"][0]
-	oldEmail := user.Email
+	userID := user.ID
 	user.Email = newEmail
 
 	newAvatar := r.MultipartForm.File["avatar"][0]
@@ -94,7 +94,7 @@ func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	user.AvatarPath = avatarName
 
 
-	err = database.GetInstance().UpdateUser(user, oldEmail)
+	err = database.GetInstance().UpdateUser(user, userID)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

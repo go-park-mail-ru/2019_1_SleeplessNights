@@ -97,7 +97,7 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 	return
 }
 
-func (db *dbManager) UpdateUser(user models.User, email string) (err error) {
+func (db *dbManager) UpdateUser(user models.User, userID int) (err error) {
 
 	_, err = db.dataBase.Exec(
 		`UPDATE public.users 
@@ -107,7 +107,7 @@ func (db *dbManager) UpdateUser(user models.User, email string) (err error) {
 				WHEN $2 = "" THEN nickname ELSE $2 END,
 			    avatarpath = CASE
 				WHEN $3 = "" THEN avatarpath ELSE $3 END
-			WHERE email = $4`, user.Email, user.Password, user.Salt, user.Nickname, user.AvatarPath, email)
+			WHERE id = $4`, user.Email, user.Password, user.Salt, user.Nickname, user.AvatarPath, userID)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 	}
