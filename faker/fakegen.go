@@ -33,9 +33,9 @@ func CreateFakeData(quantity int) {
 			continue
 		}
 		user := models.User{
-			ID:       	models.MakeID(),
-			Email:    	email,
-			Password: 	helpers.MakePasswordHash(FakeUserPassword, salt),
+			ID:         models.MakeID(),
+			Email:      email,
+			Password:   helpers.MakePasswordHash(FakeUserPassword, salt),
 			Salt:       salt,
 			Won:        uint(rand.Uint32()),
 			Lost:       uint(rand.Uint32()),
@@ -45,4 +45,57 @@ func CreateFakeData(quantity int) {
 		}
 		_ = database.GetInstance().AddUser(user)
 	}
+}
+
+func CreateFakePacks() {
+	fake, err := faker.New("en")
+	if err != nil {
+		logger.Fatal.Println(err.Error())
+		return
+	}
+	themes := []string{
+		"математика",
+		"информатика",
+		"химия",
+		"биология",
+		"физика",
+		"культура",
+		"история",
+		"языки",
+		"философия",
+		"мемология",
+	}
+
+	var packID uint = 1
+	for i := 0; i < 10; i++ {
+		for _, theme := range themes {
+			for i := 0; i < 10; i++ {
+				var answers []string
+				for j := 0; j < 4; j++ {
+					answer := fake.Paragraph(1, true)
+					answers = append(answers, answer)
+				}
+				question := models.Question{
+					Answers: answers,
+					Correct: 1,
+					Text:    fake.Paragraph(1, true),
+					PackID:  packID,
+					Theme:   theme,
+				}
+
+				err := database.GetInstance().AddQuestion(question)
+				if err != nil {
+					logger.Error.Println(err.Error())
+					return
+				}
+			}
+			err := database.GetInstance().AddQuestionPack(theme)
+			if err != nil {
+				logger.Error.Println(err.Error())
+				return
+			}
+			packID++
+		}
+	}
+
 }

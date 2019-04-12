@@ -19,6 +19,7 @@ func main() {
 	logger.Info.Printf("\nSuccessfully connected to database on: %s", "...") //TODO PORT
 
 	faker.CreateFakeData(10)
+	faker.CreateFakePacks()
 
 	PORT := os.Getenv("PORT")
 	if PORT == "" {

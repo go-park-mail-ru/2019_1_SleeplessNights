@@ -22,30 +22,29 @@ ALTER TABLE ONLY public.users
   ADD CONSTRAINT users_pk PRIMARY KEY (id);
 
 
--- table question
-CREATE TABLE question
-(
-  id         SERIAL         NOT NULL,
-  answer     VARCHAR(100)[] NOT NULL,
-  correct    INTEGER        NOT NULL,
-  text       TEXT           NOT NULL,
-  pack_id    BIGINT         NOT NULL,
-  pack_theme VARCHAR(100)   NOT NULL
-);
-
-ALTER TABLE ONLY public.question
-  ADD CONSTRAINT question_pk PRIMARY KEY (id);
-
-ALTER TABLE ONLY public.question
-  ADD CONSTRAINT question_users_fk FOREIGN KEY (pack_id) REFERENCES public.question_pack (id);
-
-
 -- table Question'sPack
 CREATE TABLE question_pack
 (
-  id    SERIAL       NOT NULL,
+  id    BIGSERIAL    NOT NULL,
   theme VARCHAR(100) NOT NULL
 );
 
 ALTER TABLE ONLY public.question_pack
   ADD CONSTRAINT question_pack_pk PRIMARY KEY (id);
+
+
+-- table question
+CREATE TABLE question
+(
+  id         BIGSERIAL    NOT NULL,
+  answers    TEXT[]       NOT NULL,
+  correct    INTEGER      NOT NULL,
+  text       TEXT         NOT NULL,
+  pack_id    BIGINT       NOT NULL,
+  pack_theme VARCHAR(100) NOT NULL
+);
+
+ALTER TABLE ONLY public.question
+  ADD CONSTRAINT question_pk PRIMARY KEY (id);
+
+

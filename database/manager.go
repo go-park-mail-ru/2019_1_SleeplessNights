@@ -10,12 +10,20 @@ import (
 )
 
 const (
-	host     = ""
-	port     = 0
-	user     = ""
-	password = ""
-	dbName   = ""
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "1209qawsed"
+	dbName   = "postgres"
 )
+
+//const (
+//	host     = ""
+//	port     = 0
+//	user     = ""
+//	password = ""
+//	dbName   = ""
+//)
 
 var db *dbManager
 
@@ -62,9 +70,6 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 		`SELECT * FROM public.users WHERE id = $1`, userID)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -85,7 +90,6 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 		user.Email, user.Password, user.Salt, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
-		return
 	}
 	return
 }
@@ -98,7 +102,6 @@ func (db *dbManager) UpdateUser(user models.User, email string) (err error) {
 			WHERE email = $6`, user.Email, user.Password, user.Salt, user.Nickname, user.AvatarPath, email)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
-		return
 	}
 	return
 }
@@ -131,9 +134,6 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 	}
 
 	err = rows.Close()
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -141,7 +141,6 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users RESTART IDENTITY`)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
-		return
 	}
 	return
 }
@@ -158,21 +157,39 @@ func (db *dbManager) GetPacksOfQuestions(theme string) (packs map[string][]model
 	for rows.Next() {
 
 		var question models.Question
-		var theme string
-		err = rows.Scan(&question.ID, &question.Answers, &question.Correct, &question.Text, &question.PackID, &theme)
+		err = rows.Scan(&question.ID, &question.Answers, &question.Correct, &question.Text, &question.PackID, &question.Theme)
 		err = rows.Close()
 		if err != nil {
 			return
 		}
 
-		pack := packs[theme]
+		pack := packs[question.Theme]
 		pack = append(pack, question)
-		packs[theme] = pack
+		packs[question.Theme] = pack
 	}
 
 	err = rows.Close()
-	if err != nil {
-		return
+	return
+}
+
+
+func (db *dbManager) AddQuestionPack(theme string) (err error){
+
+	_, err = db.dataBase.Exec(
+		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
+	if _err, ok := err.(*pq.Error); ok {
+		logger.Error.Print(_err.Error())
+	}
+	return
+}
+
+func (db *dbManager) AddQuestion(question models.Question) (err error) {
+
+	_, err = db.dataBase.Exec(
+		`INSERT INTO public.question (answers, correct, text, pack_id, pack_theme)
+			  VALUES ($1, $2, $3, $4, $5)`, pq.Array(question.Answers), question.Correct, question.Text, question.PackID, question.Theme)
+	if _err, ok := err.(*pq.Error); ok {
+		logger.Error.Print(_err.Error())
 	}
 	return
 }
