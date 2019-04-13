@@ -36,14 +36,12 @@ ALTER TABLE ONLY public.question_pack
 -- table question
 CREATE TABLE question
 (
-  id         BIGSERIAL    NOT NULL,
-  answers    VARCHAR(100)[]       NOT NULL,
-  correct    INTEGER      NOT NULL,
-  text       TEXT         NOT NULL,
-  pack_id    BIGINT       NOT NULL
+  id      BIGSERIAL     NOT NULL,
+  answers VARCHAR(60)[] NOT NULL,
+  correct INTEGER       NOT NULL,
+  text    TEXT          NOT NULL,
+  pack_id BIGINT        NOT NULL
 );
 
 ALTER TABLE ONLY public.question
   ADD CONSTRAINT question_pk PRIMARY KEY (id);
-
-
