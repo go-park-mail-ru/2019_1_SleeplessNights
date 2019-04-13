@@ -2,20 +2,14 @@ package database
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/lib/pq"
 	"github.com/xlab/closer"
-)
-
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "1209qawsed"
-	dbName   = "postgres"
+	"os"
 )
 
 const (
@@ -29,10 +23,41 @@ type dbManager struct {
 	dataBase *sql.DB
 }
 
+type dbConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	DBName   string `json:"dbname"`
+}
+
+func loadConfiguration(file string) (psqlInfo string) {
+	configFile, err := os.Open(file)
+	if err != nil {
+		logger.Error.Print(err.Error())
+		return
+	}
+	var config dbConfig
+	jsonParser := json.NewDecoder(configFile)
+	err = jsonParser.Decode(&config)
+	if err != nil {
+		logger.Error.Print(err.Error())
+		return
+	}
+	err = configFile.Close()
+	if err != nil {
+		logger.Error.Print(err.Error())
+		return
+	}
+	psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		config.Host, config.Port, config.User, config.Password, config.DBName)
+
+	return
+}
+
 func init() {
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbName)
+	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/database/config.json")
 
 	dateBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
