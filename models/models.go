@@ -16,21 +16,15 @@ type User struct {
 	AvatarPath string        `json:"avatar_path"`
 }
 
-type UserPk struct {
+type Question struct {
+	ID      uint
+	Answers []string
+	Correct int
+	Text    string
+	PackID  uint
+}
+
+type Pack struct {
 	ID    uint
-	Email string
-}
-
-var idSource uint
-var Users map[string]User
-var UserKeyPairs map[uint]string
-
-func init() {
-	Users = make(map[string]User, 0)
-	UserKeyPairs = make(map[uint]string, 0)
-}
-
-func MakeID() uint {
-	idSource++
-	return idSource
+	Theme string
 }

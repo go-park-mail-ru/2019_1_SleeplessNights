@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"net/http"
@@ -17,22 +18,22 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, isValid, err := helpers.ValidateRegisterRequest(r)
+	requestErrors, err := helpers.ValidateRegisterRequest(r)
 	if err != nil {
 		helpers.Return500(&w, err)
+		return
 	}
-	if !isValid {
+	if requestErrors != nil {
 		helpers.Return400(&w, requestErrors)
 		return
 	}
 
 	user := models.User{
-		ID:        models.MakeID(),
-		Email:     r.Form.Get("email"),
-		Won:       0,
-		Lost:      0,
-		PlayTime:  0,
-		Nickname: r.Form.Get("nickname"),
+		Email:      r.Form.Get("email"),
+		Won:        0,
+		Lost:       0,
+		PlayTime:   0,
+		Nickname:   r.Form.Get("nickname"),
 		AvatarPath: "default_avatar.jpg",
 	}
 	salt, err := helpers.MakeSalt()
@@ -45,8 +46,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		//Пользователь уже успешно создан, поэтому его в любом случае следует добавить в БД
 		//Однако, с ним ещё можно произвести полезную работу, которая может вызвать ошибки
-		models.Users[user.Email] = user
-		models.UserKeyPairs[user.ID] = user.Email//Пара ключей ID-email, чтобы юзера можно было найти 2-мя способами
+		err = database.GetInstance().AddUser(user)
+		if err != nil {
+			helpers.Return500(&w, err)
+			return
+		}
 	}()
 
 	sessionCookie, err := helpers.MakeSession(user)

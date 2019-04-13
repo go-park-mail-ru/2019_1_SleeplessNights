@@ -3,10 +3,12 @@ package handlers_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -19,7 +21,11 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range models.Users {
+	users, err := database.GetInstance().GetUsers()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	for _, user := range users {
 		cookie, err := helpers.MakeSession(user)
 		if err != nil {
 			t.Errorf("\nMakeSession returned error: %s\n", err)
@@ -31,7 +37,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 		resp := httptest.NewRecorder()
 
-		http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
+		router.MiddlewareAuth(handlers.ProfileHandler).ServeHTTP(resp, req)
 		if status := resp.Code; status == http.StatusInternalServerError {
 			t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
 				status)
@@ -50,6 +56,11 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 			}
 		}
 	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
@@ -58,7 +69,7 @@ func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
+	router.MiddlewareAuth(handlers.ProfileHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
@@ -74,6 +85,11 @@ func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 			t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 				resp.Body.String(), expected)
 		}
+	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }
 
@@ -94,7 +110,7 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(handlers.ProfileHandler).ServeHTTP(resp, req)
+	router.MiddlewareAuth(handlers.ProfileHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
@@ -111,19 +127,26 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 				resp.Body.String(), expected)
 		}
 	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 
 	user := models.User{
-		ID:         1000,
+		ID:         1,
 		Email:      "first@mail.com",
 		Nickname:   "first",
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	models.Users[user.Email] = user
-	models.UserKeyPairs[user.ID] = user.Email
+	err := database.GetInstance().AddUser(user)
+	if err != nil {
+		t.Error(err.Error())
+	}
 
 	cookie, err := helpers.MakeSession(user)
 	if err != nil {
@@ -191,15 +214,13 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 			return
 		}
 	}
+
 	req.MultipartForm.File["avatar"][0].Header.Set("content-type", "image/jpeg")
 	req.AddCookie(&cookie)
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
-
-	req.MultipartForm.File["avatar"][0].Header.Del("content-type")
-	req.MultipartForm.File["avatar"][0].Header.Add("content-type", "image/jpeg")
+	router.MiddlewareAuth(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
@@ -211,19 +232,20 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		}
 	}
 
-	user = models.Users[models.UserKeyPairs[1000]]
-
-	if user.Email != newEmail {
-		t.Errorf("\nDB returned wrong email:\ngot %v\nwant %v\n",
-			user.Email, newEmail)
+	user, err = database.GetInstance().GetUserViaID(1)
+	if err != nil {
+		t.Error(err.Error())
 	}
+
 	if user.Nickname != newNickname {
 		t.Errorf("\nDB returned wrong nickname:\ngot %v\nwant %v\n",
-			user.Email, newEmail)
+			user.Email, newNickname)
 	}
 
-	delete(models.Users, models.UserKeyPairs[1000])
-	delete(models.UserKeyPairs, 1000)
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
@@ -235,13 +257,15 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
 	}
-	models.Users[user.Email] = user
-	models.UserKeyPairs[user.ID] = user.Email
+	err := database.GetInstance().AddUser(user)
+	if err != nil {
+		t.Error(err.Error())
+	}
 
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 
-	err := bodyWriter.Close()
+	err = bodyWriter.Close()
 	if err != nil {
 		t.Errorf("Close file returned error: %s\n", err.Error())
 		return
@@ -252,7 +276,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+	router.MiddlewareAuth(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
@@ -264,10 +288,11 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		}
 	}
 
-	delete(models.Users, models.UserKeyPairs[1000])
-	delete(models.UserKeyPairs, 1000)
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
-
 
 func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
@@ -301,7 +326,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+	router.MiddlewareAuth(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
@@ -311,6 +336,11 @@ func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusUnauthorized)
 		}
+	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }
 
@@ -335,7 +365,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	http.HandlerFunc(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+	router.MiddlewareAuth(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
@@ -345,5 +375,10 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusBadRequest)
 		}
+	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }

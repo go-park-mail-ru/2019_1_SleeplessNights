@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"log"
 	"net/http"
 )
@@ -19,11 +20,12 @@ const (
 	NicknameIsTooLongErrorMsg   = "Никнейм не может быть длиннее 16 символов"
 	AvatarExtensionError        = "Файл имеет неподдерживаемый формат"
 	AvatarIsMissingError        = "Файл аватара не содержит данных"
-	AvatarFileIsTooBig 			= "Файл аватара слишком большой (более 10МБайт)"
+	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 10МБайт)"
+	NoUserFound                 = database.NoUserFound
 )
 
 const (
-	NoTokenOwner      ="error: There are no token's owner in database"
+	NoTokenOwner = "error: There are no token's owner in database"
 )
 
 type ErrorSet []string
@@ -32,11 +34,11 @@ type errorResponse struct {
 	Password  string   `json:"password, omitempty"`
 	Password2 string   `json:"password2, omitempty"`
 	Nickname  string   `json:"nickname, omitempty"`
-	Avatar 	  string   `json:"avatar, omitempty"`
+	Avatar    string   `json:"avatar, omitempty"`
 	Error     []string `json:"error, omitempty"`
 }
 
-func MarshalToJSON(errSet ErrorSet)([]byte, error) {
+func MarshalToJSON(errSet ErrorSet) ([]byte, error) {
 	var responseBody errorResponse
 	for _, err := range errSet {
 		switch err {

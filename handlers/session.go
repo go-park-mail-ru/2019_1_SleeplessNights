@@ -16,11 +16,8 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, isValid, user, err := helpers.ValidateAuthRequest(r)
-	if err != nil {
-		helpers.Return500(&w, err)
-	}
-	if !isValid {
+	requestErrors, user, err := helpers.ValidateAuthRequest(r)
+	if requestErrors != nil {
 		helpers.Return400(&w, requestErrors)
 		return
 	}
@@ -30,6 +27,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return500(&w, err) //TODO test wrong cookie
 		return
 	}
+
 	http.SetCookie(w, &sessionCookie)
 	_, err = w.Write([]byte("{}"))
 	if err != nil {
