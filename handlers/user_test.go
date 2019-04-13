@@ -252,5 +252,4 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	database.CloseConnection()
 }

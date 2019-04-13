@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
@@ -17,26 +18,10 @@ const (
 	dbName   = "postgres"
 )
 
-//const (
-//	host     = ""
-//	port     = 0
-//	user     = ""
-//	password = ""
-//	dbName   = ""
-//)
-
-const (
+const  (
 	SQLNoRows   = "sql: no rows in result set"
 	NoUserFound = "БД: Не был найден юзер"
 )
-
-type customError struct {
-	str string
-}
-
-func (error *customError) Error() string {
-	return error.str
-}
 
 var db *dbManager
 
@@ -45,7 +30,7 @@ type dbManager struct {
 }
 
 func init() {
-
+	fmt.Println("Connection opened")
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName)
 
@@ -63,14 +48,15 @@ func init() {
 		dataBase: dateBase,
 	}
 
-	closer.Bind(CloseConnection)
+	closer.Bind(closeConnection)
 }
 
-func CloseConnection() {
+func closeConnection() {
 	err := db.dataBase.Close()
 	if err != nil {
 		logger.Fatal.Print(err.Error())
 	}
+	fmt.Println("Connection closed")
 }
 
 func GetInstance() *dbManager {
@@ -95,7 +81,7 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
 	if err != nil && err.Error() == SQLNoRows {
-		err = &customError{NoUserFound}
+		err = errors.New(NoUserFound)
 		return
 	}
 
@@ -125,7 +111,7 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
 		&user.AvatarPath)
 	if err != nil {
-		err = &customError{NoUserFound}
+		err = errors.New(NoUserFound)
 		return
 	}
 

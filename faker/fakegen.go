@@ -74,7 +74,7 @@ func CreateFakePacks() {
 			for i := 0; i < NumberOfQuestionsInOnePack; i++ {
 				var answers []string
 				for j := 0; j < NumberOfAnswersInOneQuestion; j++ {
-					answer := fake.Paragraph(1, true)
+					answer := fake.Characters(fake.Rand.Intn(25) + 5)
 					answers = append(answers, answer)
 				}
 				question := models.Question{
