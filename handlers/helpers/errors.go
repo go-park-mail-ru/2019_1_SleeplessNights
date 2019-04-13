@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"log"
 	"net/http"
 )
@@ -21,12 +20,8 @@ const (
 	AvatarExtensionError        = "Файл имеет неподдерживаемый формат"
 	AvatarIsMissingError        = "Файл аватара не содержит данных"
 	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 10МБайт)"
-	NoUserFound                 = database.NoUserFound
 )
 
-const (
-	NoTokenOwner = "error: There are no token's owner in database"
-)
 
 type ErrorSet []string
 type errorResponse struct {

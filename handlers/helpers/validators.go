@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
@@ -71,7 +72,7 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	}
 
 	user, err := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
-	if err != nil && err.Error() != NoUserFound {
+	if err != nil && err.Error() != database.NoUserFound {
 		return
 	}
 	if user.ID != 0 {
@@ -97,7 +98,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.U
 
 	user, err = database.GetInstance().GetUserViaEmail(email)
 	if err != nil {
-		if err.Error() == NoUserFound {
+		if err.Error() == database.NoUserFound {
 			requestErrors = append(requestErrors, MissedUserErrorMsg)
 			return
 		} else {
@@ -105,7 +106,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.U
 		}
 	}
 
-	hashedPassword := MakePasswordHash(password, user.Salt)
+	hashedPassword := auth.MakePasswordHash(password, user.Salt)
 	if bytes.Compare(hashedPassword, user.Password) != 0 {
 		requestErrors = append(requestErrors, WrongPassword)
 	}

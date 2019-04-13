@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
@@ -36,13 +37,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Nickname:   r.Form.Get("nickname"),
 		AvatarPath: "default_avatar.jpg",
 	}
-	salt, err := helpers.MakeSalt()
+	salt, err := auth.MakeSalt()
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
 	user.Salt = salt
-	user.Password = helpers.MakePasswordHash(r.Form.Get("password"), user.Salt)
+	user.Password = auth.MakePasswordHash(r.Form.Get("password"), user.Salt)
 	defer func() {
 		//Пользователь уже успешно создан, поэтому его в любом случае следует добавить в БД
 		//Однако, с ним ещё можно произвести полезную работу, которая может вызвать ошибки
@@ -53,7 +54,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	sessionCookie, err := helpers.MakeSession(user)
+	sessionCookie, err := auth.MakeSession(user)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

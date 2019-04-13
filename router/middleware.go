@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
@@ -68,7 +69,7 @@ func MiddlewareAuth(next AuthHandler) http.Handler {
 			return
 		}
 
-		user, err := helpers.Authorize(sessionCookie.Value)
+		user, err := auth.Authorize(sessionCookie.Value)
 		if err != nil {
 			r.Header.Add("Referer", r.URL.String())
 			w.WriteHeader(http.StatusUnauthorized)

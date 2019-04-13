@@ -1,4 +1,4 @@
-package helpers
+package auth
 
 import (
 	"bytes"
@@ -19,6 +19,7 @@ import (
 const (
 	saltLen        = 16
 	sessionLifeLen = 4 * time.Hour
+	NoTokenOwner = "error: There are no token's owner in database"
 )
 
 var secret []byte
@@ -103,7 +104,7 @@ func Authorize(sessionToken string) (user models.User, err error) {
 	}
 	user, err = database.GetInstance().GetUserViaID(uint(userID))
 	if err != nil {
-		if err.Error() == NoUserFound {
+		if err.Error() == database.NoUserFound {
 			return user, errors.New(NoTokenOwner)
 		} else {
 			return

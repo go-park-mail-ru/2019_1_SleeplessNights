@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
@@ -61,7 +62,7 @@ func ProfileUpdateHandler(user models.User, w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	cookie, err := helpers.MakeSession(user)
+	cookie, err := auth.MakeSession(user)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

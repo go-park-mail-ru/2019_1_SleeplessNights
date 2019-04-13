@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
@@ -26,7 +27,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 		t.Error(err.Error())
 	}
 	for _, user := range users {
-		cookie, err := helpers.MakeSession(user)
+		cookie, err := auth.MakeSession(user)
 		if err != nil {
 			t.Errorf("\nMakeSession returned error: %s\n", err)
 			return
@@ -99,7 +100,7 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 		ID: 1000,
 	}
 
-	cookie, err := helpers.MakeSession(user)
+	cookie, err := auth.MakeSession(user)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s", err)
 		return
@@ -148,7 +149,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	cookie, err := helpers.MakeSession(user)
+	cookie, err := auth.MakeSession(user)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s\n", err.Error())
 		return
@@ -304,7 +305,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 		AvatarPath: "none",
 	}
 
-	cookie, err := helpers.MakeSession(user)
+	cookie, err := auth.MakeSession(user)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s\n", err.Error())
 		return
@@ -354,7 +355,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 		AvatarPath: "none",
 	}
 
-	cookie, err := helpers.MakeSession(user)
+	cookie, err := auth.MakeSession(user)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s\n", err.Error())
 		return

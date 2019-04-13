@@ -1,8 +1,8 @@
 package faker
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/manveru/faker"
@@ -24,7 +24,7 @@ func CreateFakeData(quantity int) {
 		return
 	}
 	for i := 1; i <= quantity; i++ {
-		salt, err := helpers.MakeSalt()
+		salt, err := auth.MakeSalt()
 		if err != nil {
 			logger.Error.Println(err.Error())
 			continue
@@ -37,7 +37,7 @@ func CreateFakeData(quantity int) {
 		}
 		user := models.User{
 			Email:      email,
-			Password:   helpers.MakePasswordHash(FakeUserPassword, salt),
+			Password:   auth.MakePasswordHash(FakeUserPassword, salt),
 			Salt:       salt,
 			Won:        uint(rand.Uint32()),
 			Lost:       uint(rand.Uint32()),

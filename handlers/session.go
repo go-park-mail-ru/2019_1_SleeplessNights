@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"net/http"
 )
@@ -22,7 +23,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionCookie, err := helpers.MakeSession(user)
+	sessionCookie, err := auth.MakeSession(user)
 	if err != nil {
 		helpers.Return500(&w, err) //TODO test wrong cookie
 		return
