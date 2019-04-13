@@ -1,4 +1,6 @@
 secret
+handlers/secret
 test.html
 server.log
 .idea
+database/config.json

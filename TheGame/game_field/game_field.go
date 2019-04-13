@@ -68,7 +68,7 @@ func (gf *GameField) Build(qArray [questionsNum]questions.Question) {
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
 			if isPrizePosition(rowIdx, colIdx) {
-				gf.field[rowIdx][colIdx] = gameCell{true, nil}
+				gf.field[rowIdx][colIdx] = gameCell{true,nil}
 			} else {
 				rand.Seed(time.Now().UnixNano())//TODO еспли я правильно помню, то seed нужно скормить 1 раз, а не в цикле. Погугли, пожалуйста
 				index := rand.Intn(len(qSlice))

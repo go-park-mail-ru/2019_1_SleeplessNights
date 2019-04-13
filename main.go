@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
+	"github.com/xlab/closer"
 	"net/http"
 	"os"
 )
@@ -11,7 +12,10 @@ import (
 func main() {
 	//TODO MAKE SECRET MANAGER ?
 	//TODO DELETE DATA CREATOR
+
+	defer closer.Close()
 	faker.CreateFakeData(10)
+	faker.CreateFakePacks()
 
 	PORT := os.Getenv("PORT")
 	if PORT == "" {
