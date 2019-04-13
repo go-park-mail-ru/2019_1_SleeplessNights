@@ -20,14 +20,19 @@ const (
 	responseInterval = 500
 )
 
+type MessageWrapper struct {
+	player *player.Player
+	msg    messge.Message
+}
+
 type Room struct {
 	//Channel to exchange event messages between Room and GameField
-	p1     player.Player
-	p2     player.Player
-	active *player.Player
-	field  game_field.GameField
-
-	mu sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
+	p1             player.Player
+	p2             player.Player
+	active         *player.Player
+	field          game_field.GameField
+	waitForSyncMsg string
+	mu             sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно
@@ -36,7 +41,6 @@ type Room struct {
 func (r *Room) TryJoin(p player.Player) (success bool) {
 	//Здесь нам нужно под мьютексом проверить наличие свободных мест. Варианты:
 	//1. 2 места свободно -> занимаем первое место
-
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
 
 	r.mu.Lock()
@@ -70,9 +74,34 @@ func (r *Room) buildEnv() {
 
 }
 
-func (r *Room) notifyAll(msg messge.Message) {
-	//Процедуры должна отправить сообщение всем игрокам комнаты
-	//TODO develop
+func (r *Room) notifyP1(msg messge.Message) (err error) {
+	err = r.p1.Send(msg)
+	if err != nil {
+		logger.Error.Println("Failed to send Message to P1", err)
+	}
+	return
+}
+
+func (r *Room) notifyP2(msg messge.Message) (err error) {
+	err = r.p2.Send(msg)
+	if err != nil {
+		logger.Error.Println("Failed to send Message to P2", err)
+	}
+	return
+}
+
+func (r *Room) notifyAll(msg messge.Message) (err error) {
+	err = r.notifyP1(msg)
+	if err != nil {
+		return
+	}
+
+	err = r.notifyP2(msg)
+	if err != nil {
+		return
+	}
+
+	return nil
 }
 
 func (r *Room) grantGodMod(p player.Player, token []byte) {
@@ -91,7 +120,7 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 func (r *Room) startMatch() {
 
 	//   Эта процедура запускает игровой процесс
-	// v Здесь мы будем слушать все сообщения пользователей асинхронно и складывать их в очередь для обработки
+	//   Здесь мы будем слушать все сообщения пользователей асинхронно и складывать их в очередь для обработки
 	//   В цикле мы будем обрабатывать все входные сообщения, выполнять нашу бизнес логику (менять значение таймера,
 	//   давать пользователям вопросы и т.д.)
 	//   Все сообщения мы будем складывать в очередь на отправку и отправлять всю очередь каждые 0.5 сек
@@ -99,38 +128,98 @@ func (r *Room) startMatch() {
 	//TODO develop
 
 	r.buildEnv()
-	//TODO Notify all about start of game
-
-	RequestsQueue := make(chan messge.Message, 50)
-	ResponsesQueue := make(chan messge.Message, 50)
 
 	p1Chan := r.p1.Subscribe()
 	p2Chan := r.p2.Subscribe()
+
+	RequestsQueue := make(chan MessageWrapper, 50)
+	ResponsesQueue := make(chan MessageWrapper, 50)
+
+	err := r.notifyAll(messge.Message{messge.StartGame, nil})
+	if err != nil {
+		logger.Error.Printf("Failed to notify all players %s", err)
+	}
+
+	//Wait for players to response "READY"
+	isP1Ready := false
+	isP2Ready := false
+
+	r.waitForSyncMsg = "Ready"
+
+	for {
+		if isP1Ready && isP2Ready {
+			r.active = &r.p1
+			break
+		}
+		select {
+		case p1response := <-p1Chan:
+			{
+				if p1response.IsValid() {
+					if r.waitForSyncMsg == p1response.Title {
+						isP1Ready = true
+						logger.Info.Println("Игрок 1 Готов")
+					} else {
+						logger.Error.Println("r.startMatch(), p1response.Title, expected \"Ready\", got ", p1response.Title)
+					}
+
+				}
+			}
+		case p2response := <-p2Chan:
+			{
+				if p2response.IsValid() {
+					if r.waitForSyncMsg == p2response.Title {
+						isP2Ready = true
+						logger.Info.Println("Игрок 2 готов")
+					} else {
+						logger.Error.Println("r.startMatch(), p1response.Title, expected \"Ready\", got ", p2response.Title)
+					}
+
+				}
+			}
+		}
+	}
+
+	logger.Info.Println("Игрокам Отправлены StartGame")
+	ResponsesQueue <- MessageWrapper{&r.p1, messge.Message{Title: messge.StartGame, Payload: nil}}
+	ResponsesQueue <- MessageWrapper{&r.p2, messge.Message{Title: messge.StartGame, Payload: nil}}
+
+	r.waitForSyncMsg = "GoTo"
+	r.active = &r.p1
+
+	logger.Info.Println("Ход игрока 1, ожидание команды GoTo")
+	ResponsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.StartGame, Payload: nil}}
 
 	//Read Messages from Players
 	go func() {
 		for msgP1 := range p1Chan {
 			logger.Info.Println("got message from P1", msgP1)
-			RequestsQueue <- msgP1 //TODO only if msgP1 is valid and (p1 is active or msgP1 is ASYNC)
+			if !msgP1.IsValid() {
+				logger.Error.Println()
+				continue
+			}
+			RequestsQueue <- MessageWrapper{&r.p1, msgP1} //TODO only if msgP1 is valid and (p1 is active or msgP1 is ASYNC)
 		}
 	}()
 
 	go func() {
 		for msgP2 := range p2Chan {
 			logger.Info.Println("got message from P2", msgP2)
-			RequestsQueue <- msgP2 //TODO only if msgP2 is valid and (p2 is active or msgP2 is ASYNC)
+			if !msgP2.IsValid() {
+				logger.Error.Println()
+				continue
+			}
+			RequestsQueue <- MessageWrapper{&r.p2, msgP2} //TODO only if msgP2 is valid and (p2 is active or msgP2 is ASYNC)
 		}
 	}()
 
 	go func() {
-		for {
-			for serverResponse := range ResponsesQueue {
-				logger.Info.Println("Got message to Send", serverResponse)
 
-				//TODO Send Message Here
-			}
-			time.Sleep(responseInterval * time.Millisecond)
+		for serverResponse := range ResponsesQueue {
+			logger.Info.Println("Got message to Send", serverResponse)
+
+			//TODO Send Message Here
 		}
+		time.Sleep(responseInterval * time.Millisecond)
 	}()
 
 	go func() {
@@ -144,5 +233,4 @@ func (r *Room) startMatch() {
 	for msg := range RequestsQueue {
 		r.MessageHandlerMux(msg)
 	}
-
 }
