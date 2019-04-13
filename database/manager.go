@@ -18,7 +18,7 @@ const (
 	dbName   = "postgres"
 )
 
-const  (
+const (
 	SQLNoRows   = "sql: no rows in result set"
 	NoUserFound = "БД: Не был найден юзер"
 )
@@ -30,7 +30,7 @@ type dbManager struct {
 }
 
 func init() {
-	fmt.Println("Connection opened")
+
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName)
 
@@ -43,12 +43,14 @@ func init() {
 	if err != nil {
 		logger.Fatal.Print(err.Error())
 	}
+	fmt.Println("DB connection opened")
 
 	db = &dbManager{
 		dataBase: dateBase,
 	}
 
 	closer.Bind(closeConnection)
+
 }
 
 func closeConnection() {
@@ -56,7 +58,7 @@ func closeConnection() {
 	if err != nil {
 		logger.Fatal.Print(err.Error())
 	}
-	fmt.Println("Connection closed")
+	fmt.Println("DB connection closed")
 }
 
 func GetInstance() *dbManager {
@@ -168,13 +170,11 @@ func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
 
 	_, err = db.dataBase.Exec(
 		`UPDATE public.users 
-			SET email = CASE
-				WHEN $1 = '' THEN email ELSE $1 END,
-			    nickname = CASE
-				WHEN $2 = '' THEN nickname ELSE $2 END,
+			SET nickname = CASE
+				WHEN $1 = '' THEN nickname ELSE $1 END,
 			    avatarpath = CASE
-				WHEN $3 = '' THEN avatarpath ELSE $3 END
-			WHERE id = $4 `, user.Email, user.Nickname, user.AvatarPath, userID)
+				WHEN $2 = '' THEN avatarpath ELSE $2 END
+			WHERE id = $3`, user.Nickname, user.AvatarPath, userID)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 		return
@@ -290,7 +290,7 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	return
 }
 
-func (db *dbManager) GetPacksOfQuestions(theme string) (packs map[string][]models.Question, err error) {
+func (db *dbManager) GetPacksOfQuestions() (packs []models.Pack, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -304,20 +304,72 @@ func (db *dbManager) GetPacksOfQuestions(theme string) (packs map[string][]model
 	}()
 
 	rows, err := db.dataBase.Query(
-		`SELECT * FROM public.question WHERE pack_id = 
-        (SELECT DISTINCT ON (theme) id FROM public.question_pack ORDER BY theme, random() LIMIT 10 )`, theme)
+		`SELECT * FROM 
+               (SELECT DISTINCT ON (theme) * FROM public.question_pack ORDER BY theme) AS qp
+				ORDER BY random() LIMIT 10`)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 		return
 	}
+
+	var pack models.Pack
 	for rows.Next() {
 
-		var question models.Question
-		err = rows.Scan(&question.ID, &question.Answers, &question.Correct, &question.Text, &question.PackID, &question.Theme)
+		err = rows.Scan(&pack.ID, &pack.Theme)
+		if err != nil {
+			return
+		}
 
-		pack := packs[question.Theme]
-		pack = append(pack, question)
-		packs[question.Theme] = pack
+		packs = append(packs, pack)
+	}
+	err = rows.Err()
+	if err != nil {
+		return
+	}
+
+	err = rows.Close()
+	if err != nil {
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
+	return
+}
+
+func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			tx.Rollback()
+		}
+	}()
+
+	//strOfIds := strings.Trim(strings.Replace(fmt.Sprint(ids), " ", ",", -1), "[]")
+
+	rows, err := db.dataBase.Query(
+		`SELECT * FROM public.question WHERE pack_id = ANY ($1)`, pq.Array(ids))
+	if _err, ok := err.(*pq.Error); ok {
+		logger.Error.Print(_err.Error())
+		return
+	}
+
+	var question models.Question
+	for rows.Next() {
+		err = rows.Scan(&question.ID, pq.Array(&question.Answers), &question.Correct, &question.Text, &question.PackID)
+		if err != nil {
+			return
+		}
+
+		questions = append(questions, question)
 	}
 	err = rows.Err()
 	if err != nil {
@@ -379,8 +431,8 @@ func (db *dbManager) AddQuestion(question models.Question) (err error) {
 	}()
 
 	_, err = db.dataBase.Exec(
-		`INSERT INTO public.question (answers, correct, text, pack_id, pack_theme)
-			  VALUES ($1, $2, $3, $4, $5)`, pq.Array(question.Answers), question.Correct, question.Text, question.PackID, question.Theme)
+		`INSERT INTO public.question (answers, correct, text, pack_id)
+			  VALUES ($1, $2, $3, $4)`, pq.Array(question.Answers), question.Correct, question.Text, question.PackID)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error.Print(_err.Error())
 		return

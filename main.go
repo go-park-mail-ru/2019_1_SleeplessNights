@@ -15,9 +15,6 @@ func main() {
 	//TODO DELETE DATA CREATOR
 
 	defer closer.Close()
-
-	logger.Info.Printf("\nSuccessfully connected to database on: %s", "...") //TODO PORT
-
 	faker.CreateFakeData(10)
 	faker.CreateFakePacks()
 

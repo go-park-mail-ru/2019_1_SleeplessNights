@@ -231,18 +231,14 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		}
 	}
 
-	user, err = database.GetInstance().GetUserViaEmail("second@mail.com")
+	user, err = database.GetInstance().GetUserViaID(1)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	if user.Email != newEmail {
-		t.Errorf("\nDB returned wrong email:\ngot %v\nwant %v\n",
-			user.Email, newEmail)
-	}
 	if user.Nickname != newNickname {
 		t.Errorf("\nDB returned wrong nickname:\ngot %v\nwant %v\n",
-			user.Email, newEmail)
+			user.Email, newNickname)
 	}
 
 	err = database.GetInstance().CleanerDBForTests()

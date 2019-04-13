@@ -37,11 +37,10 @@ ALTER TABLE ONLY public.question_pack
 CREATE TABLE question
 (
   id         BIGSERIAL    NOT NULL,
-  answers    TEXT[]       NOT NULL,
+  answers    VARCHAR(100)[]       NOT NULL,
   correct    INTEGER      NOT NULL,
   text       TEXT         NOT NULL,
-  pack_id    BIGINT       NOT NULL,
-  pack_theme VARCHAR(100) NOT NULL
+  pack_id    BIGINT       NOT NULL
 );
 
 ALTER TABLE ONLY public.question

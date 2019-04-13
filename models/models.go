@@ -22,10 +22,9 @@ type Question struct {
 	Correct int
 	Text    string
 	PackID  uint
-	Theme   string
 }
 
 type Pack struct {
-	Question []Question
-	Theme    string
+	ID    uint
+	Theme string
 }

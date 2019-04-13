@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"github.com/xlab/closer"
