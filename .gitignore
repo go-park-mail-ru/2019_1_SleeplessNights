@@ -1,4 +1,5 @@
 secret
+handlers/secret
 test.html
 server.log
 .idea
