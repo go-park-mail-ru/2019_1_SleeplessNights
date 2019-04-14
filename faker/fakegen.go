@@ -3,7 +3,7 @@ package faker
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/manveru/faker"
 	"math/rand"
@@ -16,17 +16,23 @@ const (
 	NumberOfAnswersInOneQuestion = 4
 )
 
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("Faker")
+}
+
 // Fills Users Map with user data
 func CreateFakeData(quantity int) {
 	fake, err := faker.New("en")
 	if err != nil {
-		logger.Fatal.Println(err.Error())
+		logger.Fatal(err.Error())
 		return
 	}
 	for i := 1; i <= quantity; i++ {
 		salt, err := auth.MakeSalt()
 		if err != nil {
-			logger.Error.Println(err.Error())
+			logger.Error(err.Error())
 			continue
 		}
 
@@ -52,7 +58,7 @@ func CreateFakeData(quantity int) {
 func CreateFakePacks() {
 	fake, err := faker.New("en")
 	if err != nil {
-		logger.Fatal.Println(err.Error())
+		logger.Fatal(err.Error())
 		return
 	}
 	themes := []string{
@@ -86,13 +92,13 @@ func CreateFakePacks() {
 
 				err := database.GetInstance().AddQuestion(question)
 				if err != nil {
-					logger.Error.Println(err.Error())
+					logger.Error(err.Error())
 					return
 				}
 			}
 			err := database.GetInstance().AddQuestionPack(theme)
 			if err != nil {
-				logger.Error.Println(err.Error())
+				logger.Error(err.Error())
 				return
 			}
 			packID++

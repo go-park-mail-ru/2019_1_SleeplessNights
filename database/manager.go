@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/lib/pq"
 	"github.com/xlab/closer"
@@ -18,6 +18,12 @@ const (
 )
 
 var db *dbManager
+
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("DB")
+}
 
 type dbManager struct {
 	dataBase *sql.DB
@@ -34,19 +40,19 @@ type dbConfig struct {
 func loadConfiguration(file string) (psqlInfo string) {
 	configFile, err := os.Open(file)
 	if err != nil {
-		logger.Error.Print(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	var config dbConfig
 	jsonParser := json.NewDecoder(configFile)
 	err = jsonParser.Decode(&config)
 	if err != nil {
-		logger.Error.Print(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	err = configFile.Close()
 	if err != nil {
-		logger.Error.Print(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -60,12 +66,12 @@ func init() {
 
 	dateBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		logger.Fatal.Print(err.Error())
+		logger.Fatal(err.Error())
 	}
 
 	err = dateBase.Ping()
 	if err != nil {
-		logger.Fatal.Print(err.Error())
+		logger.Fatal(err.Error())
 	}
 	fmt.Println("DB connection opened")
 
@@ -80,7 +86,7 @@ func init() {
 func closeConnection() {
 	err := db.dataBase.Close()
 	if err != nil {
-		logger.Fatal.Print(err.Error())
+		logger.Fatal(err.Error())
 	}
 	fmt.Println("DB connection closed")
 }
@@ -167,7 +173,7 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		user.Email, user.Password, user.Salt, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 
@@ -200,7 +206,7 @@ func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
 				WHEN $2 = '' THEN avatarpath ELSE $2 END
 			WHERE id = $3`, user.Nickname, user.AvatarPath, userID)
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 
@@ -255,7 +261,7 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.users ORDER BY won DESC`)
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 
@@ -302,7 +308,7 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 
 	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users, public.question, public.question_pack RESTART IDENTITY`)
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 
@@ -332,7 +338,7 @@ func (db *dbManager) GetPacksOfQuestions() (packs []models.Pack, err error) {
                (SELECT DISTINCT ON (theme) * FROM public.question_pack ORDER BY theme) AS qp
 				ORDER BY random() LIMIT 10`)
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 
@@ -382,7 +388,7 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.question WHERE pack_id = ANY ($1)`, pq.Array(ids))
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 
@@ -429,7 +435,7 @@ func (db *dbManager) AddQuestionPack(theme string) (err error) {
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 
@@ -458,7 +464,7 @@ func (db *dbManager) AddQuestion(question models.Question) (err error) {
 		`INSERT INTO public.question (answers, correct, text, pack_id)
 			  VALUES ($1, $2, $3, $4)`, pq.Array(question.Answers), question.Correct, question.Text, question.PackID)
 	if _err, ok := err.(*pq.Error); ok {
-		logger.Error.Print(_err.Error())
+		logger.Error(_err.Error())
 		return
 	}
 

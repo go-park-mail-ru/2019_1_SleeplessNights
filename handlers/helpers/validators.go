@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"mime/multipart"
 	"net/http"
@@ -16,6 +16,12 @@ const (
 	MaxPhotoSize = 2 * 1024 * 1024
 )
 
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("Validator")
+}
+
 var avatarTypeWhiteList map[string]struct{}
 
 func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, err error) {
@@ -23,7 +29,7 @@ func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, err 
 
 	err = validateNickname(newNickname, &requestErrors)
 	if err != nil {
-		logger.Error.Println("Failed to update profile:", err)
+		logger.Error("Failed to update profile:", err)
 		return
 	}
 
@@ -32,7 +38,7 @@ func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, err 
 
 	err = validateEmail(newEmail, &requestErrors)
 	if err != nil {
-		logger.Error.Println("Failed to update profile:", err)
+		logger.Error("Failed to update profile:", err)
 		return
 	}
 
@@ -40,7 +46,7 @@ func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, err 
 
 	err = validateAvatar(avatar, &requestErrors)
 	if err != nil {
-		logger.Error.Println("Failed to update profile:", err)
+		logger.Error("Failed to update profile:", err)
 		return
 	}
 	return requestErrors, nil

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"net/http"
 )
@@ -16,6 +16,12 @@ const (
 	//TODO FIX CORS HEADERS
 	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"
 )
+
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("Middleware")
+}
 
 type AuthHandler func(user models.User, w http.ResponseWriter, r *http.Request)
 
@@ -38,7 +44,7 @@ func MiddlewareBasicHeaders(next http.Handler) http.Handler {
 
 func MiddlewareLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Info.Println("Have some request on", r.URL)
+		logger.Info("Have some request on", r.URL)
 		next.ServeHTTP(w, r)
 	})
 }
