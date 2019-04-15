@@ -104,7 +104,7 @@ func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -134,7 +134,7 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -164,7 +164,7 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -172,8 +172,7 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 		`INSERT INTO public.users (email, password, salt, won, lost, playtime, nickname, avatarpath)
 			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		user.Email, user.Password, user.Salt, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
@@ -194,7 +193,7 @@ func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -205,8 +204,7 @@ func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
 			    avatarpath = CASE
 				WHEN $2 = '' THEN avatarpath ELSE $2 END
 			WHERE id = $3`, user.Nickname, user.AvatarPath, userID)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
@@ -227,7 +225,7 @@ func (db *dbManager) GetLenUsers() (len int, err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -254,14 +252,13 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.users ORDER BY won DESC`)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
@@ -302,13 +299,12 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
 	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users, public.question, public.question_pack RESTART IDENTITY`)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
@@ -329,7 +325,7 @@ func (db *dbManager) GetPacksOfQuestions() (packs []models.Pack, err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -337,8 +333,7 @@ func (db *dbManager) GetPacksOfQuestions() (packs []models.Pack, err error) {
 		`SELECT * FROM 
                (SELECT DISTINCT ON (theme) * FROM public.question_pack ORDER BY theme) AS qp
 				ORDER BY random() LIMIT 10`)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
@@ -379,16 +374,13 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
-	//strOfIds := strings.Trim(strings.Replace(fmt.Sprint(ids), " ", ",", -1), "[]")
-
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.question WHERE pack_id = ANY ($1)`, pq.Array(ids))
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
@@ -428,14 +420,13 @@ func (db *dbManager) AddQuestionPack(theme string) (err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
@@ -456,15 +447,14 @@ func (db *dbManager) AddQuestion(question models.Question) (err error) {
 	txOK := false
 	defer func() {
 		if !txOK {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question (answers, correct, text, pack_id)
 			  VALUES ($1, $2, $3, $4)`, pq.Array(question.Answers), question.Correct, question.Text, question.PackID)
-	if _err, ok := err.(*pq.Error); ok {
-		logger.Error(_err.Error())
+	if err != nil {
 		return
 	}
 
