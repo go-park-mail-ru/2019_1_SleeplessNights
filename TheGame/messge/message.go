@@ -87,6 +87,7 @@ type AnswerResult struct {
 
 //Убрать валидации для поля гейм филд, Зделать валидаторы для каждого уровня игры
 func (m *Message) IsValid() bool {
+
 	switch m.Title {
 	case Ready:
 		{
@@ -99,6 +100,7 @@ func (m *Message) IsValid() bool {
 				logger.Error("Message validator, Type=GoTo, error:interface->MoveRequest casting error")
 				return false
 			}
+			logger.Info("Received Message is Valid")
 			return true
 
 		}

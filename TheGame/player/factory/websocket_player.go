@@ -27,6 +27,7 @@ func (wsPlayer *websocketPlayer) StartListen() {
 			// то-то типа "от кигрока пришло битое сообщение"
 			//TODO write custom message
 		}
+		logger.Info("Got from connection", msg)
 		wsPlayer.in <- msg
 	}
 }

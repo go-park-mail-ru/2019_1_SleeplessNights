@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/gorilla/websocket"
@@ -49,6 +50,7 @@ func (pf *playerFactory) BuildWebsocketPlayer(conn *websocket.Conn, uid uint64) 
 		id:   atomic.AddUint64(&pf.idSource, 1), //Атомик необходим для обеспечения потокобезопасности
 		conn: conn,
 		uid:  uid,
+		in:   make(chan messge.Message, 1),
 	}
 	go wsPlayer.StartListen()
 	logger.Info("wsPlayer started listening", uid)

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
@@ -32,6 +34,14 @@ func main() {
 	defer closer.Close()
 	faker.CreateFakeData(10)
 	faker.CreateFakePacks()
+
+	user, _ := database.GetInstance().GetUserViaID(1)
+	cookie, _ := auth.MakeSession(user)
+	logger.Info(cookie.Value)
+	user, _ = database.GetInstance().GetUserViaID(2)
+	cookie, _ = auth.MakeSession(user)
+	logger.Info(cookie.Value)
+
 
 	PORT := os.Getenv("PORT")
 	if PORT == "" {

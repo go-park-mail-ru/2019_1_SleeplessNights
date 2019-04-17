@@ -38,11 +38,11 @@ type MessageWrapper struct {
 
 //При таком обьявлении каналы будут общими для всей программы- это плохо, пихнуть их в структуру комнаты
 
-var RequestsQueue chan MessageWrapper
-var ResponsesQueue chan MessageWrapper
 
 type Room struct {
 	//Channel to exchange event messages between Room and GameField
+	requestsQueue chan MessageWrapper
+	responsesQueue chan MessageWrapper
 	p1             player.Player
 	p2             player.Player
 	p1Status       int
@@ -60,6 +60,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Main")
+
 }
 
 func (r *Room) TryJoin(p player.Player) (success bool) {
@@ -97,7 +98,7 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 }
 
 func (r *Room) buildEnv() {
-	packs, err := database.GetInstance().GetPacksOfQuestions(6)
+	packs, err := database.GetInstance().GetPacksOfQuestions(10)
 	if err != nil {
 		logger.Error("Error occurred while fetching question packs from DB:", err)
 		//TODO deal with error, maybe kill the room
@@ -114,7 +115,7 @@ func (r *Room) buildEnv() {
 	}
 	var localQuestions [game_field.QuestionsNum]local.Question
 	var lq local.Question
-	for i := range localQuestions {
+	for i := 0; i < len(localQuestions); i++  {
 		questionJSON, err := json.Marshal(questions[i])
 		if err != nil {
 			logger.Error("Error occurred while marshalling question into JSON:", err)
@@ -194,7 +195,9 @@ func (r *Room) startMatch() {
 	// Call Prepare Room
 
 	logger.Infof("StartMatch : Game process has started p1: %d, p2: %d", r.p1.UID(), r.p2.UID())
-	r.buildEnv()
+
+	r.requestsQueue = make(chan MessageWrapper, channelCapacity)
+	r.responsesQueue = make(chan MessageWrapper, channelCapacity)
 
 	p1Chan := r.p1.Subscribe()
 	p2Chan := r.p2.Subscribe()
@@ -204,26 +207,27 @@ func (r *Room) startMatch() {
 		logger.Error("Failed to notify all players:", err)
 	}
 	logger.Info("Игрокам Отправлены StartGame")
-
+	r.waitForSyncMsg=messge.Ready
 	//Read Messages from Players
 	//Moved message receive conditions to Requests handler
+
 	go func() {
 		for msgP1 := range p1Chan {
 			logger.Info("got message from P1", msgP1)
-			RequestsQueue <- MessageWrapper{&r.p1, msgP1}
+			r.requestsQueue <- MessageWrapper{&r.p1, msgP1}
 		}
 	}()
 
 	go func() {
 		for msgP2 := range p2Chan {
 			logger.Info("got message from P2", msgP2)
-			RequestsQueue <- MessageWrapper{&r.p2, msgP2}
+			r.requestsQueue <- MessageWrapper{&r.p2, msgP2}
 		}
 	}()
 	//Channel to Write Server messages to the player1/player2
 
 	go func() {
-		for serverResponse := range ResponsesQueue {
+		for serverResponse := range r.responsesQueue {
 			logger.Info("Got message to Send", serverResponse)
 			err := (*serverResponse.player).Send(serverResponse.msg)
 			if err != nil {
@@ -234,32 +238,43 @@ func (r *Room) startMatch() {
 	}()
 
 	go func() {
-		for msg := range RequestsQueue {
+		for msg := range r.requestsQueue {
 			//Проверка структуры сообщения
+			logger.Info("Got Message from client")
 			if !msg.msg.IsValid() {
 				logger.Error("Message to send has invalid structure")
 				continue
 			}
 
-			if r.isSyncValid(msg) {
+			if !r.isSyncValid(msg) {
 				logger.Warningf("Got message of type %s from player %d, expected %s from player %d",
 					msg.msg.Title, msg.player, r.waitForSyncMsg, r.active)
 				continue
 			}
-
+			logger.Info("Message entered mux")
 			r.MessageHandlerMux(msg)
 
 		}
 	}()
+
+	//r.buildEnv()
 }
 
 //Проверка Уместности сообщения ( на уровне комнаты)
 func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	r.mu.Lock()
-	if wm.player != r.active {
+	if wm.msg.Title==messge.Leave{
+		isValid=true
+		r.mu.Unlock()
+		return
+	}
+
+	if wm.player != r.active && (wm.msg.Title != messge.Ready) {
+		logger.Error("isSync Player addr error")
 		isValid = false
 	}
 	if r.waitForSyncMsg != wm.msg.Title {
+		logger.Error("isSync title error")
 		isValid = false
 	}
 	isValid = true

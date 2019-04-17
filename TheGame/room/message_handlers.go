@@ -48,13 +48,13 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 
 		logger.Info("Ход игрока 1, ожидание команды GoTo")
 
-		ResponsesQueue <- MessageWrapper{&r.p1, messge.Message{Title: messge.YourTurn, Payload: nil}}
-		ResponsesQueue <- MessageWrapper{&r.p2, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{&r.p1, messge.Message{Title: messge.YourTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{&r.p2, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
 		// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
 		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		ResponsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
 
 	}
 
@@ -88,8 +88,8 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	for _, e := range eventSlice {
 		if e.Etype == event.Info {
 			data := e.Edata.(*event.Question)
-			ResponsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourQuestion, Payload: data}}
-			ResponsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.EnemyQuestion, Payload: data}}
+			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourQuestion, Payload: data}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.EnemyQuestion, Payload: data}}
 
 		}
 	}
@@ -104,15 +104,15 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	r.mu.Lock()
 	answerId := m.msg.Payload.(*messge.Answer).AnswerId
 	if !r.field.CheckAnswer(answerId) {
-		ResponsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
 	}
-	ResponsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
 
 	//Смена хода после ответа игрока
-	ResponsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
 	r.changeTurn()
 	r.waitForSyncMsg = "GoTo"
-	ResponsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourTurn, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourTurn, Payload: nil}}
 
 	r.mu.Unlock()
 	return true
