@@ -17,12 +17,11 @@ const (
 	InvalidNicknameErrorMsg     = "Никнейм может состоять только из букв латинского алфавита и символов '-' и '_'"
 	NicknameIsTooSmallErrorMsg  = "Никнейм не может быть короче 3 символов"
 	NicknameIsTooLongErrorMsg   = "Никнейм не может быть длиннее 16 символов"
-
+	AvatarExtensionError        = "Файл имеет неподдерживаемый формат"
+	AvatarIsMissingError        = "Файл аватара не содержит данных"
+	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 10МБайт)"
 )
 
-const (
-	NoTokenOwner      ="error: There are no token's owner in database"
-)
 
 type ErrorSet []string
 type errorResponse struct {
@@ -30,10 +29,11 @@ type errorResponse struct {
 	Password  string   `json:"password, omitempty"`
 	Password2 string   `json:"password2, omitempty"`
 	Nickname  string   `json:"nickname, omitempty"`
+	Avatar    string   `json:"avatar, omitempty"`
 	Error     []string `json:"error, omitempty"`
 }
 
-func MarshalToJSON(errSet ErrorSet)([]byte, error) {
+func MarshalToJSON(errSet ErrorSet) ([]byte, error) {
 	var responseBody errorResponse
 	for _, err := range errSet {
 		switch err {
@@ -57,6 +57,12 @@ func MarshalToJSON(errSet ErrorSet)([]byte, error) {
 			responseBody.Nickname = err
 		case NicknameIsTooLongErrorMsg:
 			responseBody.Nickname = err
+		case AvatarExtensionError:
+			responseBody.Avatar = err
+		case AvatarIsMissingError:
+			responseBody.Avatar = err
+		case AvatarFileIsTooBig:
+			responseBody.Avatar = err
 		default:
 			responseBody.Error = append(responseBody.Error, err)
 		}

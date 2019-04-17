@@ -9,19 +9,21 @@ import (
 )
 
 const (
-	AvatarPrefix = "static/img/"
+	AvatarPrefix = "/static/img/"
 )
 
 func ImgHandler(w http.ResponseWriter, r *http.Request) {
+
 	vars := mux.Vars(r)
 	pathToFile, found := vars["path"]
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	path := AvatarPrefix + pathToFile
+	path := os.Getenv("BASEPATH") + AvatarPrefix + pathToFile
+
 	_, err := os.Stat(path)
-	if 	err !=nil {
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

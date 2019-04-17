@@ -2,15 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"math"
 	"net/http"
-	"sort"
 	"strconv"
 )
 
 const (
-	pagesPerList = 4
+	PagesPerList = 4
 )
 
 type LeaderBoard struct {
@@ -24,7 +25,7 @@ func Paginate(data []interface{}, skip int) []interface{} {
 	if skip > len(data) {
 		skip = len(data)
 	}
-	end := skip + pagesPerList
+	end := skip + PagesPerList
 	if end > len(data) {
 		end = len(data)
 	}
@@ -36,32 +37,40 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "1"
 	}
-	usersTotal := len(models.Users)
-
-	PageNum, err := strconv.Atoi(page)
+	usersTotal, err := database.GetInstance().GetLenUsers()
 	if err != nil {
-		w.WriteHeader(404)
+		helpers.Return500(&w, err)
 		return
 	}
 
-	if PageNum > usersTotal/pagesPerList || PageNum < 1 {
+	PageNum, err := strconv.Atoi(page)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	pagesTotal := int(math.Ceil(float64(usersTotal) / PagesPerList))
+	if PageNum > pagesTotal || PageNum < 1 {
 		helpers.Return400(&w, helpers.ErrorSet{`Invalid "Page" Value`})
 		return
 	}
 
 	userSlice := make([]interface{}, 0, usersTotal)
-	for _, v := range models.Users {
+	users, err := database.GetInstance().GetUsers()
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+	for _, v := range users {
 		userSlice = append(userSlice, v)
 	}
 
-	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })
-	paginatedSlice := Paginate(userSlice, int(pagesPerList*(PageNum-1)))
+	paginatedSlice := Paginate(userSlice, int(PagesPerList*(PageNum-1)))
 	var pageSlice []models.User
 	for _, user := range paginatedSlice {
 		pageSlice = append(pageSlice, user.(models.User))
 	}
 
-	ResponseData, _ := json.Marshal(LeaderBoard{int(usersTotal / 4), int(PageNum), pageSlice})
+	ResponseData, _ := json.Marshal(LeaderBoard{int(math.Ceil(float64(usersTotal / PagesPerList))), int(PageNum), pageSlice})
 	_, err = w.Write(ResponseData)
 	if err != nil {
 		helpers.Return500(&w, err)

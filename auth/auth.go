@@ -1,4 +1,4 @@
-package helpers
+package auth
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"log"
 	"math/rand"
@@ -16,14 +17,16 @@ import (
 )
 
 const (
-	saltLen = 16
+	saltLen        = 16
 	sessionLifeLen = 4 * time.Hour
+	NoTokenOwner = "error: There are no token's owner in database"
 )
 
 var secret []byte
 
 func init() {
-	secretFile, err := os.Open("secret")
+
+	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {
@@ -39,26 +42,26 @@ func init() {
 	}
 }
 
-func MakeSalt()(salt []byte, err error) {
+func MakeSalt() (salt []byte, err error) {
 	salt = make([]byte, saltLen)
-	_, err = rand.Read(salt)//Заполняем слайс случайными значениями по всей его длине
+	_, err = rand.Read(salt) //Заполняем слайс случайными значениями по всей его длине
 	return
 }
 
-func MakePasswordHash(password string, salt []byte)(hash []byte){
-	saltedPassword:= bytes.Join([][]byte {[]byte(password), salt}, nil)
-	hashedPassword := sha512.Sum512(saltedPassword)//sha512 возвращает массив, а слайс можно взять только по addressable массиву
+func MakePasswordHash(password string, salt []byte) (hash []byte) {
+	saltedPassword := bytes.Join([][]byte{[]byte(password), salt}, nil)
+	hashedPassword := sha512.Sum512(saltedPassword) //sha512 возвращает массив, а слайс можно взять только по addressable массиву
 	hash = hashedPassword[0:]
 	return
 }
 
-func MakeSession(user models.User)(sessionCookie http.Cookie, err error){
+func MakeSession(user models.User) (sessionCookie http.Cookie, err error) {
 	signer := jwt.NewHMAC(jwt.SHA512, secret)
 	header := jwt.Header{}
 	expiresAt := time.Now().Add(sessionLifeLen)
 	payload := jwt.Payload{
 		ExpirationTime: expiresAt.Unix(),
-		JWTID: strconv.FormatUint(uint64(user.ID), 10),
+		JWTID:          strconv.FormatUint(uint64(user.ID), 10),
 	}
 	token, err := jwt.Sign(header, payload, signer)
 	if err != nil {
@@ -75,7 +78,7 @@ func MakeSession(user models.User)(sessionCookie http.Cookie, err error){
 	return
 }
 
-func Authorize(sessionToken string)(user models.User, err error){
+func Authorize(sessionToken string) (user models.User, err error) {
 	rawToken, err := jwt.Parse([]byte(sessionToken))
 	if err != nil {
 		return
@@ -99,9 +102,13 @@ func Authorize(sessionToken string)(user models.User, err error){
 	if err != nil {
 		return
 	}
-	user, found := models.Users[models.UserKeyPairs[uint(userID)]]
-	if !found {
-		return user, errors.New(NoTokenOwner)
+	user, err = database.GetInstance().GetUserViaID(uint(userID))
+	if err != nil {
+		if err.Error() == database.NoUserFound {
+			return user, errors.New(NoTokenOwner)
+		} else {
+			return
+		}
 	}
 	return
 }

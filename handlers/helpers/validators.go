@@ -2,7 +2,11 @@ package helpers
 
 import (
 	"bytes"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
+	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strings"
@@ -12,7 +16,43 @@ const (
 	MaxPhotoSize = 2 * 1024 * 1024
 )
 
-func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, err error) {
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("Validator")
+}
+
+var avatarTypeWhiteList map[string]struct{}
+
+func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, err error) {
+	newNickname := r.Form.Get("nickname")
+
+	err = validateNickname(newNickname, &requestErrors)
+	if err != nil {
+		logger.Error("Failed to update profile:", err)
+		return
+	}
+
+	newEmail := strings.ToLower(r.Form.Get("email"))
+	r.Form.Set("email", newEmail)
+
+	err = validateEmail(newEmail, &requestErrors)
+	if err != nil {
+		logger.Error("Failed to update profile:", err)
+		return
+	}
+
+	avatar := r.MultipartForm.File["avatar"][0]
+
+	err = validateAvatar(avatar, &requestErrors)
+	if err != nil {
+		logger.Error("Failed to update profile:", err)
+		return
+	}
+	return requestErrors, nil
+}
+
+func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
 	err = validateEmail(email, &requestErrors)
@@ -37,16 +77,18 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, isValid b
 		return
 	}
 
-	_, userExist := models.Users[r.Form.Get("email")]
-	if userExist {
-		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
+	user, err := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
+	if err != nil && err.Error() != database.NoUserFound {
 		return
 	}
+	if user.ID != 0 {
+		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
+	}
 
-	return requestErrors, len(requestErrors) == 0, nil
+	return requestErrors, nil
 }
 
-func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool, user models.User, err error) {
+func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.User, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
 	err = validateEmail(email, &requestErrors)
@@ -60,18 +102,22 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, isValid bool,
 		return
 	}
 
-	user, found := models.Users[email]
-	if !found {
-		requestErrors = append(requestErrors, MissedUserErrorMsg)
-		return requestErrors, false, user, nil
+	user, err = database.GetInstance().GetUserViaEmail(email)
+	if err != nil {
+		if err.Error() == database.NoUserFound {
+			requestErrors = append(requestErrors, MissedUserErrorMsg)
+			return
+		} else {
+			return
+		}
 	}
 
-	hashedPassword := MakePasswordHash(password, user.Salt)
+	hashedPassword := auth.MakePasswordHash(password, user.Salt)
 	if bytes.Compare(hashedPassword, user.Password) != 0 {
 		requestErrors = append(requestErrors, WrongPassword)
 	}
 
-	return requestErrors, len(requestErrors) == 0, user, nil
+	return requestErrors, user, nil
 }
 
 func validateEmail(email string, requestErrors *ErrorSet) (err error) {
@@ -105,4 +151,29 @@ func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
 		*requestErrors = append(*requestErrors, NicknameIsTooLongErrorMsg)
 	}
 	return
+}
+
+func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) (err error) {
+
+	if avatar.Size == 0 {
+		*requestErrors = append(*requestErrors, AvatarIsMissingError)
+	}
+	if avatar.Size > MaxPhotoSize {
+		*requestErrors = append(*requestErrors, AvatarFileIsTooBig)
+	}
+	contentType := avatar.Header.Get("content-type")
+	if _, found := avatarTypeWhiteList[contentType]; !found {
+		*requestErrors = append(*requestErrors, AvatarExtensionError)
+	}
+
+	return nil
+}
+func init() {
+	avatarTypeWhiteList = make(map[string]struct{})
+	avatarTypeWhiteList["image/gif"] = struct{}{}
+	avatarTypeWhiteList["image/png"] = struct{}{}
+	avatarTypeWhiteList["image/jpeg"] = struct{}{}
+	avatarTypeWhiteList["image/bmp"] = struct{}{}
+	avatarTypeWhiteList["image/tiff"] = struct{}{}
+	avatarTypeWhiteList["image/pjpeg"] = struct{}{}
 }
