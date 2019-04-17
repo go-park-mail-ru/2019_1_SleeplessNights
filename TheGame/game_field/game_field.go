@@ -6,15 +6,21 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/questions"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"math"
 	"math/rand"
 	"time"
 )
 
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("GameField")
+}
+
 const (
 	fieldSize    = 8
-	questionsNum = 60
+	QuestionsNum = 60
 )
 
 var prizePos []pair
@@ -69,12 +75,12 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
-func (gf *GameField) build(qArray [questionsNum]questions.Question) {
+func (gf *GameField) Build(qArray [QuestionsNum]questions.Question) {
 	qSlice := qArray[:]
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
 			if isPrizePosition(rowIdx, colIdx) {
-				gf.field[rowIdx][colIdx] = gameCell{true, nil}
+				gf.field[rowIdx][colIdx] = gameCell{true,nil}
 			} else {
 				rand.Seed(time.Now().UnixNano()) //TODO еспли я правильно помню, то seed нужно скормить 1 раз, а не в цикле. Погугли, пожалуйста
 				index := rand.Intn(len(qSlice))
@@ -183,7 +189,7 @@ func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err erro
 	}
 	e, err = gf.tryMovePlayer(&gf.p1, nextX, nextY)
 	if err != nil {
-		logger.Error.Println("TryMovePlayer1, tryMovePlayer returned error: %s", err)
+		logger.Error("TryMovePlayer1, tryMovePlayer returned error:", err)
 		return
 	}
 	return
@@ -199,7 +205,7 @@ func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err erro
 	}
 	e, err = gf.tryMovePlayer(&gf.p2, nextX, nextY)
 	if err != nil {
-		logger.Error.Println("TryMovePlayer2, tryMovePlayer returned error: %s", err)
+		logger.Error("TryMovePlayer2, tryMovePlayer returned error:", err)
 		return
 	}
 	return
@@ -234,7 +240,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 }
 
 func (gf *GameField) GetQuestionByCell(x, y int) (question questions.Question) {
-	logger.Info.Printf("GetQuestionByCell x:%d,y:%d ", x, y)
+	logger.Infof("GetQuestionByCell x:%d,y:%d ", x, y)
 	question = *(gf.field[y][x].question)
 	return
 }
@@ -244,7 +250,7 @@ func (gf *GameField) validateMoveCoordinates(player *gfPlayer, nextX int, nextY 
 	//Убрать Валидацию поля в GameField
 
 	if nextX > fieldSize || nextY > fieldSize || nextX < 0 || nextY < 0 {
-		logger.Error.Println("Coordinate validator, error:invalid next coordinates")
+		logger.Error("Coordinate validator, error:invalid next coordinates")
 		return false
 	}
 
@@ -253,7 +259,7 @@ func (gf *GameField) validateMoveCoordinates(player *gfPlayer, nextX int, nextY 
 	}
 
 	if math.Abs(float64(player.pos.X-nextX)) > 1 || math.Abs(float64(player.pos.Y-nextY)) > 1 {
-		logger.Error.Printf("Coordinate validator, error: player trie to reach cell %v", nextPos)
+		logger.Error("Coordinate validator, error: player trie to reach cell", nextPos)
 		return false
 	}
 
@@ -262,7 +268,7 @@ func (gf *GameField) validateMoveCoordinates(player *gfPlayer, nextX int, nextY 
 	}
 
 	if (*gf.p1.pos) == nextPos || (*gf.p2.pos) == nextPos {
-		logger.Error.Printf("Desired Position is another's players position p1:%v , p2:%v , desiredPos:%v", gf.p1.pos, gf.p2.pos, nextPos)
+		logger.Errorf("Desired Position is another's players position p1:%v , p2:%v , desiredPos:%v", gf.p1.pos, gf.p2.pos, nextPos)
 		return false
 	}
 
@@ -282,7 +288,7 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 func (gf *GameField) validateAnswerId(answerId int) bool {
 	//Убрать Валидацию поля в GameField
 	if answerId > 3 || answerId < 0 {
-		logger.Error.Println("validateAnswerId, error:AnswerId")
+		logger.Error("validateAnswerId, error:AnswerId")
 		return false
 	}
 	return true

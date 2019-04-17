@@ -1,40 +1,49 @@
 package faker
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"github.com/manveru/faker"
 	"math/rand"
 )
 
 const (
-	FakeUserPassword = "1Q2W3e4r5t6y7u"
+	FakeUserPassword             = "1Q2W3e4r5t6y7u"
+	NumberOfPacks                = 10
+	NumberOfQuestionsInOnePack   = 10
+	NumberOfAnswersInOneQuestion = 4
 )
+
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("Faker")
+}
 
 // Fills Users Map with user data
 func CreateFakeData(quantity int) {
 	fake, err := faker.New("en")
 	if err != nil {
-		logger.Fatal.Println(err)
+		logger.Error(err.Error())
 		return
 	}
 	for i := 1; i <= quantity; i++ {
-		salt, err := helpers.MakeSalt()
+		salt, err := auth.MakeSalt()
 		if err != nil {
-			logger.Error.Println(err)
+			logger.Error(err.Error())
 			continue
 		}
 
 		email := fake.Email()
-		_, found := models.Users[email]
-		if found {
+		_, err = database.GetInstance().GetUserViaEmail(email)
+		if err == nil {
 			continue
 		}
 		user := models.User{
-			ID:       	models.MakeID(),
-			Email:    	email,
-			Password: 	helpers.MakePasswordHash(FakeUserPassword, salt),
+			Email:      email,
+			Password:   auth.MakePasswordHash(FakeUserPassword, salt),
 			Salt:       salt,
 			Won:        uint(rand.Uint32()),
 			Lost:       uint(rand.Uint32()),
@@ -42,8 +51,57 @@ func CreateFakeData(quantity int) {
 			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
-		models.Users[user.Email] = user
-		models.UserKeyPairs[user.ID] = user.Email
+		_ = database.GetInstance().AddUser(user)
+	}
+}
+
+func CreateFakePacks() {
+	fake, err := faker.New("en")
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	themes := []string{
+		"математика",
+		"информатика",
+		"химия",
+		"биология",
+		"физика",
+		"культура",
+		"история",
+		"языки",
+		"философия",
+		"мемология",
 	}
 
+	var packID uint = 1
+	for i := 0; i < NumberOfPacks; i++ {
+		for _, theme := range themes {
+			for i := 0; i < NumberOfQuestionsInOnePack; i++ {
+				var answers []string
+				for j := 0; j < NumberOfAnswersInOneQuestion; j++ {
+					answer := fake.CompanyName()
+					answers = append(answers, answer)
+				}
+				question := models.Question{
+					Answers: answers,
+					Correct: 1,
+					Text:    fake.Paragraph(1, true),
+					PackID:  packID,
+				}
+
+				err := database.GetInstance().AddQuestion(question)
+				if err != nil {
+					logger.Error(err.Error())
+					return
+				}
+			}
+			err := database.GetInstance().AddQuestionPack(theme)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+			packID++
+		}
+	}
 }

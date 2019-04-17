@@ -2,7 +2,7 @@ package factory
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/gorilla/websocket"
 	"sync/atomic"
 )
@@ -14,6 +14,12 @@ import (
 //В ReadMe я написал, что наша фабрика - синглтон
 //Логика такого решения следующая - зачем нам игроки, которые были сделаны в разных местах? Пусть у них будет единый источник
 //Всё это значит, что на весь проект у нас есть ТОЛЬКО ОДНА фабрика игроков
+
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("PlayerFactory")
+}
 
 var factory *playerFactory //Вот она
 //Обратите внимание, что она неэксортируемая, то есть мы не можем из другого пакета напрямую взять это значение
@@ -45,6 +51,6 @@ func (pf *playerFactory) BuildWebsocketPlayer(conn *websocket.Conn, uid uint64) 
 		uid:  uid,
 	}
 	go wsPlayer.StartListen()
-	logger.Info.Println("wsPlayer started listening", uid)
+	logger.Info("wsPlayer started listening", uid)
 	return &wsPlayer
 }

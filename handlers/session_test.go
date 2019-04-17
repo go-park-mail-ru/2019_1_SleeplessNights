@@ -1,9 +1,9 @@
 package handlers_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -21,7 +21,12 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 	faker.CreateFakeData(handlers.UserCounter)
 
-	for _, user := range models.Users {
+	users, err := database.GetInstance().GetUsers()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	for _, user := range users {
+
 		email := user.Email
 		password := faker.FakeUserPassword
 
@@ -52,9 +57,15 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 			}
 		}
 	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
+
 	cases := []TestCaseAuth{
 		TestCaseAuth{
 			number:   1,
@@ -148,13 +159,18 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 			}
 		}
 	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 
 	form := url.Values{}
 	form.Add("WRONG_mail", "test@test.com")
-	form.Add("WRONG_password", "asdasdasdsadasd")
+	form.Add("WRONG_password", "asasdsadasd")
 
 	req := httptest.NewRequest(http.MethodPost, handlers.ApiAuth, nil)
 	req.PostForm = form
@@ -178,5 +194,10 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 			t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
 				response, expected)
 		}
+	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }

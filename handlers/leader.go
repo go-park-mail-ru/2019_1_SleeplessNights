@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"math"
 	"net/http"
-	"sort"
 	"strconv"
 )
 
@@ -37,7 +37,11 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "1"
 	}
-	usersTotal := len(models.Users)
+	usersTotal, err := database.GetInstance().GetLenUsers()
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
 
 	PageNum, err := strconv.Atoi(page)
 	if err != nil {
@@ -51,11 +55,15 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userSlice := make([]interface{}, 0, usersTotal)
-	for _, v := range models.Users {
+	users, err := database.GetInstance().GetUsers()
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+	for _, v := range users {
 		userSlice = append(userSlice, v)
 	}
 
-	sort.Slice(userSlice, func(i, j int) bool { return userSlice[i].(models.User).Won > userSlice[j].(models.User).Won })
 	paginatedSlice := Paginate(userSlice, int(PagesPerList*(PageNum-1)))
 	var pageSlice []models.User
 	for _, user := range paginatedSlice {
