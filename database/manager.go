@@ -386,7 +386,7 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 	//strOfIds := strings.Trim(strings.Replace(fmt.Sprint(ids), " ", ",", -1), "[]")
 
 	rows, err := db.dataBase.Query(
-		`SELECT * FROM public.question WHERE pack_id = ANY ($1)`, pq.Array(ids))
+		`SELECT * FROM public.question WHERE pack_id = ANY ($1) ORDER BY random()`, pq.Array(ids))
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error(_err.Error())
 		return

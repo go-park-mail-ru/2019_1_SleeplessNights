@@ -8,8 +8,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/questions"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"math"
-	"math/rand"
-	"time"
 )
 
 var logger *log.Logger
@@ -77,15 +75,14 @@ func isPrizePosition(x, y int) bool {
 
 func (gf *GameField) Build(qArray [QuestionsNum]questions.Question) {
 	qSlice := qArray[:]
+	index := 0
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
 			if isPrizePosition(rowIdx, colIdx) {
-				gf.field[rowIdx][colIdx] = gameCell{true,nil}
+				gf.field[rowIdx][colIdx] = gameCell{true, nil}
 			} else {
-				rand.Seed(time.Now().UnixNano()) //TODO еспли я правильно помню, то seed нужно скормить 1 раз, а не в цикле. Погугли, пожалуйста
-				index := rand.Intn(len(qSlice))
 				gf.field[rowIdx][colIdx] = gameCell{true, &qSlice[index]}
-				qSlice = append(qSlice[:index], qSlice[index+1:]...)
+				index++
 			}
 		}
 	}
