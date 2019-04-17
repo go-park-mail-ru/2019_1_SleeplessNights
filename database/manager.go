@@ -335,7 +335,7 @@ func (db *dbManager) GetPacksOfQuestions(n int) (packs []models.Pack, err error)
                (SELECT DISTINCT ON (theme) * FROM public.question_pack ORDER BY theme) AS qp
 				ORDER BY random() LIMIT $1`, n)
 	if err != nil {
-		logger.Error(_err.Error())
+		logger.Error(err.Error())
 		return
 	}
 
@@ -383,7 +383,7 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM public.question WHERE pack_id = ANY ($1)`, pq.Array(ids))
 	if err != nil {
-		logger.Error(_err.Error())
+		logger.Error(err.Error())
 		return
 	}
 

@@ -378,7 +378,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
 			status)
 	} else {
-		if status := resp.Code; status != http.StatusUnauthorized {
+		if status := resp.Code; status != http.StatusBadRequest {
 			//Авторизация теперь вынесена в мидлвары и проводится раньше валидации
 			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusBadRequest)
