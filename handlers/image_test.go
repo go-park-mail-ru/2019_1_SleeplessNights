@@ -3,18 +3,20 @@ package handlers_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
 func TestImgHandlerSuccessful(t *testing.T) {
 
 	img := "default_avatar.jpg"
-	path := fmt.Sprintf("%s%s",handlers.Img ,img)
+	path := fmt.Sprintf("%s%s", handlers.Img, img)
 	req := httptest.NewRequest(http.MethodGet, path, nil)
 
 	resp := httptest.NewRecorder()
@@ -32,8 +34,9 @@ func TestImgHandlerSuccessful(t *testing.T) {
 				status, http.StatusOK)
 		}
 
-		expected, err := ioutil.ReadFile(img)
+		expected, err := ioutil.ReadFile(os.Getenv("BASEPATH") + handlers.AvatarPrefix + img)
 		if err != nil {
+			t.Error(err.Error())
 			return
 		}
 
@@ -41,12 +44,17 @@ func TestImgHandlerSuccessful(t *testing.T) {
 			t.Errorf("handler returned unexpected body\n")
 		}
 	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 
 	img := "WRONG_default_avatar.jpg"
-	path := fmt.Sprintf("%s%s",handlers.Img ,img)
+	path := fmt.Sprintf("%s%s", handlers.Img, img)
 	req := httptest.NewRequest(http.MethodGet, path, nil)
 
 	resp := httptest.NewRecorder()
@@ -63,5 +71,10 @@ func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 			t.Errorf("handler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusNotFound)
 		}
+	}
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }
