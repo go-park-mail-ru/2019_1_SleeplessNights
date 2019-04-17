@@ -320,7 +320,7 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	return
 }
 
-func (db *dbManager) GetPacksOfQuestions() (packs []models.Pack, err error) {
+func (db *dbManager) GetPacksOfQuestions(n int) (packs []models.Pack, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -336,7 +336,7 @@ func (db *dbManager) GetPacksOfQuestions() (packs []models.Pack, err error) {
 	rows, err := db.dataBase.Query(
 		`SELECT * FROM 
                (SELECT DISTINCT ON (theme) * FROM public.question_pack ORDER BY theme) AS qp
-				ORDER BY random() LIMIT 10`)
+				ORDER BY random() LIMIT $1`, n)
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error(_err.Error())
 		return
@@ -386,7 +386,7 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 	//strOfIds := strings.Trim(strings.Replace(fmt.Sprint(ids), " ", ",", -1), "[]")
 
 	rows, err := db.dataBase.Query(
-		`SELECT * FROM public.question WHERE pack_id = ANY ($1)`, pq.Array(ids))
+		`SELECT * FROM public.question WHERE pack_id = ANY ($1) ORDER BY random()`, pq.Array(ids))
 	if _err, ok := err.(*pq.Error); ok {
 		logger.Error(_err.Error())
 		return
@@ -431,7 +431,6 @@ func (db *dbManager) AddQuestionPack(theme string) (err error) {
 			tx.Rollback()
 		}
 	}()
-
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
 	if _err, ok := err.(*pq.Error); ok {
