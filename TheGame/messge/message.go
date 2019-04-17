@@ -71,16 +71,15 @@ type Question struct {
 
 //response from client with answer_id
 type Answer struct {
-	PlayerId uint64 `json:"player_id"`
-	AnswerId int    `json:"answer_id"`
+	AnswerId int `json:"answer_id"`
 }
 
 //Response to players answer
 type AnswerResult struct {
-	PlayerId     uint64 `json:"player_id"`
-	AnswerResult bool   `json:"answer_id"`
+	AnswerResult bool `json:"answer_id"`
 }
 
+//Убрать валидации для поля гейм филд, Зделать валидаторы для каждого уровня игры
 func (m *Message) IsValid() bool {
 	switch m.Title {
 	case Ready:
@@ -89,14 +88,9 @@ func (m *Message) IsValid() bool {
 		}
 	case GoTo:
 		{
-			payload, ok := m.Payload.(*MoveRequest)
+			_, ok := m.Payload.(*MoveRequest)
 			if !ok {
 				logger.Error.Println("Message validator, Type=GoTo, error:interface->MoveRequest casting error")
-				return false
-			}
-			nextP := payload.DesiredPosition
-			if nextP.X > 8 || nextP.Y > 8 || nextP.X < 0 || nextP.Y < 0 {
-				logger.Error.Println("Message validator, Type=GoTo, error:invalid nextPosition coordinates")
 				return false
 			}
 			return true
@@ -104,15 +98,12 @@ func (m *Message) IsValid() bool {
 		}
 	case ClientAnswer:
 		{
-			payload, ok := m.Payload.(*Answer)
+			_, ok := m.Payload.(*Answer)
 			if !ok {
 				logger.Error.Println("Message validator, Title=ClientAnswer, error:interface->Answer casting error")
 				return false
 			}
-			if payload.AnswerId < 0 || payload.AnswerId > 3 {
-				logger.Error.Println("Message validator, Title=ClientAnswer, error:invalid AnswerId values")
-				return false
-			}
+
 			return true
 		}
 	case Leave:

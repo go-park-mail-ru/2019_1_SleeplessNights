@@ -2,6 +2,7 @@ package factory
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/gorilla/websocket"
 	"sync/atomic"
 )
@@ -44,5 +45,6 @@ func (pf *playerFactory) BuildWebsocketPlayer(conn *websocket.Conn, uid uint64) 
 		uid:  uid,
 	}
 	go wsPlayer.StartListen()
+	logger.Info.Println("wsPlayer started listening", uid)
 	return &wsPlayer
 }

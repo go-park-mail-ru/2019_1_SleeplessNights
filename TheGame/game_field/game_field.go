@@ -1,8 +1,13 @@
 package game_field
 
 import (
+	"errors"
+	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/event"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/questions"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -13,6 +18,7 @@ const (
 )
 
 var prizePos []pair
+
 //В начале иры й игроков не существует никаких позиций, они находятся как бы вне поля
 
 func init() {
@@ -21,7 +27,7 @@ func init() {
 
 type gameCell struct {
 	isAvailable bool
-	question    questions.Question
+	question    *questions.Question
 }
 
 type pair struct {
@@ -30,7 +36,7 @@ type pair struct {
 }
 
 type gfPlayer struct {
-	pos *pair//Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
+	pos *pair //Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
 	id  uint64
 }
 
@@ -38,7 +44,7 @@ type GameField struct {
 	field [fieldSize][fieldSize]gameCell
 	p1    gfPlayer
 	p2    gfPlayer
-	Out   chan event.Event
+	//Out   []event.Event
 
 	regX        int
 	regY        int
@@ -63,22 +69,21 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
-func (gf *GameField) Build(qArray [questionsNum]questions.Question) {
+func (gf *GameField) build(qArray [questionsNum]questions.Question) {
 	qSlice := qArray[:]
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
 			if isPrizePosition(rowIdx, colIdx) {
 				gf.field[rowIdx][colIdx] = gameCell{true, nil}
 			} else {
-				rand.Seed(time.Now().UnixNano())//TODO еспли я правильно помню, то seed нужно скормить 1 раз, а не в цикле. Погугли, пожалуйста
+				rand.Seed(time.Now().UnixNano()) //TODO еспли я правильно помню, то seed нужно скормить 1 раз, а не в цикле. Погугли, пожалуйста
 				index := rand.Intn(len(qSlice))
-				gf.field[rowIdx][colIdx] = gameCell{true, qSlice[index]}
+				gf.field[rowIdx][colIdx] = gameCell{true, &qSlice[index]}
 				qSlice = append(qSlice[:index], qSlice[index+1:]...)
 			}
 		}
 	}
 	gf.p1.pos = nil
-
 	gf.p2.pos = nil
 }
 
@@ -110,23 +115,19 @@ func (gf *GameField) checkRouteAvailable(player pair) (isAvailable bool) {
 |__|__|__|P1|__|__|__|__|  y7
 
 */
-func (gf *GameField) TryMovePlayer1(nextX int, nextY int) {
-	gf.tryMovePlayer(&gf.p1, nextX, nextY)
-}
 
-func (gf *GameField) TryMovePlayer2(nextX int, nextY int) {
-	gf.tryMovePlayer(&gf.p2, nextX, nextY)
-}
-
-func (gf *GameField) GetAvailableCells(player *gfPlayer) (cellsCoordinates []pair) {
+func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) {
 	var rowIdx int
 	var secondPlayer *gfPlayer
+	var player *gfPlayer
 
-	if player.id == gf.p1.id {
+	if playerIdx == 1 {
+		player = &gf.p1
 		rowIdx = 7
 		secondPlayer = &gf.p2
 
 	} else {
+		player = &gf.p2
 		rowIdx = 0
 		secondPlayer = &gf.p1
 	}
@@ -163,53 +164,126 @@ func (gf *GameField) Move(player *gfPlayer) {
 	player.pos.Y = gf.regY
 
 	if gf.checkWinner(*player.pos) {
-		gf.Out <- event.Event{Etype: event.WinPrize, Edata: player.id}
+		//gf.Out <- event.Event{Etype: event.WinPrize, Edata: player.id}
 		return
 	}
 
-	gf.Out <- event.Event{Etype: event.Move, Edata: player.id}
+	//gf.Out <- event.Event{Etype: event.Move, Edata: player.id}
 	return
 
 }
 
-func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) {
+func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err error) {
+	nextX := m.Payload.(*messge.Coordinates).X
+	nextY := m.Payload.(*messge.Coordinates).Y
 
-	if nextX >= fieldSize || nextY >= fieldSize || nextX < 0 || nextY < 0 {
-		//TODO Make logging of invalid commands instead of sending  events
-		gf.Out <- event.Event{Etype: event.Warning, Edata: player.id}
+	if !gf.validateMoveCoordinates(&gf.p1, nextX, nextY) {
+		err = errors.New(fmt.Sprintf("tried moving to invalid position x:%d ,y:%d", nextX, nextY))
 		return
 	}
+	e, err = gf.tryMovePlayer(&gf.p1, nextX, nextY)
+	if err != nil {
+		logger.Error.Println("TryMovePlayer1, tryMovePlayer returned error: %s", err)
+		return
+	}
+	return
+}
 
-	destination := pair{nextX, nextY}
+func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err error) {
+	nextX := m.Payload.(*messge.Coordinates).X
+	nextY := m.Payload.(*messge.Coordinates).Y
+
+	if !gf.validateMoveCoordinates(&gf.p2, nextX, nextY) {
+		err = errors.New(fmt.Sprintf("tried moving to invalid position x:%d ,y:%d", nextX, nextY))
+		return
+	}
+	e, err = gf.tryMovePlayer(&gf.p2, nextX, nextY)
+	if err != nil {
+		logger.Error.Println("TryMovePlayer2, tryMovePlayer returned error: %s", err)
+		return
+	}
+	return
+}
+
+//Выполняет доставание вопроса из матрицы Игрового поля
+func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []event.Event, err error) {
+
+	//destination := pair{nextX, nextY}
 	//TODO проверить, что destination isAvailable
-	//TODO проверить, что модуль разницы по обеим координатом между player.pos и destination не превышает еденицы
-	if destination == *player.pos {
-		//TODO Make logging of invalid commands instead of sending  events
-		gf.Out <- event.Event{Etype: event.Warning, Edata: player.id}
-		return
-	}
 
+	//Запись в регистр положения игрока, вопроса,
 	gf.regY = nextY
 	gf.regX = nextX
 
 	//Пока не трогать
 	if !gf.checkRouteAvailable(*gf.p1.pos) {
 		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
+
 		//TODO переместить в начало метода GetAvailableCells
 	}
 
 	ms := struct {
-		playerId uint64
-		question questions.Question
+		question string
 	}{
-		player.id, gf.field[nextY][nextX].question,
+		gf.GetQuestionByCell(nextX, nextY).QuestionJson,
 	}
-	gf.Out <- event.Event{Etype: event.Move, Edata: ms}
+
+	e = make([]event.Event, 0)
+	e = append(e, event.Event{Etype: event.Move, Edata: ms})
 	return
 }
 
-func (gf *GameField) GetQuestionByCell(x, y int) (question string) {
-	//А почему y, x? Разве не gf.field[x][y]?
-	question = gf.field[y][x].question.QuestionJson
+func (gf *GameField) GetQuestionByCell(x, y int) (question questions.Question) {
+	logger.Info.Printf("GetQuestionByCell x:%d,y:%d ", x, y)
+	question = *(gf.field[y][x].question)
 	return
+}
+
+func (gf *GameField) validateMoveCoordinates(player *gfPlayer, nextX int, nextY int) bool {
+	nextPos := pair{nextX, nextY}
+	//Убрать Валидацию поля в GameField
+
+	if nextX > fieldSize || nextY > fieldSize || nextX < 0 || nextY < 0 {
+		logger.Error.Println("Coordinate validator, error:invalid next coordinates")
+		return false
+	}
+
+	if player.pos == nil {
+		return true
+	}
+
+	if math.Abs(float64(player.pos.X-nextX)) > 1 || math.Abs(float64(player.pos.Y-nextY)) > 1 {
+		logger.Error.Printf("Coordinate validator, error: player trie to reach cell %v", nextPos)
+		return false
+	}
+
+	if gf.p1.pos == nil || gf.p2.pos == nil {
+		return true
+	}
+
+	if (*gf.p1.pos) == nextPos || (*gf.p2.pos) == nextPos {
+		logger.Error.Printf("Desired Position is another's players position p1:%v , p2:%v , desiredPos:%v", gf.p1.pos, gf.p2.pos, nextPos)
+		return false
+	}
+
+	return true
+}
+
+func (gf *GameField) CheckAnswer(answerIdx int) bool {
+	if !gf.validateAnswerId(answerIdx) {
+		return false
+	}
+	if gf.regQuestion.CorrectAnswerId == answerIdx {
+		return true
+	}
+	return false
+}
+
+func (gf *GameField) validateAnswerId(answerId int) bool {
+	//Убрать Валидацию поля в GameField
+	if answerId > 3 || answerId < 0 {
+		logger.Error.Println("validateAnswerId, error:AnswerId")
+		return false
+	}
+	return true
 }
