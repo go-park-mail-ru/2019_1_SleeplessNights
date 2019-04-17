@@ -29,6 +29,6 @@ func (q *queue) dequeue() (cell *gameCell, err error) {
 	return nil, errors.New("Queue is empty")
 }
 
-func CheckCellReachability(currenCell, goalCell *gameCell) {
+func checkCellReachability(currenCell, goalCell *gameCell) {
 
 }

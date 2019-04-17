@@ -26,7 +26,7 @@ func init () {
 func CreateFakeData(quantity int) {
 	fake, err := faker.New("en")
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	for i := 1; i <= quantity; i++ {
@@ -58,7 +58,7 @@ func CreateFakeData(quantity int) {
 func CreateFakePacks() {
 	fake, err := faker.New("en")
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	themes := []string{
