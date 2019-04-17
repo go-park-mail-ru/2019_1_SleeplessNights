@@ -4,7 +4,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 )
 
 func (r *Room) MessageHandlerMux(m MessageWrapper) {
@@ -34,11 +33,11 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 	r.mu.Lock()
 
 	if m.player == &r.p1 {
-		logger.Info.Println("Игрок 1 Готов")
+		logger.Info("Игрок 1 Готов")
 		r.p1Status = StatusReady
 	}
 	if m.player == &r.p2 {
-		logger.Info.Println("Игрок 2 готов")
+		logger.Info("Игрок 2 готов")
 		r.p2Status = StatusReady
 	}
 
@@ -47,7 +46,7 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 		r.waitForSyncMsg = messge.GoTo
 		r.active = &r.p1
 
-		logger.Info.Println("Ход игрока 1, ожидание команды GoTo")
+		logger.Info("Ход игрока 1, ожидание команды GoTo")
 
 		ResponsesQueue <- MessageWrapper{&r.p1, messge.Message{Title: messge.YourTurn, Payload: nil}}
 		ResponsesQueue <- MessageWrapper{&r.p2, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
@@ -64,7 +63,7 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 }
 
 func (r *Room) GoToHandler(m MessageWrapper) bool {
-	logger.Info.Printf("player %d requested GoTo", (*m.player).UID())
+	logger.Info("player %d requested GoTo", (*m.player).UID())
 
 	r.mu.Lock()
 	var eventSlice []event.Event
@@ -81,7 +80,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	}
 
 	if err != nil {
-		logger.Error.Println("GoToHandler, called TryMovePLayer, got error", err)
+		logger.Error("GoToHandler, called TryMovePLayer, got error", err)
 		r.mu.Unlock()
 		return false
 	}
@@ -101,7 +100,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 }
 
 func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
-	logger.Info.Printf("player %d answered to ClientAnswerHandler", (*m.player).UID())
+	logger.Info("player %d answered to ClientAnswerHandler", (*m.player).UID())
 	r.mu.Lock()
 	answerId := m.msg.Payload.(*messge.Answer).AnswerId
 	if !r.field.CheckAnswer(answerId) {
@@ -135,6 +134,6 @@ func (r *Room) getPlayerIdx(p *player.Player) int {
 	if &r.p2 == p {
 		return 2
 	}
-	logger.Error.Println("Player with address %d was not found, couldn't get idx", p)
+	logger.Error("Player with address %d was not found, couldn't get idx", p)
 	return 1
 }

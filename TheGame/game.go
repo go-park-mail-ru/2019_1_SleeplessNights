@@ -10,7 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player/factory"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/room"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/gorilla/websocket"
 	"sync"
 )
@@ -23,6 +23,12 @@ import (
 
 //Паттерн синглтон был выбран по той же причине, что и с фабрикой игроков, потому что зачем нам два не связанных
 //между собой набора комнат игроков и т.д. в рамках одного приложения
+
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("Game")
+}
 
 const (
 	maxRooms = 100
@@ -66,16 +72,16 @@ func (g *gameFacade) startBalance() {
 	//Стратегий распределения может быть много, в самом простом варианте мы идём в цикле по мапе комнат
 	//и ищем в каждой комнате свободное место, если дошли до конца и не нашли, то создаём свою комнату
 	//и занимаем место в ней, а если достигнут maxRooms, то заново входим в цикл
-	logger.Info.Println("StartBalance started")
+	logger.Info("StartBalance started")
 
 	for {
 		select {
 		case p := <-g.in:
 			{
 				fmt.Println("Got value from channel")
-				logger.Info.Println("Got new Player from channel g.in")
+				logger.Info("Got new Player from channel g.in")
 				go func() {
-					logger.Info.Print("goroutine Started:", "player", p.UID(), " looking for space room")
+					logger.Info("goroutine Started:", "player", p.UID(), " looking for space room")
 					roomFound := false
 					for !roomFound {
 						roomsCounter := 0
@@ -84,7 +90,7 @@ func (g *gameFacade) startBalance() {
 						//Search for room a player can join
 						for _, v := range g.rooms {
 							if v.TryJoin(p) {
-								logger.Info.Println("Found Existing room, player added")
+								logger.Info("Found Existing room, player added")
 								roomFound = true
 								break
 							}
@@ -101,10 +107,10 @@ func (g *gameFacade) startBalance() {
 						}
 						g.mu.Unlock()
 						if roomFound {
-							logger.Info.Println("Successfully found Room with id", roomId)
-							logger.Info.Println("Player with id", p.UID(), "added to room", roomId)
+							logger.Info("Successfully found Room with id", roomId)
+							logger.Info("Player with id", p.UID(), "added to room", roomId)
 						} else {
-							logger.Fatal.Println("Failed to join just created Room with id", roomId)
+							logger.Fatal("Failed to join just created Room with id", roomId)
 						}
 					}
 				}()
@@ -120,8 +126,8 @@ func (g *gameFacade) startBalance() {
 }
 
 func (g *gameFacade) PlayByWebsocket(conn *websocket.Conn, uid uint64) {
-	logger.Info.Println("PlayByWebsocket Got new Connection")
+	logger.Info("PlayByWebsocket Got new Connection")
 	//Начинаем игру по вебсокет соединению
 	g.in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
-	logger.Info.Println("Player has been read from channel by balancer ")
+	logger.Info("Player has been read from channel by balancer ")
 }

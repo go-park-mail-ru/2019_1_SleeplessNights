@@ -1,6 +1,7 @@
 package questions
 
 type Question struct {
+	PackID          uint64 `json:"-"`
 	QuestionJson    string `json:"question"`
 	CorrectAnswerId int    `json:"-"`
 	//Здесь ситуация аналогичная с гейм филдом
@@ -9,17 +10,4 @@ type Question struct {
 	//Ответственность:
 	//* Давать по запросу JSON вопроса (варианты ответа уже лежат внутри)
 	//* Давать по запросу номер правильного ответа
-	//TODO develop
-}
-
-func (q *Question) GetQuestion() (question string) {
-	return q.QuestionJson
-}
-
-func (q *Question) CheckAnswer(answerId int) (result bool) {
-	return q.CorrectAnswerId == answerId
-}
-
-func (q *Question) GetAnswerId() int {
-	return q.CorrectAnswerId
 }

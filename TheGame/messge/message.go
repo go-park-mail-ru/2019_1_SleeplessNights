@@ -2,8 +2,14 @@ package messge
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/questions"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 )
+
+var logger *log.Logger
+
+func init () {
+	logger = log.GetLogger("Message")
+}
 
 const (
 	//Набор констант, которые можно использовать в качестве значения поля Title для Message
@@ -90,7 +96,7 @@ func (m *Message) IsValid() bool {
 		{
 			_, ok := m.Payload.(*MoveRequest)
 			if !ok {
-				logger.Error.Println("Message validator, Type=GoTo, error:interface->MoveRequest casting error")
+				logger.Error("Message validator, Type=GoTo, error:interface->MoveRequest casting error")
 				return false
 			}
 			return true
@@ -100,7 +106,7 @@ func (m *Message) IsValid() bool {
 		{
 			_, ok := m.Payload.(*Answer)
 			if !ok {
-				logger.Error.Println("Message validator, Title=ClientAnswer, error:interface->Answer casting error")
+				logger.Error("Message validator, Title=ClientAnswer, error:interface->Answer casting error")
 				return false
 			}
 

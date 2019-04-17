@@ -23,7 +23,7 @@ func GetRouter() (router *mux.Router) {
 	api.Handle("/profile", MiddlewareAuth(handlers.ProfileUpdateHandler)).Methods(http.MethodPatch)
 
 	ws := router.PathPrefix("/ws").Subrouter()
-	ws.HandleFunc("/connect", handlers.UpgradeWs)
+	ws.Handle("/connect", MiddlewareAuth(handlers.UpgradeWs))
 
 	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods(http.MethodOptions)
 	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods(http.MethodGet)
