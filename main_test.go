@@ -1,4 +1,4 @@
-package handlers_test
+package main_test
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"

@@ -97,7 +97,7 @@ func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
 	user := models.User{
-		ID: 1000,
+		ID: 1,
 	}
 
 	cookie, err := auth.MakeSession(user)
@@ -252,7 +252,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 
 	user := models.User{
-		ID:         1000,
+		ID:         1,
 		Email:      "first@mail.com",
 		Nickname:   "first",
 		Password:   []byte(faker.FakeUserPassword),
@@ -298,7 +298,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
 	user := models.User{
-		ID:         1000,
+		ID:         1,
 		Email:      "first@mail.com",
 		Nickname:   "first",
 		Password:   []byte(faker.FakeUserPassword),
@@ -348,11 +348,17 @@ func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 
 	user := models.User{
-		ID:         1000,
+		ID:         1,
 		Email:      "first@mail.com",
 		Nickname:   "first",
 		Password:   []byte(faker.FakeUserPassword),
 		AvatarPath: "none",
+	}
+
+	err := database.GetInstance().AddUser(user)
+	if err != nil {
+		t.Errorf("AddUser returned error: %s\n", err.Error())
+		return
 	}
 
 	cookie, err := auth.MakeSession(user)

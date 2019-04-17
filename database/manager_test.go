@@ -7,10 +7,6 @@ import (
 	"testing"
 )
 
-const (
-	FakeUserPassword = "1Q2W3e4r5t6y7u"
-)
-
 func TestGetUserViaIDSuccessful(t *testing.T) {
 
 	oldUser := models.User{
@@ -46,7 +42,7 @@ func TestGetUserViaIDSuccessful(t *testing.T) {
 func TestGetUserViaIDUnsuccessful(t *testing.T) {
 
 	var userID uint = 1
-	expected := "БД: Не был найден юзер"
+	expected := database.NoUserFound
 
 	_, err := database.GetInstance().GetUserViaID(userID)
 	if err == nil {
@@ -92,7 +88,7 @@ func TestGetUserViaEmailSuccessful(t *testing.T) {
 func TestGetUserViaEmailUnsuccessful(t *testing.T) {
 
 	var userEmail = "test@test.com"
-	expected := "БД: Не был найден юзер"
+	expected := database.NoUserFound
 
 	_, err := database.GetInstance().GetUserViaEmail(userEmail)
 	if err == nil {
@@ -153,7 +149,7 @@ func TestAddUserUnsuccessful(t *testing.T) {
 		return
 	}
 
-	expected := "pq: duplicate key value violates unique constraint \"users_email_ui\""
+	expected := database.UniqueViolation
 
 	err = database.GetInstance().AddUser(secondUser)
 	if err == nil {
@@ -217,14 +213,9 @@ func TestUpdateUserSuccessful(t *testing.T) {
 //		AvatarPath: "new_default_avatar.jpg",
 //	}
 //
-//	expected := "БД: Не был найден юзер"
-//
 //	err := database.GetInstance().UpdateUser(oldUser, oldUser.ID)
 //	if err == nil {
 //		t.Errorf("DB didn't return error")
-//	} else if err.Error() != expected {
-//		t.Errorf("DB returned wrong error:\ngot %v\nwant %v\n",
-//			err.Error(), expected)
 //	}
 //
 //	err = database.GetInstance().CleanerDBForTests()
@@ -324,7 +315,7 @@ func TestPacksOfQuestions(t *testing.T){
 
 	faker.CreateFakePacks()
 
-	packs, err := database.GetInstance().GetPacksOfQuestions()
+	packs, err := database.GetInstance().GetPacksOfQuestions(10)
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
