@@ -12,7 +12,7 @@ import (
 func UpgradeWs(user models.User, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{}
 	conn, err := upgrader.Upgrade(w, r, http.Header{"Upgrade": []string{"websocket"}})
-	logger.Info("player with ID = %D connected to socket", user.ID)
+	logger.Infof("player with ID = %d connected to socket", user.ID)
 	if err != nil {
 		logger.Error("Error during UpgradeWs", err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -431,7 +431,6 @@ func (db *dbManager) AddQuestionPack(theme string) (err error) {
 			tx.Rollback()
 		}
 	}()
-
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
 	if _err, ok := err.(*pq.Error); ok {

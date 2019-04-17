@@ -189,7 +189,7 @@ func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err erro
 	}
 	e, err = gf.tryMovePlayer(&gf.p1, nextX, nextY)
 	if err != nil {
-		logger.Error("TryMovePlayer1, tryMovePlayer returned error: %s", err)
+		logger.Error("TryMovePlayer1, tryMovePlayer returned error:", err)
 		return
 	}
 	return
@@ -205,7 +205,7 @@ func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err erro
 	}
 	e, err = gf.tryMovePlayer(&gf.p2, nextX, nextY)
 	if err != nil {
-		logger.Error("TryMovePlayer2, tryMovePlayer returned error: %s", err)
+		logger.Error("TryMovePlayer2, tryMovePlayer returned error:", err)
 		return
 	}
 	return
@@ -240,7 +240,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 }
 
 func (gf *GameField) GetQuestionByCell(x, y int) (question questions.Question) {
-	logger.Info("GetQuestionByCell x:%d,y:%d ", x, y)
+	logger.Infof("GetQuestionByCell x:%d,y:%d ", x, y)
 	question = *(gf.field[y][x].question)
 	return
 }
@@ -259,7 +259,7 @@ func (gf *GameField) validateMoveCoordinates(player *gfPlayer, nextX int, nextY 
 	}
 
 	if math.Abs(float64(player.pos.X-nextX)) > 1 || math.Abs(float64(player.pos.Y-nextY)) > 1 {
-		logger.Error("Coordinate validator, error: player trie to reach cell %v", nextPos)
+		logger.Error("Coordinate validator, error: player trie to reach cell", nextPos)
 		return false
 	}
 
@@ -268,7 +268,7 @@ func (gf *GameField) validateMoveCoordinates(player *gfPlayer, nextX int, nextY 
 	}
 
 	if (*gf.p1.pos) == nextPos || (*gf.p2.pos) == nextPos {
-		logger.Error("Desired Position is another's players position p1:%v , p2:%v , desiredPos:%v", gf.p1.pos, gf.p2.pos, nextPos)
+		logger.Errorf("Desired Position is another's players position p1:%v , p2:%v , desiredPos:%v", gf.p1.pos, gf.p2.pos, nextPos)
 		return false
 	}
 

@@ -110,7 +110,7 @@ func (g *gameFacade) startBalance() {
 							logger.Info("Successfully found Room with id", roomId)
 							logger.Info("Player with id", p.UID(), "added to room", roomId)
 						} else {
-							logger.Fatal("Failed to join just created Room with id", roomId)
+							logger.Error("Failed to join just created Room with id", roomId)
 						}
 					}
 				}()

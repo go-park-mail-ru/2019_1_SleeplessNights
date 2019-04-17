@@ -66,25 +66,25 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	//Здесь нам нужно под мьютексом проверить наличие свободных мест. Варианты:
 	//1. 2 места свободно -> занимаем первое место
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
-	logger.Info("player %d entered Try Join", p.UID())
+	logger.Infof("player %d entered Try Join", p.UID())
 	r.mu.Lock()
 	found := false
 
 	if r.p1 == nil {
 		r.p1 = p
 		r.p1Status = StatusJoined
-		logger.Info("Player %d is now p1 in room", p.UID())
+		logger.Infof("Player %d is now p1 in room", p.UID())
 		found = true
 	} else if r.p2 == nil {
 		r.p2 = p
 		r.p1Status = StatusJoined
-		logger.Info("Player %d is now p2 in room", p.UID())
+		logger.Infof("Player %d is now p2 in room", p.UID())
 
 		found = true
 	}
 
 	if r.p1 != nil && r.p2 != nil {
-		logger.Info("All players joined the game, p1: %d, p2: %d", r.p1.UID(), r.p1.UID())
+		logger.Infof("All players joined the game, p1: %d, p2: %d", r.p1.UID(), r.p1.UID())
 		//TODO Prepare Match
 		//TODO Then run buildEnv after PrepareMatch
 		// In build Env составление и доставание даннных для вопросов
@@ -193,7 +193,7 @@ func (r *Room) startMatch() {
 
 	// Call Prepare Room
 
-	logger.Info("StartMatch : Game process has started p1:%s, p2: %s", r.p1.UID(), r.p2.UID())
+	logger.Infof("StartMatch : Game process has started p1: %d, p2: %d", r.p1.UID(), r.p2.UID())
 	r.buildEnv()
 
 	p1Chan := r.p1.Subscribe()
@@ -201,7 +201,7 @@ func (r *Room) startMatch() {
 
 	err := r.notifyAll(messge.Message{Title: messge.StartGame, Payload: nil})
 	if err != nil {
-		logger.Error("Failed to notify all players %s", err)
+		logger.Error("Failed to notify all players:", err)
 	}
 	logger.Info("Игрокам Отправлены StartGame")
 
@@ -242,7 +242,7 @@ func (r *Room) startMatch() {
 			}
 
 			if r.isSyncValid(msg) {
-				logger.Warning("Got message of type %s from player %d, expected %s from player %d",
+				logger.Warningf("Got message of type %s from player %d, expected %s from player %d",
 					msg.msg.Title, msg.player, r.waitForSyncMsg, r.active)
 				continue
 			}
