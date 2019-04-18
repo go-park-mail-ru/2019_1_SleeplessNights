@@ -9,6 +9,8 @@ import (
 	"github.com/xlab/closer"
 	"net/http"
 	"os"
+	"os/exec"
+	"sync"
 )
 
 var logger *log.Logger
@@ -35,19 +37,27 @@ func main() {
 	faker.CreateFakeData(10)
 	faker.CreateFakePacks()
 
-	user, _ := database.GetInstance().GetUserViaID(1)
-	cookie, _ := auth.MakeSession(user)
-	logger.Info(cookie.Value)
-	user, _ = database.GetInstance().GetUserViaID(2)
-	cookie, _ = auth.MakeSession(user)
-	logger.Info(cookie.Value)
-
-
 	PORT := os.Getenv("PORT")
 	if PORT == "" {
 		PORT = "8080"
 	}
 	logger.Info("Started listening on", PORT)
 	r := router.GetRouter()
-	logger.Fatal(http.ListenAndServe(":"+PORT, r))
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		logger.Fatal(http.ListenAndServe(":"+PORT, r))
+		wg.Done()
+	}(&wg)
+
+	user, _ := database.GetInstance().GetUserViaID(1)
+	cookie, _ := auth.MakeSession(user)
+	connUser := exec.Command(`./ws-connect.sh`, PORT, cookie.Value)
+	logger.Error(connUser.Run())
+	user, _ = database.GetInstance().GetUserViaID(2)
+	cookie, _ = auth.MakeSession(user)
+	connUser = exec.Command(`./ws-connect.sh`, PORT, cookie.Value)
+	logger.Error(connUser.Run())
+
+	wg.Wait()
 }
