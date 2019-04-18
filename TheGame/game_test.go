@@ -1,6 +1,7 @@
 package TheGame
 
 import (
+	"github.com/xlab/closer"
 	"reflect"
 	"testing"
 )
@@ -11,6 +12,7 @@ func TestGetInstance(t *testing.T) {
 			reflect.TypeOf(reflect.TypeOf(GetInstance())),
 			reflect.PtrTo(reflect.TypeOf(gameFacade{})))
 	}
+	closer.Close()
 }
 
 /*func TestGameFacade_PlayByWebsocket(t *testing.T) {

@@ -20,6 +20,11 @@ type TestCaseReg struct {
 
 func TestRegisterHandlerSuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	cases := []TestCaseReg{
 		TestCaseReg{
 			number:    1,
@@ -124,14 +129,14 @@ func TestRegisterHandlerSuccessful(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
-
-func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 
 	cases := []TestCaseReg{
 		TestCaseReg{
@@ -246,10 +251,4 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 			}
 		}
 	}
-
-	err := database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 }

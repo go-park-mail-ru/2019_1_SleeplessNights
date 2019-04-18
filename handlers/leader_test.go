@@ -15,6 +15,11 @@ import (
 
 func TestLeadersHandlerSuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	faker.CreateFakeData(handlers.UserCounter)
 	usersTotal, err := database.GetInstance().GetLenUsers()
 	if err != nil {
@@ -76,14 +81,14 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 			}
 		}
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
 	qq := req.URL.Query()
@@ -103,14 +108,14 @@ func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
 				status, http.StatusNotFound)
 		}
 	}
+}
+
+func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
-
-func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
 	qq := req.URL.Query()
@@ -135,10 +140,5 @@ func TestLeadersHandlerUnsuccessfulWithWrongPage(t *testing.T) {
 			t.Errorf("\nhandler returned unexpected body:\ngot %v\nwant %v\n",
 				resp.Body.String(), expected)
 		}
-	}
-
-	err := database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
 	}
 }

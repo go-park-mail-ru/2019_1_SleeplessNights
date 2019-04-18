@@ -20,6 +20,11 @@ import (
 
 func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	faker.CreateFakeData(handlers.UserCounter)
 
 	users, err := database.GetInstance().GetUsers()
@@ -57,14 +62,14 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 			}
 		}
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	req := httptest.NewRequest(http.MethodGet, handlers.ApiProfile, nil)
 
@@ -87,14 +92,14 @@ func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 				resp.Body.String(), expected)
 		}
 	}
+}
+
+func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
-
-func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
 	user := models.User{
 		ID: 1000,
@@ -128,14 +133,14 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 				resp.Body.String(), expected)
 		}
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestProfileUpdateHandlerSuccessful(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	user := models.User{
 		ID:         1,
@@ -143,7 +148,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		Nickname:   "first",
 		AvatarPath: "none",
 	}
-	err := database.GetInstance().AddUser(user)
+	err = database.GetInstance().AddUser(user)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -241,14 +246,14 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		t.Errorf("\nDB returned wrong nickname:\ngot %v\nwant %v\n",
 			user.Email, newNickname)
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	user := models.User{
 		ID:         1,
@@ -256,7 +261,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 		Nickname:   "first",
 		AvatarPath: "none",
 	}
-	err := database.GetInstance().AddUser(user)
+	err = database.GetInstance().AddUser(user)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -285,11 +290,6 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusUnauthorized)
 		}
-	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
 	}
 }
 
@@ -335,14 +335,14 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 //				status, http.StatusUnauthorized)
 //		}
 //	}
-//
-//	err = database.GetInstance().CleanerDBForTests()
-//	if err != nil {
-//		t.Errorf(err.Error())
-//	}
 //}
 
 func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	user := models.User{
 		ID:         1,
@@ -351,7 +351,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 		AvatarPath: "none",
 	}
 
-	err := database.GetInstance().AddUser(user)
+	err = database.GetInstance().AddUser(user)
 	if err != nil {
 		t.Errorf("AddUser returned error: %s\n", err.Error())
 		return
@@ -379,10 +379,5 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusBadRequest)
 		}
-	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
 	}
 }

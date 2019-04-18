@@ -19,6 +19,11 @@ type TestCaseAuth struct {
 
 func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	faker.CreateFakeData(handlers.UserCounter)
 
 	users, err := database.GetInstance().GetUsers()
@@ -57,14 +62,14 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 			}
 		}
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	cases := []TestCaseAuth{
 		TestCaseAuth{
@@ -159,14 +164,14 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
-
-func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 
 	form := url.Values{}
 	form.Add("WRONG_mail", "test@test.com")
@@ -194,10 +199,5 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 			t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
 				response, expected)
 		}
-	}
-
-	err := database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
 	}
 }

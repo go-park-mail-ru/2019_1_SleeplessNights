@@ -15,6 +15,11 @@ import (
 
 func TestImgHandlerSuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	img := "default_avatar.jpg"
 	path := fmt.Sprintf("%s%s", handlers.Img, img)
 	req := httptest.NewRequest(http.MethodGet, path, nil)
@@ -44,14 +49,14 @@ func TestImgHandlerSuccessful(t *testing.T) {
 			t.Errorf("handler returned unexpected body\n")
 		}
 	}
+}
+
+func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
-
-func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 
 	img := "WRONG_default_avatar.jpg"
 	path := fmt.Sprintf("%s%s", handlers.Img, img)
@@ -71,10 +76,5 @@ func TestImgHandlerUnsuccessfulWrongImagePath(t *testing.T) {
 			t.Errorf("handler returned wrong status code:\ngot %v\nwant %v\n",
 				status, http.StatusNotFound)
 		}
-	}
-
-	err := database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
 	}
 }
