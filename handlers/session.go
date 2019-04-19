@@ -36,3 +36,27 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+
+func AuthDeleteHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, err := r.Cookie("session_token")
+	if err != nil {
+		r.Header.Add("Referer", r.URL.String())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sessionCookie := http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &sessionCookie)
+	_, err = w.Write([]byte("{}"))
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+}
