@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
 	"github.com/xlab/closer"
@@ -34,8 +33,8 @@ func main() {
 	logger.Fatal("Can not continue")*/
 
 	defer closer.Close()
-	faker.CreateFakeData(10)
-	faker.CreateFakePacks()
+	//faker.CreateFakeData(10)
+	//faker.CreateFakePacks()
 
 	PORT := os.Getenv("PORT")
 	if PORT == "" {
