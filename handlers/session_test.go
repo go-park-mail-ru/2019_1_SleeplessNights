@@ -1,9 +1,11 @@
 package handlers_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -198,6 +200,75 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 		if response := resp.Body.String(); response != expected {
 			t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
 				response, expected)
+		}
+	}
+}
+
+
+func TestAuthDeleteHandlerSuccessful(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	user := models.User{
+		ID:         1,
+		Email:      "first@mail.com",
+		Nickname:   "first",
+		AvatarPath: "none",
+	}
+	err = database.GetInstance().AddUser(user)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	cookie, err := auth.MakeSession(user)
+	if err != nil {
+		t.Errorf("MakeSession returned error: %s\n", err.Error())
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodDelete, handlers.ApiProfile, nil)
+	req.AddCookie(&cookie)
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.AuthDeleteHandler).ServeHTTP(resp, req)
+
+	expected := "session_token="
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusOK {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v;\n",
+				status, http.StatusOK)
+		}
+
+
+		if cookie := resp.Header().Get("Set-Cookie"); cookie != expected {
+			t.Errorf("\nhandler returned wrong cookie:\ngot %v\nwant %v;\n",
+				cookie, expected)
+		}
+	}
+}
+
+func TestAuthDeleteHandlerUnsuccessful(t *testing.T) {
+
+	req := httptest.NewRequest(http.MethodDelete, handlers.ApiProfile, nil)
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.AuthDeleteHandler).ServeHTTP(resp, req)
+
+	if status := resp.Code; status == http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce",
+			status)
+	} else {
+		if status := resp.Code; status != http.StatusBadRequest {
+			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v;\n",
+				status, http.StatusBadRequest)
 		}
 	}
 }

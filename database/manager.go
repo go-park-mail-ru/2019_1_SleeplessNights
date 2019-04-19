@@ -174,8 +174,6 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 		}
 	}()
 
-	logger.Warningf("    %s---%s---%s", user.Email, user.Nickname, user.AvatarPath)
-
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.users (email, password, salt, won, lost, playtime, nickname, avatarpath)
 			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
