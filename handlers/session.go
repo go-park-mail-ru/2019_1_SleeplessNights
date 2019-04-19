@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
 	"net/http"
@@ -30,7 +31,13 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &sessionCookie)
-	_, err = w.Write([]byte("{}"))
+
+	data, err := json.Marshal(user)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+	_, err = w.Write(data)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
