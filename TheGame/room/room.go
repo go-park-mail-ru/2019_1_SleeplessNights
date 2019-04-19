@@ -60,7 +60,6 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Main")
-
 }
 
 func (r *Room) TryJoin(p player.Player) (success bool) {
@@ -89,7 +88,10 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 		//TODO Prepare Match
 		//TODO Then run buildEnv after PrepareMatch
 		// In build Env составление и доставание даннных для вопросов
-		go r.startMatch()
+		go func() {
+			//TODO handle possible panic
+			r.startMatch()
+		}()
 
 	}
 
@@ -256,7 +258,6 @@ func (r *Room) startMatch() {
 
 		}
 	}()
-
 	//r.buildEnv()
 }
 

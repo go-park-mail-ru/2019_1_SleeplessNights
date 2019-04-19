@@ -12,6 +12,8 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/room"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
+	"github.com/xlab/closer"
 	"sync"
 )
 
@@ -28,6 +30,7 @@ var logger *log.Logger
 
 func init () {
 	logger = log.GetLogger("Game")
+	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 const (
@@ -51,6 +54,9 @@ func init() {
 	//Make Buffered channel, otherwise 'g.PlayByWebsocket' gets stuck,
 	// awaiting for someone ('startBalance' in goroutine) to read from channel g.in
 	in = make(chan player.Player, maxPlayersInputQueueLen)
+	closer.Bind(func() {
+		close(in) //Закрываем канал входа перед завершением работы программы
+	})
 
 	game = &gameFacade{
 		maxRooms: maxRooms,
@@ -60,7 +66,15 @@ func init() {
 		rooms:    make(map[uint64]*room.Room, maxRooms/4),
 		idSource: 0,
 	}
-	go game.startBalance() //Начинаем работу балансировщика
+	go func() {
+		game.startBalance() //Начинаем работу балансировщика
+		err := recover()
+		for err != nil {
+			logger.Error("Unhandled panic came from startBalance:", err)
+			game.startBalance()
+			err = recover()
+		}
+	}()
 }
 
 func GetInstance() *gameFacade {
@@ -75,7 +89,7 @@ func (g *gameFacade) startBalance() {
 	//Стратегий распределения может быть много, в самом простом варианте мы идём в цикле по мапе комнат
 	//и ищем в каждой комнате свободное место, если дошли до конца и не нашли, то создаём свою комнату
 	//и занимаем место в ней, а если достигнут maxRooms, то заново входим в цикл
-	logger.Info("StartBalance started")
+	logger.Trace("StartBalance started")
 
 	for p := range in {
 		fmt.Println("Got value from channel")
