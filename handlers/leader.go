@@ -47,8 +47,8 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write([]byte(`{"pages_total":0,"page":1,"data":[]}`))
 		if err != nil {
 			helpers.Return500(&w, err)
-			return
 		}
+		return
 	}
 
 	PageNum, err := strconv.Atoi(page)
