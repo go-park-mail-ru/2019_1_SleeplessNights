@@ -2,6 +2,7 @@ package database_test
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
 	"testing"
 )
@@ -346,25 +347,27 @@ func TestPacksOfQuestions(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	themes := []string{
-		"математика",
-		"информатика",
-		"химия",
-		"биология",
-		"физика",
-		"культура",
-		"история",
-		"языки",
-		"философия",
-		"мемология",
-	}
+	//themes := []string{
+	//	"математика",
+	//	"информатика",
+	//	"химия",
+	//	"биология",
+	//	"физика",
+	//	"культура",
+	//	"история",
+	//	"языки",
+	//	"философия",
+	//	"мемология",
+	//}
+	//
+	//for _, theme := range themes {
+	//	err = database.GetInstance().AddQuestionPack(theme)
+	//	if err != nil {
+	//		t.Errorf("DB returned error: %v", err.Error())
+	//	}
+	//}
 
-	for _, theme := range themes {
-		err = database.GetInstance().AddQuestionPack(theme)
-		if err != nil {
-			t.Errorf("DB returned error: %v", err.Error())
-		}
-	}
+	faker.CreateFakePacks()
 
 	packs, err := database.GetInstance().GetPacksOfQuestions(10)
 	if err != nil {
@@ -383,26 +386,28 @@ func TestGetQuestions(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	for i := uint(1); i <= uint(4); i++  {
-		question := models.Question{
-			Answers: []string{},
-			Correct: 2,
-			Text:    "",
-			PackID:  i,
-		}
+	//for i := uint(1); i <= uint(4); i++  {
+	//	question := models.Question{
+	//		Answers: []string{},
+	//		Correct: 2,
+	//		Text:    "",
+	//		PackID:  i,
+	//	}
+	//
+	//	err = database.GetInstance().AddQuestion(question)
+	//	if err != nil {
+	//		t.Errorf("DB returned error: %v", err.Error())
+	//	}
+	//}
 
-		err = database.GetInstance().AddQuestion(question)
-		if err != nil {
-			t.Errorf("DB returned error: %v", err.Error())
-		}
-	}
+	faker.CreateFakePacks()
 
 	questions, err := database.GetInstance().GetQuestions([]int{1, 2, 3, 4})
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
 	cont := len(questions)
-	if cont != 4 {
+	if cont != 40 {
 		t.Errorf("DB return wrong count of questions")
 	}
 }
