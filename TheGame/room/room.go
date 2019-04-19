@@ -59,7 +59,7 @@ type Room struct {
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("Main")
+	logger = log.GetLogger("Room")
 }
 
 func (r *Room) TryJoin(p player.Player) (success bool) {
@@ -84,7 +84,7 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	}
 
 	if r.p1 != nil && r.p2 != nil {
-		logger.Infof("All players joined the game, p1: %d, p2: %d", r.p1.UID(), r.p1.UID())
+		logger.Infof("All players joined the game, p1: %d, p2: %d", r.p1.UID(), r.p2.UID())
 		//TODO Prepare Match
 		//TODO Then run buildEnv after PrepareMatch
 		// In build Env составление и доставание даннных для вопросов

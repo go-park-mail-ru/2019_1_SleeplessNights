@@ -25,7 +25,10 @@ func (wsPlayer *websocketPlayer) StartListen() {
 			//она была разовой и не критической
 			//Нужно сформировать кастомое сообщение и отправить его серверу,
 			// то-то типа "от кигрока пришло битое сообщение"
-			//TODO write custom message
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
+				logger.Infof("Player %d closed the connection", wsPlayer.uid)
+				return
+			}
 		}
 		logger.Info("Got from connection", msg)
 		wsPlayer.in <- msg
