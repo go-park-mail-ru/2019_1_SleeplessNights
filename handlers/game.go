@@ -26,6 +26,5 @@ func UpgradeWs(user models.User, w http.ResponseWriter, r *http.Request) {
 	}
 
 	game := TheGame.GetInstance()
-	game.PlayByWebsocket(conn, uint64(user.ID))
-
+	go game.PlayByWebsocket(conn, uint64(user.ID))
 }
