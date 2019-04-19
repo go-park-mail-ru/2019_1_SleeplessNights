@@ -33,6 +33,7 @@ type MessageWrapper struct {
 }
 
 type Room struct {
+	//TODO develop Close() method
 	//Channel to exchange event messages between Room and GameField
 	requestsQueue  chan MessageWrapper
 	responsesQueue chan MessageWrapper
