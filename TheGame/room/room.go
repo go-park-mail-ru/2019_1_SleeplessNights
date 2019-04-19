@@ -41,7 +41,7 @@ type MessageWrapper struct {
 
 type Room struct {
 	//Channel to exchange event messages between Room and GameField
-	requestsQueue chan MessageWrapper
+	requestsQueue  chan MessageWrapper
 	responsesQueue chan MessageWrapper
 	p1             player.Player
 	p2             player.Player

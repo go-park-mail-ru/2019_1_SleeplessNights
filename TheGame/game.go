@@ -32,12 +32,15 @@ func init () {
 
 const (
 	maxRooms = 100
+	maxPlayersInputQueueLen = 100
 )
 
 var game *gameFacade
+var in   chan player.Player //Через этот канал игроки попадают из фабрики в комнаты
+//in вынесен за пределы игры, чтобы улучшить масштабируемость на случай,
+//если мы быдем поднимать несколько инстансов микросервиса игры
 
 type gameFacade struct {
-	in       chan player.Player //Через этот канал игроки попадают из фабрики в комнаты
 	maxRooms int                //Макисмальное количество комнат в мапе, которое мы готовы поддерживать
 	rooms    map[uint64]*room.Room
 	idSource uint64
@@ -45,6 +48,10 @@ type gameFacade struct {
 }
 
 func init() {
+	//Make Buffered channel, otherwise 'g.PlayByWebsocket' gets stuck,
+	// awaiting for someone ('startBalance' in goroutine) to read from channel g.in
+	in = make(chan player.Player, maxPlayersInputQueueLen)
+
 	game = &gameFacade{
 		maxRooms: maxRooms,
 		//Сразу делаем мапу нужного размера, чтобы не тратить потом время на аллокации памяти
@@ -52,10 +59,6 @@ func init() {
 		//(maxRooms / 2)  или (maxRooms / 4)
 		rooms:    make(map[uint64]*room.Room, maxRooms/4),
 		idSource: 0,
-
-		//Make Buffered channel, otherwise 'g.PlayByWebsocket' gets stuck,
-		// awaiting for someone ('startBalance' in goroutine) to read from channel g.in
-		in: make(chan player.Player, 1),
 	}
 	go game.startBalance() //Начинаем работу балансировщика
 }
@@ -74,7 +77,7 @@ func (g *gameFacade) startBalance() {
 	//и занимаем место в ней, а если достигнут maxRooms, то заново входим в цикл
 	logger.Info("StartBalance started")
 
-	for p := range g.in {
+	for p := range in {
 		fmt.Println("Got value from channel")
 		logger.Info("Got new Player from channel g.in")
 		go func() {
@@ -115,6 +118,6 @@ func (g *gameFacade) startBalance() {
 func (g *gameFacade) PlayByWebsocket(conn *websocket.Conn, uid uint64) {
 	logger.Info("PlayByWebsocket Got new Connection")
 	//Начинаем игру по вебсокет соединению
-	g.in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
+	in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
 	logger.Info("Player has been read from channel by balancer ")
 }
