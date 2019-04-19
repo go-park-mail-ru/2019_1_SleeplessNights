@@ -74,54 +74,41 @@ func (g *gameFacade) startBalance() {
 	//и занимаем место в ней, а если достигнут maxRooms, то заново входим в цикл
 	logger.Info("StartBalance started")
 
-	for {
-		select {
-		case p := <-g.in:
-			{
-				fmt.Println("Got value from channel")
-				logger.Info("Got new Player from channel g.in")
-				go func() {
-					logger.Info("goroutine Started:", "player", p.UID(), " looking for space room")
-					roomFound := false
-					for !roomFound {
-						roomsCounter := 0
-						roomFound = false
-
-						//Search for room a player can join
-						for _, v := range g.rooms {
-							if v.TryJoin(p) {
-								logger.Info("Found Existing room, player added")
-								roomFound = true
-								break
-							}
-							roomsCounter++
-						}
-
-						g.mu.Lock()
-						var roomId uint64
-						if roomsCounter != maxRooms && !roomFound {
-							g.idSource += 1
-							roomId = g.idSource
-							g.rooms[roomId] = &room.Room{}
-							roomFound = (g.rooms[roomId]).TryJoin(p)
-						}
-						g.mu.Unlock()
-						if roomFound {
-							logger.Info("Successfully found Room with id", roomId)
-							logger.Info("Player with id", p.UID(), "added to room", roomId)
-						} else {
-							logger.Error("Failed to join just created Room with id", roomId)
-						}
+	for p := range g.in {
+		fmt.Println("Got value from channel")
+		logger.Info("Got new Player from channel g.in")
+		go func() {
+			logger.Info("goroutine Started:", "player", p.UID(), " looking for space room")
+			roomFound := false
+			for !roomFound {
+				roomsCounter := 0
+				roomFound = false
+				//Search for room a player can join
+				for _, v := range g.rooms {
+					if v.TryJoin(p) {
+						logger.Info("Found Existing room, player added")
+						roomFound = true
+						break
 					}
-				}()
+					roomsCounter++
+				}
+				g.mu.Lock()
+				var roomId uint64
+				if roomsCounter != maxRooms && !roomFound {
+					g.idSource += 1
+					roomId = g.idSource
+					g.rooms[roomId] = &room.Room{}
+					roomFound = (g.rooms[roomId]).TryJoin(p)
+				}
+				g.mu.Unlock()
+				if roomFound {
+					logger.Info("Successfully found Room with id", roomId)
+					logger.Info("Player with id", p.UID(), "added to room", roomId)
+				} else {
+					logger.Error("Failed to join just created Room with id", roomId)
+				}
 			}
-		default:
-			{
-
-			}
-
-		}
-
+		}()
 	}
 }
 
