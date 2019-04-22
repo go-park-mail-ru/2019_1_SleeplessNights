@@ -52,6 +52,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err = database.GetInstance().GetUserViaEmail(user.Email)//id присваивается только при добавлении в базу
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+
 	sessionCookie, err := auth.MakeSession(user)
 	if err != nil {
 		helpers.Return500(&w, err)
