@@ -48,7 +48,7 @@ type GameField struct {
 	field [fieldSize][fieldSize]gameCell
 	p1    gfPlayer
 	p2    gfPlayer
-	//Out   []event.Event
+	//out   []event.Event
 
 	regX        int
 	regY        int
@@ -167,11 +167,11 @@ func (gf *GameField) Move(player *gfPlayer) {
 	player.pos.Y = gf.regY
 
 	if gf.checkWinner(*player.pos) {
-		//gf.Out <- event.Event{Etype: event.WinPrize, Edata: player.id}
+		//gf.out <- event.Event{Etype: event.WinPrize, Edata: player.id}
 		return
 	}
 
-	//gf.Out <- event.Event{Etype: event.Move, Edata: player.id}
+	//gf.out <- event.Event{Etype: event.Move, Edata: player.id}
 	return
 
 }

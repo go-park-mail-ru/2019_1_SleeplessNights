@@ -57,12 +57,15 @@ func (pf *playerFactory) BuildWebsocketPlayer(conn *websocket.Conn, uid uint64) 
 	return &wsPlayer
 }
 
-func (pf *playerFactory) BuildChannelPlayer(uid uint64) player.Player {
+func (pf *playerFactory) BuildChannelPlayer(jobToDo channelPlayerLogic, args ...interface{}) player.Player {
 	//Метод построения игрока из вебсокет соединения
 	chanPlayer := channelPlayer{
-		id:  atomic.AddUint64(&pf.idSource, 1), //Атомик необходим для обеспечения потокобезопасности
-		In:  make(chan messge.Message, 1),
-		Out:  make(chan messge.Message, 1),
+		work: jobToDo,
+		id:   atomic.AddUint64(&pf.idSource, 1), //Атомик необходим для обеспечения потокобезопасности
+		in:   make(chan messge.Message, 1),
+		out:  make(chan messge.Message, 1),
 	}
+	go chanPlayer.work(args...)
+	logger.Info("chanPlayer started working", chanPlayer.id)
 	return &chanPlayer
 }

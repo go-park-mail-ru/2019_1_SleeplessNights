@@ -4,21 +4,24 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 )
 
+type channelPlayerLogic func(args ...interface{})()
+
 type channelPlayer struct {
 	//С помощью этой структуры будем делать игрока по вебсокету на фабрике
 	//Она уже реализует интерфейс Player, поэтому нам нужно будет просто сделатьинстанс этой структуры
-	id  uint64
-	In  chan messge.Message
-	Out chan messge.Message
+	work channelPlayerLogic
+	id   uint64
+	in   chan messge.Message
+	out  chan messge.Message
 }
 
 func (chanPlayer *channelPlayer) Send(msg messge.Message) (err error) {
-	chanPlayer.Out <- msg
+	chanPlayer.out <- msg
 	return nil
 }
 
 func (chanPlayer *channelPlayer) Subscribe() chan messge.Message {
-	return chanPlayer.In
+	return chanPlayer.in
 }
 
 func (chanPlayer *channelPlayer) ID() uint64 {
@@ -31,7 +34,7 @@ func (chanPlayer *channelPlayer) UID() uint64 {
 
 func (chanPlayer *channelPlayer) Close() {
 	logger.Infof("Player %d closed the connection", chanPlayer.id)
-	chanPlayer.In <- messge.Message{Title: messge.Leave}
-	close(chanPlayer.In)
-	close(chanPlayer.Out)
+	chanPlayer.in <- messge.Message{Title: messge.Leave}
+	close(chanPlayer.in)
+	close(chanPlayer.out)
 }
