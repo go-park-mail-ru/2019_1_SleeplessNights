@@ -46,18 +46,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	user.Salt = salt
 	user.Password = auth.MakePasswordHash(r.Form.Get("password"), user.Salt)
 
-	sessionCookie, err := auth.MakeSession(user)
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
-	http.SetCookie(w, &sessionCookie)
-
 	err = database.GetInstance().AddUser(user)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
+
+	sessionCookie, err := auth.MakeSession(user)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+
+	http.SetCookie(w, &sessionCookie)
 
 	data, err := json.Marshal(user)
 	if err != nil {

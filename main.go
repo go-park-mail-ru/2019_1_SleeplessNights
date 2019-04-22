@@ -1,14 +1,11 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
 	"github.com/xlab/closer"
 	"net/http"
 	"os"
-	"os/exec"
 	"sync"
 )
 
@@ -49,7 +46,7 @@ func main() {
 		wg.Done()
 	}(&wg)
 
-	user, _ := database.GetInstance().GetUserViaID(1)
+	/*user, _ := database.GetInstance().GetUserViaID(1)
 	cookie, _ := auth.MakeSession(user)
 	connUser := exec.Command(`./ws-connect.sh`, PORT, cookie.Value)
 	err := connUser.Run()
@@ -62,7 +59,7 @@ func main() {
 	err = connUser.Run()
 	if err != nil {
 		logger.Error(err)
-	}
+	}*/
 
 	wg.Wait()
 }

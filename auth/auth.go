@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/models"
-	"log"
+	"github.com/sirupsen/logrus"
 	"math/rand"
 	"net/http"
 	"os"
@@ -22,19 +23,25 @@ const (
 	NoTokenOwner = "error: There are no token's owner in database"
 )
 
+var logger *log.Logger
+
+func init() {
+	logger = log.GetLogger("Auth")
+	logger.SetLogLevel(logrus.TraceLevel)
+}
+
 var secret []byte
 
 func init() {
-
 	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 	}()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	_, err = fmt.Fscanln(secretFile, &secret)
 	if err != nil {
@@ -79,6 +86,8 @@ func MakeSession(user models.User) (sessionCookie http.Cookie, err error) {
 }
 
 func Authorize(sessionToken string) (user models.User, err error) {
+	fmt.Println("HERE")
+	logger.Debug("Authorize method called with token:",sessionToken)
 	rawToken, err := jwt.Parse([]byte(sessionToken))
 	if err != nil {
 		return
@@ -86,24 +95,29 @@ func Authorize(sessionToken string) (user models.User, err error) {
 	verifier := jwt.NewHMAC(jwt.SHA512, secret)
 	err = rawToken.Verify(verifier)
 	if err != nil {
+		logger.Debug("Verify function returned an error:",err)
 		return
 	}
 	payload := jwt.Payload{}
 	_, err = rawToken.Decode(&payload)
 	if err != nil {
+		logger.Debug("Decode function returned an error:",err)
 		return
 	}
 	expValidator := jwt.ExpirationTimeValidator(time.Now(), true)
 	err = payload.Validate(expValidator)
 	if err != nil {
+		logger.Debug("Validate function returned an error:",err)
 		return
 	}
 	userID, err := strconv.ParseUint(payload.JWTID, 10, 64)
 	if err != nil {
+		logger.Debug("ParseUint function returned an error:",err)
 		return
 	}
 	user, err = database.GetInstance().GetUserViaID(uint(userID))
 	if err != nil {
+		logger.Debug("GetUserViaID returned an error:",err)
 		if err.Error() == database.NoUserFound {
 			return user, errors.New(NoTokenOwner)
 		} else {
