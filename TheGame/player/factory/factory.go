@@ -61,10 +61,8 @@ func (pf *playerFactory) BuildChannelPlayer(uid uint64) player.Player {
 	//Метод построения игрока из вебсокет соединения
 	chanPlayer := channelPlayer{
 		id:  atomic.AddUint64(&pf.idSource, 1), //Атомик необходим для обеспечения потокобезопасности
-		uid: uid,
 		In:  make(chan messge.Message, 1),
+		Out:  make(chan messge.Message, 1),
 	}
-	go chanPlayer.StartListen()
-	logger.Info("wsPlayer started listening", uid)
 	return &chanPlayer
 }
