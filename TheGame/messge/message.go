@@ -7,7 +7,7 @@ import (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Message")
 }
 
@@ -64,8 +64,6 @@ type Coordinates struct {
 //Request TryMove to a cell
 
 type MoveRequest struct {
-	PlayerId        uint64      `json:"player_id"`
-	CurrentPosition Coordinates `json:"curr_pos"`
 	DesiredPosition Coordinates `json:"desired_pos"`
 }
 
