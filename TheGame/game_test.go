@@ -16,3 +16,19 @@ func TestGetInstance(t *testing.T) {
 	}
 }
 
+func TestGameFacade_PlayByWebsocket(t *testing.T) {
+	//Метод должен протестировать то, что по вызову метода game.PlayByWebsocket игрок попадает в game.in
+	game.Close()//Там крутиться горутина, которая читает game.in, останавливаем её чтобы с ней не конкурировать
+	game.in = make(chan player.Player)//Канал in был закрыт предыдущим методом, переопределяем его, чтобы протестировать
+	uid := rand.Uint64()
+	//TODO make valid websocket connection for this test to work
+	game.PlayByWebsocket(&websocket.Conn{}, uid)
+	newPlayer := <- game.in
+	if newPlayer.UID() != uid {
+		t.Error("game.PlayByWebsocket() violates UID")
+	}
+}
+
+func TestGameFacade_StartBalance(t *testing.T) {
+	
+}
