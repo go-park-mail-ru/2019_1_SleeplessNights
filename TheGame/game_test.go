@@ -1,11 +1,13 @@
 package TheGame
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
 	"github.com/gorilla/websocket"
 	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestGetInstance(t *testing.T) {
@@ -30,5 +32,20 @@ func TestGameFacade_PlayByWebsocket(t *testing.T) {
 }
 
 func TestGameFacade_StartBalance(t *testing.T) {
-	
+	leaverLogic := func(id uint64, in, out *chan messge.Message, args ...interface{}) {
+		//КОНТРАКТ: args: 1 фргумент - time.Duration
+		defer func() {
+			if err := recover(); err != nil {
+				logger.Errorf("Channel player", id, "failed with error", err)
+			}
+		}()
+
+		offset := args[0].(time.Duration)
+
+		time.Sleep(offset)
+		*in <- messge.Message{Title: messge.Leave, Payload: nil}
+	}
+	//TODO засунуть в игру много игроков с рандомным временем ожидания и дождаться, пока они отработают
+	//TODO add wait group
+	game.PlayByChannels(leaverLogic /*,some time duration*/)
 }

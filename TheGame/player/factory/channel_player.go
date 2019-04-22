@@ -4,12 +4,12 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
 )
 
-type channelPlayerLogic func(args ...interface{})()
+type ChannelPlayerLogic func(id uint64, in, out *chan messge.Message, args ...interface{})()//id - просто идентификатор для логов
 
 type channelPlayer struct {
 	//С помощью этой структуры будем делать игрока по вебсокету на фабрике
 	//Она уже реализует интерфейс Player, поэтому нам нужно будет просто сделатьинстанс этой структуры
-	work channelPlayerLogic
+	work ChannelPlayerLogic
 	id   uint64
 	in   chan messge.Message
 	out  chan messge.Message

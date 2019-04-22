@@ -57,7 +57,7 @@ func (pf *playerFactory) BuildWebsocketPlayer(conn *websocket.Conn, uid uint64) 
 	return &wsPlayer
 }
 
-func (pf *playerFactory) BuildChannelPlayer(jobToDo channelPlayerLogic, args ...interface{}) player.Player {
+func (pf *playerFactory) BuildChannelPlayer(jobToDo ChannelPlayerLogic, args ...interface{}) player.Player {
 	//Метод построения игрока из вебсокет соединения
 	chanPlayer := channelPlayer{
 		work: jobToDo,
@@ -65,7 +65,10 @@ func (pf *playerFactory) BuildChannelPlayer(jobToDo channelPlayerLogic, args ...
 		in:   make(chan messge.Message, 1),
 		out:  make(chan messge.Message, 1),
 	}
-	go chanPlayer.work(args...)
+	go func() {
+		chanPlayer.work(chanPlayer.id, &chanPlayer.in, &chanPlayer.out, args...)
+		chanPlayer.Close()
+	}()
 	logger.Info("chanPlayer started working", chanPlayer.id)
 	return &chanPlayer
 }
