@@ -45,11 +45,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Salt = salt
 	user.Password = auth.MakePasswordHash(r.Form.Get("password"), user.Salt)
-	err = database.GetInstance().AddUser(user)
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
 
 	sessionCookie, err := auth.MakeSession(user)
 	if err != nil {
@@ -57,6 +52,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, &sessionCookie)
+
+	err = database.GetInstance().AddUser(user)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
 
 	data, err := json.Marshal(user)
 	if err != nil {
