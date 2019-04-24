@@ -14,4 +14,5 @@ type Player interface {
 	Subscribe() chan messge.Message
 	ID() uint64
 	UID() uint64
+	Close()
 }
