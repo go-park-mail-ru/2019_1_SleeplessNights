@@ -26,6 +26,7 @@ func createPosts(slugOrID string, parents []int64, authors, messages []string)(c
 				var msg responses.Error
 				msg.Message = "Can't find thread"
 				response = &msg
+				return
 			default:
 				return responses.InternalError("Database returned unexpected error: " + err.Error())
 			}
@@ -49,6 +50,18 @@ func createPosts(slugOrID string, parents []int64, authors, messages []string)(c
 		err = rows.Err()
 		if err != nil {
 			switch err.Error() {
+			case "ERROR: no_data_found (SQLSTATE P0002)":
+				code = 404
+				var msg responses.Error
+				msg.Message = "Can't find user by id"
+				response = &msg
+				return
+			case "ERROR: unique_violation (SQLSTATE 23505)":
+				code = 409
+				var msg responses.Error
+				msg.Message = "Can't find post in this thread"
+				response = &msg
+				return
 			case "ERROR: integrity_constraint_violation (SQLSTATE 23000)":
 				code = 409
 				var msg responses.Error

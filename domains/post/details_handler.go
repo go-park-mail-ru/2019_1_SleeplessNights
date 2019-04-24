@@ -6,10 +6,11 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func DetailsHandler(w http.ResponseWriter, r *http.Request) {
-	related := r.URL.Query()["related"]
+	related := strings.Split(r.URL.Query().Get("related"), ",")
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		fmt.Println("Error while parsing mux variables:", err)

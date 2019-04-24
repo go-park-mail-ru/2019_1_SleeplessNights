@@ -11,7 +11,6 @@ import (
 )
 
 func CreateThreadHandler(w http.ResponseWriter, r *http.Request) {
-	//Создание форума
 	bodyContent, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("Error while reading body:", err)

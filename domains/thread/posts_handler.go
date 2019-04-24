@@ -1,6 +1,7 @@
 package thread
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -46,6 +47,9 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error while marshaling response to JSON:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+	if bytes.Equal(responseJSON,[]byte("null")) {
+		responseJSON = []byte("[]")
 	}
 
 	w.WriteHeader(code)

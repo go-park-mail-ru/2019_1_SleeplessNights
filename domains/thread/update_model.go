@@ -26,6 +26,7 @@ func update(slugOrID string, title, message string)(code int, response interface
 				var msg responses.Error
 				msg.Message = "Can't find thread"
 				response = &msg
+				return
 			default:
 				return responses.InternalError("Database returned unexpected error: " + err.Error())
 			}
@@ -49,6 +50,7 @@ func update(slugOrID string, title, message string)(code int, response interface
 			var msg responses.Error
 			msg.Message = "Can't find thread"
 			response = &msg
+			return
 		default:
 			return responses.InternalError("Database returned unexpected error: " + err.Error())
 		}

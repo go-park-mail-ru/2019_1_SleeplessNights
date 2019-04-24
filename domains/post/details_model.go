@@ -38,13 +38,14 @@ func details(id int64, related []string)(code int, response interface{}) {
 			var msg responses.Error
 			msg.Message = "Can't find post"
 			response = &msg
+			return
 		default:
 			return responses.InternalError("Database returned unexpected error: " + err.Error())
 		}
 	}
-
 	for _, key := range related {
 		switch key {
+		case "":
 		case keyUser:
 			postInfo.Author = &responses.User{}
 			row := tx.QueryRow(`SELECT * FROM func_user_details($1)`, postInfo.Post.Author)
@@ -56,6 +57,7 @@ func details(id int64, related []string)(code int, response interface{}) {
 					var msg responses.Error
 					msg.Message = "Can't find user"
 					response = &msg
+					return
 				default:
 					return responses.InternalError("Database returned unexpected error: " + err.Error())
 				}
@@ -71,6 +73,7 @@ func details(id int64, related []string)(code int, response interface{}) {
 					var msg responses.Error
 					msg.Message = "Can't find forum"
 					response = &msg
+					return
 				default:
 					return responses.InternalError("Database returned unexpected error: " + err.Error())
 				}
@@ -87,6 +90,7 @@ func details(id int64, related []string)(code int, response interface{}) {
 					var msg responses.Error
 					msg.Message = "Can't find thread"
 					response = &msg
+					return
 				default:
 					return responses.InternalError("Database returned unexpected error: " + err.Error())
 				}

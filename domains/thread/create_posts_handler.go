@@ -1,6 +1,7 @@
 package thread
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -18,6 +19,8 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
+
+
 	fmt.Println(string(bodyContent))
 
 	type PostData struct {
@@ -31,17 +34,6 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error while parsing request:", err)
 		w.WriteHeader(http.StatusInternalServerError)//Возможно, лучше BadRequest
-		return
-	}
-
-	if len(args) == 0 {
-		w.WriteHeader(201)
-		_, err = w.Write(bodyContent)
-		if err != nil {
-			fmt.Println("Error while writing response body:", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
 		return
 	}
 
@@ -61,6 +53,10 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error while marshaling response to JSON:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	if bytes.Equal(responseJSON, []byte("null")) {
+		responseJSON = []byte("[]")
 	}
 
 	w.WriteHeader(code)

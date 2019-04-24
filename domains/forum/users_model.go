@@ -38,7 +38,16 @@ func users(slug string, limit int32, since string, desc bool)(code int, response
 		}
 		err = rows.Err()
 		if err != nil {
-			return responses.InternalError("Error returned by rows: " + err.Error())
+			switch err.Error() {
+			case "ERROR: no_data_found (SQLSTATE P0002)":
+				code = 404
+				var msg responses.Error
+				msg.Message = "Can't find forum"
+				response = &msg
+			default:
+				return responses.InternalError("Database returned unexpected error: " + err.Error())
+			}
+			return
 		}
 
 		code = 200

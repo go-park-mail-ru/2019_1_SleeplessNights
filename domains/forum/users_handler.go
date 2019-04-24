@@ -1,6 +1,7 @@
 package forum
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -9,7 +10,6 @@ import (
 )
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
-	//Создание форума
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil {
 		limit = 100
@@ -26,6 +26,10 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error while marshaling response to JSON:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	if bytes.Equal(responseJSON,[]byte("null")) {
+		responseJSON = []byte("[]")
 	}
 
 	w.WriteHeader(code)

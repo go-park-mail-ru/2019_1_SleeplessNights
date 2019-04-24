@@ -36,6 +36,7 @@ func vote(slugOrID string, nickname string, voiceArg int)(code int, response int
 				var msg responses.Error
 				msg.Message = "Can't find thread"
 				response = &msg
+				return
 			default:
 				return responses.InternalError("Database returned unexpected error: " + err.Error())
 			}
@@ -59,6 +60,7 @@ func vote(slugOrID string, nickname string, voiceArg int)(code int, response int
 			var msg responses.Error
 			msg.Message = "Can't find thread"
 			response = &msg
+			return
 		default:
 			return responses.InternalError("Database returned unexpected error: " + err.Error())
 		}
