@@ -1,8 +1,8 @@
 package main
 
 import (
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/router"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/router"
 	"github.com/xlab/closer"
 	"net/http"
 	"os"
@@ -47,14 +47,14 @@ func main() {
 	}(&wg)
 
 	/*user, _ := database.GetInstance().GetUserViaID(1)
-	cookie, _ := auth.MakeSession(user)
+	cookie, _ := auth_microservice.MakeSession(user)
 	connUser := exec.Command(`./ws-connect.sh`, PORT, cookie.Value)
 	err := connUser.Run()
 	if err != nil {
 		logger.Error(err)
 	}
 	user, _ = database.GetInstance().GetUserViaID(2)
-	cookie, _ = auth.MakeSession(user)
+	cookie, _ = auth_microservice.MakeSession(user)
 	connUser = exec.Command(`./ws-connect.sh`, PORT, cookie.Value)
 	err = connUser.Run()
 	if err != nil {
