@@ -25,6 +25,9 @@ const (
 	StatusJoined = iota
 	StatusReady
 	StatusLeft
+	StatusWannaContinue
+	StatusWannaChangeOpponent
+	StatusWannaQuit
 )
 
 type MessageWrapper struct {
@@ -139,6 +142,11 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	r.mu.Lock()
 	if wm.msg.Title == messge.Leave {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == messge.ChangeOpponent || wm.msg.Title == messge.Quit || wm.msg.Title == messge.Continue {
 		isValid = true
 		r.mu.Unlock()
 		return

@@ -26,6 +26,19 @@ func (r *Room) MessageHandlerMux(m MessageWrapper) {
 			r.LeaveHandler(m)
 		}
 
+	case messge.Continue:
+		{
+			r.ContinueHandler(m)
+		}
+	case messge.ChangeOpponent:
+		{
+			r.ChangeOpponentHandler(m)
+		}
+	case messge.Quit:
+		{
+			r.QuitHandler(m)
+		}
+
 	}
 }
 
@@ -102,7 +115,9 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			logger.Info("player", (*r.active).ID(), "Has Won the prize")
 			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Win, Payload: nil}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.Loss, Payload: nil}}
-			r.waitForSyncMsg = "LEAVE"
+			r.waitForSyncMsg = "Leave"
+			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.WannaPlayAgain, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.WannaPlayAgain, Payload: nil}}
 		}
 	}
 
@@ -146,8 +161,59 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 }
 
 func (r *Room) LeaveHandler(m MessageWrapper) bool {
-
 	r.mu.Lock()
+
+	r.mu.Unlock()
+	return true
+}
+
+//Оставить комнату с теми же игроками, создать для них новое игровое поле
+//Если один из них голосует выйти, то написать об этом другому
+func (r *Room) ContinueHandler(m MessageWrapper) bool {
+	r.mu.Lock()
+	var secondPlayer *player.Player
+	///var thisPlayer *player.Player
+
+	if &r.p1 == m.player {
+		///	thisPlayer=&r.p1
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		///	thisPlayer = &r.p2
+		secondPlayer = &r.p1
+	}
+	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentContines, Payload: nil}}
+
+	r.mu.Unlock()
+	return true
+}
+
+//Выбросить "игрока" из комнаты, поместить в другую
+func (r *Room) ChangeOpponentHandler(m MessageWrapper) bool {
+	r.mu.Lock()
+
+	var secondPlayer *player.Player
+	//var thisPlayer *player.Player
+
+	if &r.p1 == m.player {
+		///	thisPlayer=&r.p1
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		///	thisPlayer = &r.p2
+		secondPlayer = &r.p1
+	}
+	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentLeaves, Payload: nil}}
+
+	r.mu.Unlock()
+	return true
+
+}
+
+//Выбросить "пользователя" в главное меню, "игрока" уничтожить
+func (r *Room) QuitHandler(m MessageWrapper) bool {
+	r.mu.Lock()
+	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.OpponentLeaves, Payload: nil}}
 
 	r.mu.Unlock()
 	return true

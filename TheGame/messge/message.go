@@ -29,6 +29,10 @@ const (
 	Loss           = "LOSS"            //Оповещаем клиента о его поражении
 	Win            = "WIN"             //Оповещаем клиента о его победе
 
+	WannaPlayAgain   = "WANNA_PLAY_AGAIN"   // Даём клиенту выбор продолжить играть или нет
+	OpponentLeaves   = "OPPONENT_QUITS"     //Оповещаем клиента о желании соперника продолжить
+	OpponentContines = "OPPONENT_CONTINUES" //Оповещаем клиента о желании выйти из игры
+
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
 	//Асинхронные команды всегда принимаются и добавляются в очередь входных сообщений комнаты
@@ -42,6 +46,11 @@ const (
 	GoTo         = "GO_TO"  //SYNC Оповещаем клиента о клетке, которую выбрали для хода; payload = pair
 	ClientAnswer = "ANSWER" //SYNC Оповещаем сервер о выбранном ответе на вопрос; payload = int
 	Leave        = "LEAVE"  //ASYNC Оповещаем клиента о выходе из комнаты
+
+	//Ответы игроков после того, как матч завершиться (ответы на запрос WannaPlayAgain)
+	Quit           = "QUIT"            //  Оповещаем сервер о желании выйти из игры и в главное меню
+	Continue       = "CONTINUE"        //  Оповещаем сервер о желании продолжить игру с тем же соперником
+	ChangeOpponent = "CHANGE_OPPONENT" //  Оповещаем сервер о желании продолжить игру с другим соперником
 )
 
 type Message struct {
@@ -118,6 +127,19 @@ func (m *Message) IsValid() bool {
 			return true
 		}
 	case Leave:
+		{
+			return true
+		}
+
+	case Continue:
+		{
+			return true
+		}
+	case ChangeOpponent:
+		{
+			return true
+		}
+	case Quit:
 		{
 			return true
 		}
