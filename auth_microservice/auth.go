@@ -1,39 +1,25 @@
 package auth_microservice
 
 import (
-	"errors"
+	"context"
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
-	"net/http"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
 	"os"
 	"strconv"
 	"time"
 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const (
 	sessionLifeLen = 4 * time.Hour
 	NoTokenOwner = "error: There are no token's owner in database"
 )
 
-var secret []byte
+var auth *authManager
+
+type authManager struct {
+	secret []byte
+}
 
 func init() {
 	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
@@ -46,73 +32,67 @@ func init() {
 	if err != nil {
 		logger.Fatal(err)
 	}
+
+	var secret []byte
 	_, err = fmt.Fscanln(secretFile, &secret)
 	if err != nil {
 		return
 	}
+
+	auth = &authManager{
+		secret: secret,
+	}
 }
 
-func MakeSession(user models.User) (sessionCookie http.Cookie, err error) {
-	signer := jwt.NewHMAC(jwt.SHA512, secret)
-	header := jwt.Header{}
-	expiresAt := time.Now().Add(sessionLifeLen)
-	payload := jwt.Payload{
-		ExpirationTime: expiresAt.Unix(),
-		JWTID:          strconv.FormatUint(uint64(user.ID), 10),
-	}
-	token, err := jwt.Sign(header, payload, signer)
-	if err != nil {
-		return
-	}
-
-	//Создаём cookie сессии
-	sessionCookie = http.Cookie{
-		Name:     "session_token",
-		Value:    string(token),
-		Expires:  expiresAt,
-		HttpOnly: true,
-	}
-	return
+func GetInstance() *authManager {
+	return auth
 }
 
-func Authorize(sessionToken string) (user models.User, err error) {
-	fmt.Println("HERE")
-	logger.Debug("Authorize method called with token:",sessionToken)
-	rawToken, err := jwt.Parse([]byte(sessionToken))
+func (auth *authManager)Check(ctx context.Context, in *services.SessionToken)(*services.UserID, error) {
+	rawToken, err := jwt.Parse([]byte(in.Token))
 	if err != nil {
-		return
+		return nil, err
 	}
-	verifier := jwt.NewHMAC(jwt.SHA512, secret)
+	verifier := jwt.NewHMAC(jwt.SHA512, auth.secret)
 	err = rawToken.Verify(verifier)
 	if err != nil {
-		logger.Debug("Verify function returned an error:",err)
-		return
+		return nil, err
 	}
 	payload := jwt.Payload{}
 	_, err = rawToken.Decode(&payload)
 	if err != nil {
-		logger.Debug("Decode function returned an error:",err)
-		return
+		return nil, err
 	}
 	expValidator := jwt.ExpirationTimeValidator(time.Now(), true)
 	err = payload.Validate(expValidator)
 	if err != nil {
-		logger.Debug("Validate function returned an error:",err)
-		return
+		return nil, err
 	}
 	userID, err := strconv.ParseUint(payload.JWTID, 10, 64)
 	if err != nil {
-		logger.Debug("ParseUint function returned an error:",err)
-		return
+		return nil, err
 	}
-	user, err = database.GetInstance().GetUserViaID(userID)
+
+	var user services.UserID
+	user.ID = userID
+
+	return &user, nil
+}
+
+func (auth *authManager)MakeToken(ctx context.Context, in *services.UserID)(*services.SessionToken, error) {
+	signer := jwt.NewHMAC(jwt.SHA512, auth.secret)
+	header := jwt.Header{}
+	expiresAt := time.Now().Add(sessionLifeLen)
+	payload := jwt.Payload{
+		ExpirationTime: expiresAt.Unix(),
+		JWTID:          strconv.FormatUint(in.ID, 10),
+	}
+	token, err := jwt.Sign(header, payload, signer)
 	if err != nil {
-		logger.Debug("GetUserViaID returned an error:",err)
-		if err.Error() == database.NoUserFound {
-			return user, errors.New(NoTokenOwner)
-		} else {
-			return
-		}
+		return nil, err
 	}
-	return
+
+	var sessionToken services.SessionToken
+	sessionToken.Token = string(token)
+	return &sessionToken, nil
 }

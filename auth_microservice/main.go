@@ -1,7 +1,6 @@
 package auth_microservice
 
 import (
-	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
 	"github.com/sirupsen/logrus"
@@ -23,10 +22,14 @@ func main() {
 	}
 
 	server := grpc.NewServer()
+	services.RegisterAuthCheckerServer(server, GetInstance())
 
-	//session.RegisterAuthCheckerServer(server, NewSessionManager())
-	services.RegisterAuthCheckerServer(server, )
-
-	fmt.Println("starting server at :8081")
-	server.Serve(lis)
+	logger.Info("Auth microservice started listening at :8081")
+	err = server.Serve(lis)
+	if err != nil {
+		logger.Error("Auth microservice dropped with error")
+		logger.Info("Restarting auth microservice...")
+		logger.Info("Auth microservice started listening at :8081")
+		err = server.Serve(lis)
+	}
 }
