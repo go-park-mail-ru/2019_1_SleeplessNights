@@ -17,13 +17,3 @@ type Event struct {
 	Etype eventType
 	Edata interface{}
 }
-
-type Pair struct {
-	X int `json:"x"`
-	Y int `json:"y"`
-}
-type Coordinates []Pair
-
-type Question struct {
-	Question string `json:"question"`
-}

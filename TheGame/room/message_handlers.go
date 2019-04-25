@@ -87,10 +87,22 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 
 	for _, e := range eventSlice {
 		if e.Etype == event.Info {
-			data := e.Edata.(*event.Question)
-			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourQuestion, Payload: data}}
-			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.EnemyQuestion, Payload: data}}
-
+			logger.Info("player", (*r.active).ID(), "got question", e.Edata)
+			q, ok := e.Edata.(messge.Question)
+			if !ok {
+				logger.Error("Go_To handler couldn't cast Edata interface with question to string")
+				return false
+			}
+			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourQuestion, Payload: q}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.EnemyQuestion, Payload: q}}
+			r.waitForSyncMsg = "ANSWER"
+		}
+		if e.Etype == event.WinPrize {
+			//Write to DB results of the match
+			logger.Info("player", (*r.active).ID(), "Has Won the prize")
+			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Win, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.Loss, Payload: nil}}
+			r.waitForSyncMsg = "LEAVE"
 		}
 	}
 
@@ -102,17 +114,32 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	logger.Infof("player %d answered to ClientAnswerHandler", (*m.player).UID())
 	r.mu.Lock()
-	answerId := m.msg.Payload.(*messge.Answer).AnswerId
-	if !r.field.CheckAnswer(answerId) {
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
+	st, ok := m.msg.Payload.(map[string]interface{})
+	if !ok {
+		logger.Error("ClientAnswerHandler, coundn't cast payload with answer_id to map[string]interface{}")
 	}
-	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
+	answerId, ok := st["answer_id"].(float64)
+	if !ok {
+		logger.Error(`ClientAnswerHandler, coundn't find value in map st with key "answer_id" `)
+	}
+
+	if !r.field.CheckAnswer(int(answerId)) {
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
+		r.field.MarkCellAsBlocked()
+	} else {
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
+		r.field.Move(r.getPlayerIdx(r.active))
+	}
 
 	//Смена хода после ответа игрока
 	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
 	r.changeTurn()
-	r.waitForSyncMsg = "GoTo"
+	r.waitForSyncMsg = "GO_TO"
 	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourTurn, Payload: nil}}
+	cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
+
+	//Send Available cells to active player (Do it every time, after giving player a turn rights
+	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
 
 	r.mu.Unlock()
 	return true

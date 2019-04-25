@@ -12,7 +12,7 @@ import (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("GameField")
 }
 
@@ -49,7 +49,6 @@ type GameField struct {
 	p1    gfPlayer
 	p2    gfPlayer
 	//Out   []event.Event
-
 	regX        int
 	regY        int
 	regQuestion questions.Question
@@ -138,7 +137,9 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	//Get rows
 	if player.pos == nil {
 		for x := 0; x < fieldSize; x++ {
-			cellsCoordinates = append(cellsCoordinates, pair{x, rowIdx})
+			if gf.field[rowIdx][x].isAvailable {
+				cellsCoordinates = append(cellsCoordinates, pair{x, rowIdx})
+			}
 		}
 		return
 	}
@@ -161,14 +162,22 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	return
 }
 
-func (gf *GameField) Move(player *gfPlayer) {
-	//TODO этот метод должен получать ответ на regQuestion и проверять правильноть этого ответа
-	player.pos.X = gf.regX
-	player.pos.Y = gf.regY
+//Поле для перемещения берется из регистров
+func (gf *GameField) Move(playerIdx int) {
+	var player *gfPlayer
 
-	if gf.checkWinner(*player.pos) {
-		//gf.Out <- event.Event{Etype: event.WinPrize, Edata: player.id}
-		return
+	if playerIdx == 1 {
+		player = &gf.p1
+	} else {
+		player = &gf.p2
+	}
+
+	//TODO этот метод должен получать ответ на regQuestion и проверять правильноть этого ответа
+	if player.pos == nil {
+		player.pos = &pair{gf.regX, gf.regY}
+	} else {
+		player.pos.X = gf.regX
+		player.pos.Y = gf.regY
 	}
 
 	//gf.Out <- event.Event{Etype: event.Move, Edata: player.id}
@@ -177,9 +186,9 @@ func (gf *GameField) Move(player *gfPlayer) {
 }
 
 func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err error) {
-	nextX := m.Payload.(*messge.Coordinates).X
-	nextY := m.Payload.(*messge.Coordinates).Y
-
+	st := m.Payload.(map[string]interface{})
+	nextX := int(st["x"].(float64))
+	nextY := int(st["y"].(float64))
 	if !gf.validateMoveCoordinates(&gf.p1, nextX, nextY) {
 		err = errors.New(fmt.Sprintf("tried moving to invalid position x:%d ,y:%d", nextX, nextY))
 		return
@@ -193,9 +202,9 @@ func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err erro
 }
 
 func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err error) {
-	nextX := m.Payload.(*messge.Coordinates).X
-	nextY := m.Payload.(*messge.Coordinates).Y
-
+	st := m.Payload.(map[string]interface{})
+	nextX := int(st["x"].(float64))
+	nextY := int(st["y"].(float64))
 	if !gf.validateMoveCoordinates(&gf.p2, nextX, nextY) {
 		err = errors.New(fmt.Sprintf("tried moving to invalid position x:%d ,y:%d", nextX, nextY))
 		return
@@ -219,26 +228,30 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	gf.regX = nextX
 
 	//Пока не трогать
-	if !gf.checkRouteAvailable(*gf.p1.pos) {
+	/*if !gf.checkRouteAvailable(*gf.p1.pos) {
 		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
 
 		//TODO переместить в начало метода GetAvailableCells
-	}
+	}*/
 
-	ms := struct {
-		question string
-	}{
-		gf.GetQuestionByCell(nextX, nextY).QuestionJson,
+	//Здесь проверяем, если следущая клетка выигрышная
+
+	if gf.checkWinner(pair{nextX, nextY}) {
+		e = make([]event.Event, 0)
+		e = append(e, event.Event{Etype: event.WinPrize, Edata: nil})
+		return
 	}
+	gf.regQuestion = gf.GetQuestionByCell(nextX, nextY)
+	ms := messge.Question{gf.GetQuestionByCell(nextX, nextY).QuestionJson}
 
 	e = make([]event.Event, 0)
-	e = append(e, event.Event{Etype: event.Move, Edata: ms})
+	e = append(e, event.Event{Etype: event.Info, Edata: ms})
 	return
 }
 
 func (gf *GameField) GetQuestionByCell(x, y int) (question questions.Question) {
 	logger.Infof("GetQuestionByCell x:%d,y:%d ", x, y)
-	question = *(gf.field[y][x].question)
+	question = *(gf.field[x][y].question)
 	return
 }
 
@@ -289,4 +302,9 @@ func (gf *GameField) validateAnswerId(answerId int) bool {
 		return false
 	}
 	return true
+}
+
+//Cell coordinates are taken from gamefield register
+func (gf *GameField) MarkCellAsBlocked() {
+	(gf.field[gf.regY][gf.regX]).isAvailable = false
 }

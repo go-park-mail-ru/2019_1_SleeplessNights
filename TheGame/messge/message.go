@@ -1,13 +1,13 @@
 package messge
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/questions"
+	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/logger"
 )
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Message")
 }
 
@@ -57,22 +57,16 @@ type Message struct {
 }
 
 type Coordinates struct {
+	//Achtung!!!!
 	X int `json:"x"`
 	Y int `json:"y"`
 }
 
 //Request TryMove to a cell
 
-type MoveRequest struct {
-	PlayerId        uint64      `json:"player_id"`
-	CurrentPosition Coordinates `json:"curr_pos"`
-	DesiredPosition Coordinates `json:"desired_pos"`
-}
-
 //response from sever with question
 type Question struct {
-	PlayerId uint64             `json:"player_id"`
-	Question questions.Question `json:"question"`
+	Question string `json:"question"`
 }
 
 //response from client with answer_id
@@ -82,12 +76,12 @@ type Answer struct {
 
 //Response to players answer
 type AnswerResult struct {
-	AnswerResult bool `json:"answer_id"`
+	AnswerResult  bool `json:"answer_id"`
+	CorrectAnswer int  `json:"correct_answer"`
 }
 
-//Убрать валидации для поля гейм филд, Зделать валидаторы для каждого уровня игры
 func (m *Message) IsValid() bool {
-
+	fmt.Println(m.Payload)
 	switch m.Title {
 	case Ready:
 		{
@@ -95,20 +89,29 @@ func (m *Message) IsValid() bool {
 		}
 	case GoTo:
 		{
-			_, ok := m.Payload.(*MoveRequest)
+
+			st, ok := m.Payload.(map[string]interface{})
 			if !ok {
-				logger.Error("Message validator, Type=GoTo, error:interface->MoveRequest casting error")
+				logger.Error("Message validator, Title=GO_TO, error:interface->Answer casting error")
 				return false
 			}
-			logger.Info("Received Message is Valid")
+			if _, ok := st["x"]; !ok {
+				return false
+			}
+			if _, ok := st["y"]; !ok {
+				return false
+			}
 			return true
 
 		}
 	case ClientAnswer:
 		{
-			_, ok := m.Payload.(*Answer)
+			st, ok := m.Payload.(map[string]interface{})
 			if !ok {
 				logger.Error("Message validator, Title=ClientAnswer, error:interface->Answer casting error")
+				return false
+			}
+			if _, ok := st["answer_id"]; !ok {
 				return false
 			}
 

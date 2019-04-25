@@ -27,14 +27,14 @@ func (r *Room) buildEnv() {
 	}
 	var localQuestions [game_field.QuestionsNum]local.Question
 	var lq local.Question
-	for i := 0; i < len(localQuestions); i++  {
+	for i := 0; i < len(localQuestions); i++ {
 		questionJSON, err := json.Marshal(questions[i])
 		if err != nil {
 			logger.Error("Error occurred while marshalling question into JSON:", err)
 			//TODO deal with error, maybe refresh questions
 		}
 		lq = local.Question{PackID: uint64(questions[i].ID),
-			QuestionJson: string(questionJSON),
+			QuestionJson:    string(questionJSON),
 			CorrectAnswerId: questions[i].Correct}
 		localQuestions[i] = lq
 	}
@@ -45,11 +45,10 @@ func (r *Room) buildEnv() {
 }
 
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
-//
 
 func (r *Room) prepareMatch() {
 	logger.Info("Entered Prepare Match")
-	//r.buildEnv()
+	r.buildEnv()
 	r.requestsQueue = make(chan MessageWrapper, channelCapacity)
 	r.responsesQueue = make(chan MessageWrapper, channelCapacity)
 
@@ -61,7 +60,7 @@ func (r *Room) prepareMatch() {
 		logger.Error("Failed to notify all players:", err)
 	}
 	logger.Info("Игрокам Отправлены StartGame")
-	r.waitForSyncMsg=messge.Ready
+	r.waitForSyncMsg = messge.Ready
 	//Read Messages from Players
 	//Moved message receive conditions to Requests handler
 
