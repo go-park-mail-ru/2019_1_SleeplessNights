@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"math/rand"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -23,8 +24,19 @@ func TestGameFacade_PlayByWebsocket(t *testing.T) {
 	game.Close()//Там крутиться горутина, которая читает game.in, останавливаем её чтобы с ней не конкурировать
 	game.in = make(chan player.Player)//Канал in был закрыт предыдущим методом, переопределяем его, чтобы протестировать
 	uid := rand.Uint64()
-	//TODO make valid websocket connection for this test to work
-	game.PlayByWebsocket(&websocket.Conn{}, uid)
+
+	u := "ws" + strings.TrimPrefix("/", "http")
+	ws, _, err := websocket.DefaultDialer.Dial(u, nil)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	defer ws.Close()
+
+	if err = ws.WriteJSON( []byte("hello")); err != nil {
+		t.Error(err.Error())
+	}
+
+	game.PlayByWebsocket(ws, uid)
 	newPlayer := <- game.in
 	if newPlayer.UID() != uid {
 		t.Error("game.PlayByWebsocket() violates UID")
