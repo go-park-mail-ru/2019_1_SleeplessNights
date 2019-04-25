@@ -1,34 +1,37 @@
 package auth_microservice
 
 import (
-	"bytes"
-	"crypto/sha512"
 	"errors"
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
-	"github.com/sirupsen/logrus"
-	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 )
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const (
-	saltLen        = 16
 	sessionLifeLen = 4 * time.Hour
 	NoTokenOwner = "error: There are no token's owner in database"
 )
-
-var logger *log.Logger
-
-func init() {
-	logger = log.GetLogger("Auth")
-	logger.SetLogLevel(logrus.TraceLevel)
-}
 
 var secret []byte
 
@@ -47,19 +50,6 @@ func init() {
 	if err != nil {
 		return
 	}
-}
-
-func MakeSalt() (salt []byte, err error) {
-	salt = make([]byte, saltLen)
-	_, err = rand.Read(salt) //Заполняем слайс случайными значениями по всей его длине
-	return
-}
-
-func MakePasswordHash(password string, salt []byte) (hash []byte) {
-	saltedPassword := bytes.Join([][]byte{[]byte(password), salt}, nil)
-	hashedPassword := sha512.Sum512(saltedPassword) //sha512 возвращает массив, а слайс можно взять только по addressable массиву
-	hash = hashedPassword[0:]
-	return
 }
 
 func MakeSession(user models.User) (sessionCookie http.Cookie, err error) {
@@ -115,7 +105,7 @@ func Authorize(sessionToken string) (user models.User, err error) {
 		logger.Debug("ParseUint function returned an error:",err)
 		return
 	}
-	user, err = database.GetInstance().GetUserViaID(uint(userID))
+	user, err = database.GetInstance().GetUserViaID(userID)
 	if err != nil {
 		logger.Debug("GetUserViaID returned an error:",err)
 		if err.Error() == database.NoUserFound {

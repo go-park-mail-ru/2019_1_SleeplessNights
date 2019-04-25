@@ -96,7 +96,7 @@ func GetInstance() *dbManager {
 	return db
 }
 
-func (db *dbManager) GetUserViaID(userID uint) (user models.User, err error) {
+func (db *dbManager) GetUserViaID(userID uint64) (user models.User, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -190,7 +190,7 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 	return
 }
 
-func (db *dbManager) UpdateUser(user models.User, userID uint) (err error) {
+func (db *dbManager) UpdateUser(user models.User, userID uint64) (err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {

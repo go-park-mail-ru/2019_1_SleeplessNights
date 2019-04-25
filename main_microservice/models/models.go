@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	ID         uint          `json:"-"`
+	ID         uint64          `json:"-"`
 	Email      string        `json:"email"`
 	Password   []byte        `json:"-"`
 	Salt       []byte        `json:"-"`
@@ -17,7 +17,7 @@ type User struct {
 }
 
 type Question struct {
-	ID      uint
+	ID      uint64
 	Answers []string
 	Correct int
 	Text    string
@@ -25,6 +25,6 @@ type Question struct {
 }
 
 type Pack struct {
-	ID    uint
+	ID    uint64
 	Theme string
 }

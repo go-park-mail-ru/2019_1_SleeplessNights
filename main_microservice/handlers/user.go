@@ -38,13 +38,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Nickname:   r.Form.Get("nickname"),
 		AvatarPath: "default_avatar.jpg",
 	}
-	salt, err := auth_microservice.MakeSalt()
+	salt, err := helpers.MakeSalt()
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
 	user.Salt = salt
-	user.Password = auth_microservice.MakePasswordHash(r.Form.Get("password"), user.Salt)
+	user.Password = helpers.MakePasswordHash(r.Form.Get("password"), user.Salt)
 
 	err = database.GetInstance().AddUser(user)
 	if err != nil {

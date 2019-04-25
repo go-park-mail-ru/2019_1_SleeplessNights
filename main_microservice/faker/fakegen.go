@@ -1,10 +1,10 @@
 package faker
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/manveru/faker"
 	"math/rand"
 )
@@ -30,7 +30,7 @@ func CreateFakeData(quantity int) {
 		return
 	}
 	for i := 1; i <= quantity; i++ {
-		salt, err := auth_microservice.MakeSalt()
+		salt, err := helpers.MakeSalt()
 		if err != nil {
 			logger.Error(err.Error())
 			continue
@@ -44,7 +44,7 @@ func CreateFakeData(quantity int) {
 		}
 		user := models.User{
 			Email:      email,
-			Password:   auth_microservice.MakePasswordHash(FakeUserPassword, salt),
+			Password:   helpers.MakePasswordHash(FakeUserPassword, salt),
 			Salt:       salt,
 			Won:        uint(rand.Uint32()),
 			Lost:       uint(rand.Uint32()),

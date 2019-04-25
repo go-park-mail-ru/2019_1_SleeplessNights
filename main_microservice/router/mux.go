@@ -7,7 +7,6 @@ import (
 )
 
 func GetRouter() (router *mux.Router) {
-	//TODO REWORK AUTH AND MOVE IT TO MIDDLEWARE
 	//TODO REORGANIZE STATIC FILES ACCESS
 	//TODO ADD AMAZON S3
 	router = mux.NewRouter()

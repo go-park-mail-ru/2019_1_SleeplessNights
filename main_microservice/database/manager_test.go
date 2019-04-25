@@ -44,7 +44,7 @@ func TestGetUserViaIDUnsuccessful(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	var userID uint = 1
+	var userID uint64 = 1
 	expected := database.NoUserFound
 
 	_, err = database.GetInstance().GetUserViaID(userID)
@@ -298,7 +298,7 @@ func TestGetUsers(t *testing.T) {
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
-	for i, _ := range newUsers {
+	for i := range newUsers {
 		if newUsers[i].Email != oldUsers[i].Email || newUsers[i].Nickname != oldUsers[i].Nickname || newUsers[i].AvatarPath != oldUsers[i].AvatarPath {
 			t.Errorf("DB returned wrong user:\ngot %v, %v, %v\nwant %v, %v, %v\n",
 				newUsers[i].Email, newUsers[i].Nickname, newUsers[i].AvatarPath,

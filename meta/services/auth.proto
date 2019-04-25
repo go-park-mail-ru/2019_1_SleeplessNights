@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=services:. *.proto
+
+package services;
+
+message SessionToken {
+    string Token = 1;
+}
+
+message UserID {
+    uint64 ID = 1;
+}
+
+// services-сервис проверки авторизации
+service AuthChecker {
+    rpc Check (SessionToken) returns (UserID) {}
+    rpc MakeToken (UserID) returns (SessionToken) {}
+}

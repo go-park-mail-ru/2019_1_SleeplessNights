@@ -2,10 +2,9 @@ package helpers
 
 import (
 	"bytes"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"mime/multipart"
 	"net/http"
 	"regexp"
@@ -112,7 +111,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.U
 		}
 	}
 
-	hashedPassword := auth_microservice.MakePasswordHash(password, user.Salt)
+	hashedPassword := MakePasswordHash(password, user.Salt)
 	if bytes.Compare(hashedPassword, user.Password) != 0 {
 		requestErrors = append(requestErrors, WrongPassword)
 	}
