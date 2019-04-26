@@ -12,10 +12,6 @@ import (
 
 var logger *log.Logger
 
-func init() {
-	logger = log.GetLogger("GameField")
-}
-
 const (
 	fieldSize    = 8
 	QuestionsNum = 60
@@ -24,14 +20,15 @@ const (
 var prizePos []pair
 
 //В начале иры й игроков не существует никаких позиций, они находятся как бы вне поля
-
 func init() {
+	logger = log.GetLogger("GameField")
 	prizePos = []pair{{3, 3}, {3, 4}, {4, 3}, {4, 4}}
 }
 
 type gameCell struct {
-	isAvailable bool
-	question    *questions.Question
+	isAvailable  bool
+	answerResult int
+	question     *questions.Question
 }
 
 type pair struct {
@@ -40,8 +37,11 @@ type pair struct {
 }
 
 type gfPlayer struct {
-	pos *pair //Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
-	id  uint64
+	pos          *pair //Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
+	rightAnswers int
+	falseAnswers int
+	partyCounter int
+	id           uint64
 }
 
 type GameField struct {
@@ -78,9 +78,9 @@ func (gf *GameField) Build(qArray [QuestionsNum]questions.Question) {
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
 			if isPrizePosition(rowIdx, colIdx) {
-				gf.field[rowIdx][colIdx] = gameCell{true, nil}
+				gf.field[rowIdx][colIdx] = gameCell{true, 0, nil}
 			} else {
-				gf.field[rowIdx][colIdx] = gameCell{true, &qSlice[index]}
+				gf.field[rowIdx][colIdx] = gameCell{true, 0, &qSlice[index]}
 				index++
 			}
 		}
@@ -290,8 +290,12 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 		return false
 	}
 	if gf.regQuestion.CorrectAnswerId == answerIdx {
+		(gf.field[gf.regY][gf.regX]).isAvailable = false
+		(gf.field[gf.regY][gf.regX]).answerResult = 1
 		return true
 	}
+	(gf.field[gf.regY][gf.regX]).isAvailable = false
+	(gf.field[gf.regY][gf.regX]).answerResult = -1
 	return false
 }
 
@@ -305,6 +309,68 @@ func (gf *GameField) validateAnswerId(answerId int) bool {
 }
 
 //Cell coordinates are taken from gamefield register
-func (gf *GameField) MarkCellAsBlocked() {
-	(gf.field[gf.regY][gf.regX]).isAvailable = false
+
+func (gf *GameField) ResetPlayersPositions() {
+	gf.p1.pos = nil
+	gf.p2.pos = nil
+
+}
+
+/*
+ x0 x1 x2 x3 x4 x5 x6 x7
+ __ __ __ __ __ __ __ __
+|__|__|__|__|P2|__|__|__|  y0
+|__|__|__|__|_X|_X|__|__|  y1
+|__|__|__|__|_X|_X|_X|_X|  y2
+|__|__|__|Pr|Pr|p1|__|__|  y3
+|__|__|__|Pr|Pr|__|__|__|  y4
+|__|__|__|__|_X|__|__|__|  y5
+|__|__|__|__|_X|__|__|__|  y6
+|__|__|__|P1|__|__|__|__|  y7
+*/
+func (gf *GameField) GetCurrentState() string {
+	fieldState := fmt.Sprintln("\n x0 x1 x2 x3 x4 x5 x6 x7\n __ __ __ __ __ __ __ __")
+	for i := 0; i < fieldSize; i++ {
+		for j := 0; j < fieldSize; j++ {
+			if gf.p1.pos != nil {
+				if (*gf.p1.pos) == (pair{j, i}) {
+					fieldState = fieldState + "|P1"
+					continue
+				}
+			}
+			if gf.p2.pos != nil {
+				if (*gf.p2.pos) == (pair{j, i}) {
+					fieldState = fieldState + "|P2"
+					continue
+				}
+			}
+			if isPrizePosition(j, i) {
+				fieldState = fieldState + "|Pr"
+				continue
+			}
+			if gf.field[i][j].answerResult == 1 {
+				fieldState = fieldState + "|+_"
+			}
+			if gf.field[i][j].answerResult == -1 {
+				fieldState = fieldState + "|-_"
+			}
+			if gf.field[i][j].answerResult == 0 {
+				fieldState = fieldState + "|__"
+			}
+			if j == 7 {
+				fieldState = fieldState + fmt.Sprintln("|  y", i)
+			}
+			if i == 7 && j == 7 {
+				fieldState = fieldState + fmt.Sprintln()
+			}
+		}
+	}
+	p1State := ""
+	p2State := ""
+	if gf.p1.pos != nil && gf.p2.pos != nil {
+		p1State = fmt.Sprintf("\n\n player1 %d, {X:%d, Y:%d},answers: +:%d -:%d \n", gf.p1.id, gf.p1.pos.X, gf.p1.pos.Y, gf.p1.rightAnswers, gf.p1.falseAnswers)
+		p2State = fmt.Sprintf("\n\n player1 %d, {X:%d, Y:%d},answers: +:%d -:%d \n ", gf.p2.id, gf.p2.pos.X, gf.p2.pos.Y, gf.p1.rightAnswers, gf.p1.falseAnswers)
+
+	}
+	return (fieldState + p1State + p2State)
 }

@@ -33,6 +33,8 @@ const (
 	OpponentLeaves   = "OPPONENT_QUITS"     //Оповещаем клиента о желании соперника продолжить
 	OpponentContines = "OPPONENT_CONTINUES" //Оповещаем клиента о желании выйти из игры
 
+	CurrentState = "CURRENT_STATE" //Текущее состояние игры
+
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
 	//Асинхронные команды всегда принимаются и добавляются в очередь входных сообщений комнаты
@@ -51,6 +53,8 @@ const (
 	Quit           = "QUIT"            //  Оповещаем сервер о желании выйти из игры и в главное меню
 	Continue       = "CONTINUE"        //  Оповещаем сервер о желании продолжить игру с тем же соперником
 	ChangeOpponent = "CHANGE_OPPONENT" //  Оповещаем сервер о желании продолжить игру с другим соперником
+
+	State = "STATE" //Запрос текущего состояния игры
 )
 
 type Message struct {
@@ -76,6 +80,9 @@ type Coordinates struct {
 //response from sever with question
 type Question struct {
 	Question string `json:"question"`
+}
+type GameState struct {
+	State string `json:"state"`
 }
 
 //response from client with answer_id
@@ -140,6 +147,10 @@ func (m *Message) IsValid() bool {
 			return true
 		}
 	case Quit:
+		{
+			return true
+		}
+	case State:
 		{
 			return true
 		}

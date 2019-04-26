@@ -151,6 +151,11 @@ func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 		r.mu.Unlock()
 		return
 	}
+	if wm.msg.Title == messge.State {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
 
 	if wm.player != r.active && (wm.msg.Title != messge.Ready) {
 		logger.Error("isSync Player addr error")
