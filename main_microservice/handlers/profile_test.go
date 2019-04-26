@@ -3,7 +3,6 @@ package handlers_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
@@ -32,7 +31,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 		t.Error(err.Error())
 	}
 	for _, user := range users {
-		cookie, err := auth_microservice.MakeSession(user)
+		cookie, err := helpers.BuildSessionCookie(user.ID)
 		if err != nil {
 			t.Errorf("\nMakeSession returned error: %s\n", err)
 			return
@@ -105,7 +104,7 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 		ID: 1000,
 	}
 
-	cookie, err := auth_microservice.MakeSession(user)
+	cookie, err := helpers.BuildSessionCookie(user.ID)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s", err)
 		return
@@ -153,7 +152,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	cookie, err := auth_microservice.MakeSession(user)
+	cookie, err := helpers.BuildSessionCookie(user.ID)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s\n", err.Error())
 		return
@@ -357,7 +356,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 		return
 	}
 
-	cookie, err := auth_microservice.MakeSession(user)
+	cookie, err := helpers.BuildSessionCookie(user.ID)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s\n", err.Error())
 		return

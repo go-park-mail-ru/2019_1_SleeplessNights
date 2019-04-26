@@ -1,10 +1,10 @@
 package handlers_test
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
 	"net/http"
 	"net/http/httptest"
@@ -223,7 +223,7 @@ func TestAuthDeleteHandlerSuccessful(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	cookie, err := auth_microservice.MakeSession(user)
+	cookie, err := helpers.BuildSessionCookie(user.ID)
 	if err != nil {
 		t.Errorf("MakeSession returned error: %s\n", err.Error())
 		return

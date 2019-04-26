@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
@@ -61,13 +60,6 @@ func ProfileUpdateHandler(user models.User, w http.ResponseWriter, r *http.Reque
 		helpers.Return500(&w, err)
 		return
 	}
-
-	cookie, err := auth_microservice.MakeSession(user)
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
-	http.SetCookie(w, &cookie)
 
 	avatarFile, err := newAvatar.Open()
 	if err != nil {
