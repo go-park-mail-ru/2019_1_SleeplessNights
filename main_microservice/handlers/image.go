@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	AvatarPrefix = "/static/img/"
+	AvatarPrefix = "/main_microservice/static/img/"
 )
 
 func ImgHandler(w http.ResponseWriter, r *http.Request) {
