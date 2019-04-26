@@ -1,4 +1,91 @@
 # 2019_1_SleeplessNights
+## О конфигурации системы
+Модель конфига:  
+```
+{  
+  "dev": {
+    "log_level": "trace",  
+    "auth": {  
+      "cookie_name": "session_token",  
+      "expiration_time": 86400,  
+      "secret": "-"  
+    },  
+    "cors": {  
+      "credentials": true,  
+      "domains": "https://sleepless-nights--frontend.herokuapp.com",  
+      "headers": [  
+        "X-Requested_With",  
+        "Content-type",  
+        "User-Agent",  
+        "Cache-Control",  
+        "Cookie",  
+        "Origin",  
+        "Accept-Encoding",  
+        "Connection",  
+        "Host",  
+        "Upgrade-Insecure-Requests",  
+        "User-Agent",  
+        "Referer",  
+        "Access-Control-Request-Method",  
+        "Access-Control-Request-Headers"  
+      ],  
+      "methods": [  
+        "GET",  
+        "POST",  
+        "PATCH",  
+        "DELETE",  
+        "OPTIONS"  
+      ]  
+    },  
+    "db": {  
+      "host": "localhost",  
+      "port": 5432,  
+      "user": "maxim",  
+      "password": "-",  
+      "dbname": "questions"  
+    },  
+    "game": {  
+      "max_rooms": 100,  
+      "room": {  
+        "io_queues_len": 50,  
+        "main_loop_interval": 500  
+      }  
+    },  
+    "grpc_servers": {  
+      "main": {  
+        "host": "127.0.0.1",  
+        "port": "8000"  
+      },  
+      "game": {  
+        "host": "127.0.0.1",  
+        "port": "8001"  
+      },  
+      "auth": {  
+        "host": "127.0.0.1",  
+        "port": "8002"  
+      }  
+    },  
+    "http_servers": {  
+      "main": {  
+        "host": "127.0.0.1",  
+        "port": "8080"  
+      },  
+      "game": {  
+        "host": "127.0.0.1",  
+        "port": "8081"  
+      }  
+    },  
+    "static_path": "/home/maxim/Dev/Technopark/2_semester/Golang/2019_1_SleeplessNights/main_microservice/static"  
+  },
+  
+  "test": {
+  },  
+  "local": {
+  },  
+  "prod": {
+  }  
+}
+```
 ## Об архитектуре игры
 Сейчас все файлы, относящиеся к бизнес логике игры, лежат в директории TheGame. Уже в следующем модуле нам понадобится выделять эту логику в отдельный микросервис, поэтому на данном этапе очень важно, чтобы не возникало никаких внешних зависимостей.
 В игре присутствуют следующие сущности:
