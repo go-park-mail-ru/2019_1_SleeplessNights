@@ -25,6 +25,9 @@ const (
 	StatusJoined = iota
 	StatusReady
 	StatusLeft
+	StatusWannaContinue
+	StatusWannaChangeOpponent
+	StatusWannaQuit
 )
 
 type MessageWrapper struct {
@@ -138,8 +141,18 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 //Проверка Уместности сообщения ( на уровне комнаты)
 func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	r.mu.Lock()
-	if wm.msg.Title==messge.Leave{
-		isValid=true
+	if wm.msg.Title == messge.Leave {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == messge.ChangeOpponent || wm.msg.Title == messge.Quit || wm.msg.Title == messge.Continue {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == messge.State {
+		isValid = true
 		r.mu.Unlock()
 		return
 	}
@@ -147,10 +160,14 @@ func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	if wm.player != r.active && (wm.msg.Title != messge.Ready) {
 		logger.Error("isSync Player addr error")
 		isValid = false
+		r.mu.Unlock()
+		return
 	}
 	if r.waitForSyncMsg != wm.msg.Title {
 		logger.Error("isSync title error")
 		isValid = false
+		r.mu.Unlock()
+		return
 	}
 	isValid = true
 	r.mu.Unlock()

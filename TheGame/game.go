@@ -28,7 +28,7 @@ import (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Game")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
@@ -87,7 +87,6 @@ func (g *gameFacade) startBalance() {
 	//и ищем в каждой комнате свободное место, если дошли до конца и не нашли, то создаём свою комнату
 	//и занимаем место в ней, а если достигнут maxRooms, то заново входим в цикл
 	logger.Trace("StartBalance started")
-
 	for p := range g.in {
 		fmt.Println("Got value from channel")
 		logger.Info("Got new Player from channel g.in")

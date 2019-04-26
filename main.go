@@ -15,7 +15,7 @@ import (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Main")
 	//logger.SetLogLevel(logrus.TraceLevel)
 }
@@ -34,6 +34,12 @@ func main() {
 	logger.Fatal("Can not continue")*/
 
 	defer closer.Close()
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	faker.CreateFakeData(10)
 	faker.CreateFakePacks()
 
@@ -53,7 +59,7 @@ func main() {
 	user, _ := database.GetInstance().GetUserViaID(1)
 	cookie, _ := auth.MakeSession(user)
 	connUser := exec.Command(`./ws-connect.sh`, PORT, cookie.Value)
-	err := connUser.Run()
+	err = connUser.Run()
 	if err != nil {
 		logger.Error(err)
 	}

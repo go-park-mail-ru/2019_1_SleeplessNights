@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	SQLNoRows   = "sql: no rows in result set"
-	NoUserFound = "БД: Не был найден юзер"
+	SQLNoRows       = "sql: no rows in result set"
+	NoUserFound     = "БД: Не был найден юзер"
 	UniqueViolation = "pq: duplicate key value violates unique constraint \"users_email_ui\""
 )
 
@@ -22,7 +22,7 @@ var db *dbManager
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("DB")
 }
 
@@ -63,8 +63,7 @@ func loadConfiguration(file string) (psqlInfo string) {
 }
 
 func init() {
-	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/database/config.json")
-
+	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + string(os.PathSeparator) + "database" + string(os.PathSeparator) + "config.json")
 	dateBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		logger.Fatal(err.Error())
