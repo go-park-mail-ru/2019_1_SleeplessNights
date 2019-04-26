@@ -3,4 +3,4 @@ handlers/secret
 test.html
 server.log
 .idea
-database/config.json
+main_microservice/database/config.json
