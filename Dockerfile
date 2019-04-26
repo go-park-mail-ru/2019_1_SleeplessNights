@@ -22,7 +22,7 @@ COPY . .
 
 RUN cd /server
 RUN go get -u
-RUN cat database/deploy_config.json > database/config.json
+RUN cat main_microservice/database/deploy_config.json > main_microservice/database/config.json
 ENV BASEPATH "/server"
 ENV PORT 8080
 EXPOSE $PORT
@@ -32,7 +32,7 @@ USER postgres
 RUN /etc/init.d/postgresql start &&\
 	psql --echo-all --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
 	createdb -O docker docker &&\
-	psql -d docker -f database/sql.sql &&\
+	psql -d docker -f main_microservice/database/sql.sql &&\
 	/etc/init.d/postgresql stop
 
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGSQLVER/main/pg_hba.conf &&\

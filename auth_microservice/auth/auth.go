@@ -1,10 +1,12 @@
-package main
+package auth
 
 import (
 	"context"
 	"fmt"
 	"github.com/gbrlsnchs/jwt/v3"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"time"
@@ -14,6 +16,13 @@ const (
 	sessionLifeLen = 4 * time.Hour
 	NoTokenOwner = "error: There are no token's owner in database"
 )
+
+var logger *log.Logger
+
+func init() {
+	logger = log.GetLogger("Auth")
+	logger.SetLogLevel(logrus.TraceLevel)
+}
 
 var auth *authManager
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice/auth"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
 	"github.com/sirupsen/logrus"
@@ -11,7 +12,7 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("Auth")
+	logger = log.GetLogger("AuthMS")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
@@ -22,7 +23,7 @@ func main() {
 	}
 
 	server := grpc.NewServer()
-	services.RegisterAuthCheckerServer(server, GetInstance())
+	services.RegisterAuthCheckerServer(server, auth.GetInstance())
 
 	logger.Info("Auth microservice started listening at :8081")
 	err = server.Serve(lis)
