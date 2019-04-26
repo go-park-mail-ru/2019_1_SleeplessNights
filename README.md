@@ -75,6 +75,7 @@
         "port": "8081"  
       }  
     },  
+    "scripts_path": "/home/maxim/Dev/Technopark/2_semester/Golang/2019_1_SleeplessNights/main_microservice/scripts",  
     "static_path": "/home/maxim/Dev/Technopark/2_semester/Golang/2019_1_SleeplessNights/main_microservice/static"  
   },
   
