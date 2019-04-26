@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	"net/http"
 )
@@ -24,9 +23,10 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionCookie, err := auth_microservice.MakeSession(user)
+	sessionCookie, err := helpers.BuildSessionCookie(user.ID)
 	if err != nil {
-		helpers.Return500(&w, err) //TODO test wrong cookie
+		logger.Error("Cant build session cookie:", err)
+		helpers.Return500(&w, err)
 		return
 	}
 
