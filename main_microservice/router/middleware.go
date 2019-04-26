@@ -2,10 +2,13 @@ package router
 
 import (
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"net/http"
 )
 
@@ -63,9 +66,9 @@ func MiddlewareRescue(next http.Handler) http.Handler {
 
 func MiddlewareAuth(next AuthHandler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Header.Add("Referer", r.URL.String())
 		sessionCookie, err := r.Cookie("session_token")
 		if err != nil {
-			r.Header.Add("Referer", r.URL.String())
 			w.WriteHeader(http.StatusUnauthorized)
 			_, err = w.Write([]byte("{}"))
 			if err != nil {
@@ -75,9 +78,35 @@ func MiddlewareAuth(next AuthHandler) http.Handler {
 			return
 		}
 
-		user, err := auth_microservice.Authorize(sessionCookie.Value)
+		grpcConn, err := grpc.Dial(
+			"127.0.0.1:8081",
+			grpc.WithInsecure(),
+		)
 		if err != nil {
-			r.Header.Add("Referer", r.URL.String())
+			logger.Error("Can't connect to auth microservice")
+			helpers.Return500(&w, err)
+			return
+		}
+		defer grpcConn.Close()
+
+		authManager := services.NewAuthCheckerClient(grpcConn)
+
+		userID, err := authManager.Check(context.Background(),
+			&services.SessionToken{
+				Token: sessionCookie.Value,
+			})
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			_, err = w.Write([]byte("{}"))
+			if err != nil {
+				helpers.Return500(&w, err)
+				return
+			}
+			return
+		}
+
+		user, err := database.GetInstance().GetUserViaID(userID.ID)
+		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			_, err = w.Write([]byte("{}"))
 			if err != nil {
