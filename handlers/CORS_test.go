@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,11 @@ import (
 )
 
 func TestOptionsHandlerSuccessful(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	req := httptest.NewRequest(http.MethodOptions, handlers.ApiRegister, nil)
 

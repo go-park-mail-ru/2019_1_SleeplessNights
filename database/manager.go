@@ -152,6 +152,11 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 		return
 	}
 	txOK = true
+
+	if !txOK {
+		err = tx.Rollback()
+		return
+	}
 	return
 }
 
@@ -292,27 +297,27 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 
 func (db *dbManager) CleanerDBForTests() (err error) {
 
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
+	//tx, err := db.dataBase.Begin()
+	//if err != nil {
+	//	return
+	//}
+	//txOK := false
+	//defer func() {
+	//	if !txOK {
+	//		_ = tx.Rollback()
+	//	}
+	//}()
 
 	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users, public.question, public.question_pack RESTART IDENTITY`)
 	if err != nil {
 		return
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
+	//err = tx.Commit()
+	//if err != nil {
+	//	return
+	//}
+	//txOK = true
 	return
 }
 
@@ -425,6 +430,7 @@ func (db *dbManager) AddQuestionPack(theme string) (err error) {
 			_ = tx.Rollback()
 		}
 	}()
+
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
 	if err != nil {

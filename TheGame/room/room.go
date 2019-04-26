@@ -84,7 +84,7 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 		logger.Infof("All players joined the game, p1: %d, p2: %d", r.p1.UID(), r.p2.UID())
 		//TODO Prepare Match
 		//TODO Then run buildEnv after PrepareMatch
-		// In build Env составление и доставание даннных для вопросов
+		// in build Env составление и доставание даннных для вопросов
 		go func() {
 			//TODO handle possible panic
 			r.prepareMatch()

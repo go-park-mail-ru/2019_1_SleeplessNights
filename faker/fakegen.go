@@ -39,6 +39,7 @@ func CreateFakeData(quantity int) {
 		email := fake.Email()
 		_, err = database.GetInstance().GetUserViaEmail(email)
 		if err == nil {
+			quantity++
 			continue
 		}
 		user := models.User{
@@ -51,7 +52,10 @@ func CreateFakeData(quantity int) {
 			Nickname:   fake.UserName(),
 			AvatarPath: "default_avatar.jpg",
 		}
-		_ = database.GetInstance().AddUser(user)
+		err = database.GetInstance().AddUser(user)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 	}
 }
 

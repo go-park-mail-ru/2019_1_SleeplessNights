@@ -9,6 +9,11 @@ import (
 
 func TestGetUserViaIDSuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	oldUser := models.User{
 		ID:         1,
 		Email:      "first@test.com",
@@ -16,13 +21,11 @@ func TestGetUserViaIDSuccessful(t *testing.T) {
 		AvatarPath: "default_avatar.jpg",
 	}
 
-	err := database.GetInstance().AddUser(oldUser)
+	err = database.GetInstance().AddUser(oldUser)
 	if err != nil {
 		t.Error(err.Error())
 		return
 	}
-
-	faker.CreateFakeData(10)
 
 	newUser, err := database.GetInstance().GetUserViaID(oldUser.ID)
 	if err != nil {
@@ -32,19 +35,19 @@ func TestGetUserViaIDSuccessful(t *testing.T) {
 		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
 			newUser.ID, newUser.Email, oldUser.ID, oldUser.Email)
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestGetUserViaIDUnsuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	var userID uint = 1
 	expected := database.NoUserFound
 
-	_, err := database.GetInstance().GetUserViaID(userID)
+	_, err = database.GetInstance().GetUserViaID(userID)
 	if err == nil {
 		t.Errorf("DB didn't return error")
 	} else if err.Error() != expected {
@@ -55,6 +58,11 @@ func TestGetUserViaIDUnsuccessful(t *testing.T) {
 
 func TestGetUserViaEmailSuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	oldUser := models.User{
 		ID:         1,
 		Email:      "first@test.com",
@@ -62,13 +70,11 @@ func TestGetUserViaEmailSuccessful(t *testing.T) {
 		AvatarPath: "default_avatar.jpg",
 	}
 
-	err := database.GetInstance().AddUser(oldUser)
+	err = database.GetInstance().AddUser(oldUser)
 	if err != nil {
 		t.Error(err.Error())
 		return
 	}
-
-	faker.CreateFakeData(10)
 
 	newUser, err := database.GetInstance().GetUserViaEmail(oldUser.Email)
 	if err != nil {
@@ -78,19 +84,19 @@ func TestGetUserViaEmailSuccessful(t *testing.T) {
 		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
 			newUser.Email, newUser.ID, oldUser.Email, oldUser.ID)
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestGetUserViaEmailUnsuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	var userEmail = "test@test.com"
 	expected := database.NoUserFound
 
-	_, err := database.GetInstance().GetUserViaEmail(userEmail)
+	_, err = database.GetInstance().GetUserViaEmail(userEmail)
 	if err == nil {
 		t.Errorf("DB didn't return error")
 	} else if err.Error() != expected {
@@ -101,6 +107,11 @@ func TestGetUserViaEmailUnsuccessful(t *testing.T) {
 
 func TestAddUserSuccessful(t *testing.T) {
 
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	oldUser := models.User{
 		ID:         1,
 		Email:      "test@test.com",
@@ -108,7 +119,7 @@ func TestAddUserSuccessful(t *testing.T) {
 		AvatarPath: "default_avatar.jpg",
 	}
 
-	err := database.GetInstance().AddUser(oldUser)
+	err = database.GetInstance().AddUser(oldUser)
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -122,14 +133,14 @@ func TestAddUserSuccessful(t *testing.T) {
 		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
 			newUser.Email, newUser.ID, oldUser.Email, oldUser.ID)
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestAddUserUnsuccessful(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	firstUser := models.User{
 		Email:      "first@test.com",
@@ -143,7 +154,7 @@ func TestAddUserUnsuccessful(t *testing.T) {
 		AvatarPath: "default_avatar.jpg",
 	}
 
-	err := database.GetInstance().AddUser(firstUser)
+	err = database.GetInstance().AddUser(firstUser)
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 		return
@@ -158,14 +169,14 @@ func TestAddUserUnsuccessful(t *testing.T) {
 		t.Errorf("DB returned wrong error:\ngot %v\nwant %v\n",
 			err.Error(), expected)
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestUpdateUserSuccessful(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	oldUser := models.User{
 		Email:      "test@test.com",
@@ -173,7 +184,7 @@ func TestUpdateUserSuccessful(t *testing.T) {
 		AvatarPath: "old_default_avatar.jpg",
 	}
 
-	err := database.GetInstance().AddUser(oldUser)
+	err = database.GetInstance().AddUser(oldUser)
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -198,14 +209,14 @@ func TestUpdateUserSuccessful(t *testing.T) {
 		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
 			newUser.Nickname, oldUser.Nickname, newUser.AvatarPath, oldUser.AvatarPath)
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 //func TestUpdateUserUnsuccessful(t *testing.T) {
+//
+//	err := database.GetInstance().CleanerDBForTests()
+//	if err != nil {
+//	t.Errorf(err.Error())
+//	}
 //
 //	oldUser := models.User{
 //		ID:         2000,
@@ -213,7 +224,7 @@ func TestUpdateUserSuccessful(t *testing.T) {
 //		AvatarPath: "new_default_avatar.jpg",
 //	}
 //
-//	err := database.GetInstance().UpdateUser(oldUser, oldUser.ID)
+//	err = database.GetInstance().UpdateUser(oldUser, oldUser.ID)
 //	if err == nil {
 //		t.Errorf("DB didn't return error")
 //	}
@@ -226,25 +237,39 @@ func TestUpdateUserSuccessful(t *testing.T) {
 
 func TestGetLenUsers(t *testing.T) {
 
-	count := 10
-	faker.CreateFakeData(count)
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	user := models.User{
+		Email:      "test@test.com",
+		Nickname:   "test",
+		AvatarPath: "default_avatar.jpg",
+	}
+
+	err = database.GetInstance().AddUser(user)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
 
 	newLen, err := database.GetInstance().GetLenUsers()
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
-	if newLen != count {
+	if newLen != 1 {
 		t.Errorf("DB returned wrong length:\ngot %v\nwant %v\n",
-			newLen, count)
-	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
+			newLen, 1)
 	}
 }
 
 func TestGetUsers(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	oldUsers := []models.User{
 		{
@@ -280,20 +305,30 @@ func TestGetUsers(t *testing.T) {
 				oldUsers[i].Email, oldUsers[i].Nickname, oldUsers[i].AvatarPath)
 		}
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
 
 func TestCleanerDBForTests(t *testing.T) {
 
-	faker.CreateFakeData(100)
-
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
-		t.Errorf("DB returned error: %v", err.Error())
+		t.Errorf(err.Error())
+	}
+
+	user := models.User{
+		Email:      "test@test.com",
+		Nickname:   "test",
+		AvatarPath: "default_avatar.jpg",
+	}
+
+	err = database.GetInstance().AddUser(user)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 
 	length, err := database.GetInstance().GetLenUsers()
@@ -303,15 +338,34 @@ func TestCleanerDBForTests(t *testing.T) {
 	if length != 0 {
 		t.Errorf("DB didn't cleaned up")
 	}
+}
 
-	err = database.GetInstance().CleanerDBForTests()
+func TestPacksOfQuestions(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
 
-
-func TestPacksOfQuestions(t *testing.T){
+	//themes := []string{
+	//	"математика",
+	//	"информатика",
+	//	"химия",
+	//	"биология",
+	//	"физика",
+	//	"культура",
+	//	"история",
+	//	"языки",
+	//	"философия",
+	//	"мемология",
+	//}
+	//
+	//for _, theme := range themes {
+	//	err = database.GetInstance().AddQuestionPack(theme)
+	//	if err != nil {
+	//		t.Errorf("DB returned error: %v", err.Error())
+	//	}
+	//}
 
 	faker.CreateFakePacks()
 
@@ -319,22 +373,36 @@ func TestPacksOfQuestions(t *testing.T){
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
-	cont := len(packs)
-	if cont != 10 {
-		t.Errorf("DB return wrong count of packs")
-	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
+	count := len(packs)
+	if count != 10 {
+		t.Errorf("DB return wrong count of packs: %v", count)
 	}
 }
 
-func TestGetQuestions(t *testing.T){
+func TestGetQuestions(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	//for i := uint(1); i <= uint(4); i++  {
+	//	question := models.Question{
+	//		Answers: []string{},
+	//		Correct: 2,
+	//		Text:    "",
+	//		PackID:  i,
+	//	}
+	//
+	//	err = database.GetInstance().AddQuestion(question)
+	//	if err != nil {
+	//		t.Errorf("DB returned error: %v", err.Error())
+	//	}
+	//}
 
 	faker.CreateFakePacks()
 
-	questions, err := database.GetInstance().GetQuestions([]int{1,2,3,4})
+	questions, err := database.GetInstance().GetQuestions([]int{1, 2, 3, 4})
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
@@ -342,43 +410,37 @@ func TestGetQuestions(t *testing.T){
 	if cont != 40 {
 		t.Errorf("DB return wrong count of questions")
 	}
+}
 
-	err = database.GetInstance().CleanerDBForTests()
+func TestAddQuestionPack(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
 
-func TestAddQuestionPack(t *testing.T){
-
-	err := database.GetInstance().AddQuestionPack("алгебра")
+	err = database.GetInstance().AddQuestionPack("алгебра")
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
+}
 
-	err = database.GetInstance().CleanerDBForTests()
+func TestAddQuestion(t *testing.T) {
+
+	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-}
-
-func TestAddQuestion(t *testing.T){
 
 	question := models.Question{
 		Answers: []string{},
 		Correct: 2,
-		Text: "",
-		PackID: 1,
+		Text:    "",
+		PackID:  1,
 	}
 
-	err := database.GetInstance().AddQuestion(question)
+	err = database.GetInstance().AddQuestion(question)
 	if err != nil {
 		t.Errorf("DB returned error: %v", err.Error())
 	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 }
-

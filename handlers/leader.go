@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	PagesPerList = 4
+	PagesPerList = 10
 )
 
 type LeaderBoard struct {
@@ -40,6 +40,14 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	usersTotal, err := database.GetInstance().GetLenUsers()
 	if err != nil {
 		helpers.Return500(&w, err)
+		return
+	}
+
+	if usersTotal == 0 {
+		_, err := w.Write([]byte(`{"pages_total":0,"page":1,"data":[]}`))
+		if err != nil {
+			helpers.Return500(&w, err)
+		}
 		return
 	}
 

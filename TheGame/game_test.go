@@ -1,8 +1,13 @@
 package TheGame
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/TheGame/player"
+	"github.com/gorilla/websocket"
+	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestGetInstance(t *testing.T) {
@@ -13,19 +18,34 @@ func TestGetInstance(t *testing.T) {
 	}
 }
 
-/*func TestGameFacade_PlayByWebsocket(t *testing.T) {
-	game = &gameFacade{
-		maxRooms: 1,
-		rooms:    make(map[uint64]*room.Room, maxRooms),
-		idSource: 0,
-		in:       make(chan player.Player, 1),
-	}
-
+func TestGameFacade_PlayByWebsocket(t *testing.T) {
+	//Метод должен протестировать то, что по вызову метода game.PlayByWebsocket игрок попадает в game.in
+	game.Close()//Там крутиться горутина, которая читает game.in, останавливаем её чтобы с ней не конкурировать
+	game.in = make(chan player.Player)//Канал in был закрыт предыдущим методом, переопределяем его, чтобы протестировать
 	uid := rand.Uint64()
+	//TODO make valid websocket connection for this test to work
 	game.PlayByWebsocket(&websocket.Conn{}, uid)
-	newPlayer := <-game.in
-
+	newPlayer := <- game.in
 	if newPlayer.UID() != uid {
-		t.Errorf("PlayByWebsocket method violates uid: got %d, whant %d", newPlayer.UID(), uid)
+		t.Error("game.PlayByWebsocket() violates UID")
 	}
-}*/
+}
+
+func TestGameFacade_StartBalance(t *testing.T) {
+	leaverLogic := func(id uint64, in, out *chan messge.Message, args ...interface{}) {
+		//КОНТРАКТ: args: 1 фргумент - time.Duration
+		defer func() {
+			if err := recover(); err != nil {
+				logger.Errorf("Channel player", id, "failed with error", err)
+			}
+		}()
+
+		offset := args[0].(time.Duration)
+
+		time.Sleep(offset)
+		*in <- messge.Message{Title: messge.Leave, Payload: nil}
+	}
+	//TODO засунуть в игру много игроков с рандомным временем ожидания и дождаться, пока они отработают
+	//TODO add wait group
+	game.PlayByChannels(leaverLogic /*,some time duration*/)
+}

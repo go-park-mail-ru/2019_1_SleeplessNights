@@ -11,7 +11,7 @@ import (
 
 const (
 	DomainsCORS     = "https://sleepless-nights--frontend.herokuapp.com"
-	MethodsCORS     = "GET, POST, PATCH, OPTIONS"
+	MethodsCORS     = "GET, POST, PATCH, DELETE, OPTIONS"
 	CredentialsCORS = "true"
 	//TODO FIX CORS HEADERS
 	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"

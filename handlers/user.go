@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/handlers/helpers"
@@ -44,15 +45,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Salt = salt
 	user.Password = auth.MakePasswordHash(r.Form.Get("password"), user.Salt)
-	defer func() {
-		//Пользователь уже успешно создан, поэтому его в любом случае следует добавить в БД
-		//Однако, с ним ещё можно произвести полезную работу, которая может вызвать ошибки
-		err = database.GetInstance().AddUser(user)
-		if err != nil {
-			helpers.Return500(&w, err)
-			return
-		}
-	}()
 
 	sessionCookie, err := auth.MakeSession(user)
 	if err != nil {
@@ -60,7 +52,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, &sessionCookie)
-	_, err = w.Write([]byte("{}"))
+
+	err = database.GetInstance().AddUser(user)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+
+	data, err := json.Marshal(user)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
+	_, err = w.Write(data)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

@@ -48,7 +48,6 @@ type GameField struct {
 	field [fieldSize][fieldSize]gameCell
 	p1    gfPlayer
 	p2    gfPlayer
-	//Out   []event.Event
 	regX        int
 	regY        int
 	regQuestion questions.Question
@@ -180,7 +179,7 @@ func (gf *GameField) Move(playerIdx int) {
 		player.pos.Y = gf.regY
 	}
 
-	//gf.Out <- event.Event{Etype: event.Move, Edata: player.id}
+	//gf.out <- event.Event{Etype: event.Move, Edata: player.id}
 	return
 
 }
