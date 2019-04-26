@@ -1,4 +1,4 @@
-package auth_microservice
+package main
 
 import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"

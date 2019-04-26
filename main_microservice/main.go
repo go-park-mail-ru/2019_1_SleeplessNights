@@ -1,4 +1,4 @@
-package main_microservice
+package main
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/router"

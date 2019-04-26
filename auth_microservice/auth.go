@@ -1,4 +1,4 @@
-package auth_microservice
+package main
 
 import (
 	"context"
