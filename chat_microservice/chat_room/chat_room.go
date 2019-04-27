@@ -1,6 +1,7 @@
 package chat_room
 
 import (
+	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/gorilla/websocket"
@@ -72,13 +73,13 @@ type ScrollPayload struct {
 }
 
 type ResponseMessage struct {
-	Nickname string `json:"nickname"`
+	Nickname   string `json:"nickname"`
 	AvatarPath string `json:"avatar_path"`
-	Id uint64 `json:"id"`
-	Text string `json:"text"`
+	Id         uint64 `json:"id"`
+	Text       string `json:"text"`
 }
 
-func (author *Author)StartListen(roomId uint64) {
+func (author *Author) StartListen(roomId uint64) {
 	var msg Message
 	for {
 		err := author.Conn.ReadJSON(&msg)
@@ -101,16 +102,31 @@ func (author *Author)StartListen(roomId uint64) {
 			//TODO switch for payload types
 
 			respMsg := ResponseMessage{
-				//TODO make struct
+				Nickname:   author.Nickname,
+				AvatarPath: author.AvatarPath,
+				Id:         author.Id,
+				Text:       postPayload.Text,
 			}
 
-			database.GetInstance().PostMessage(author.Id, roomId,)//TODO add message to DB
+			err := database.GetInstance().PostMessage(respMsg.Id, roomId, []byte(respMsg.Text))
+			if err != nil {
+				logger.Error(err.Error())
+			}
 
-			//TODO for each user in room send message
+			bytes, err := json.Marshal(respMsg)
+			if err != nil {
+				logger.Error(err.Error())
+			}
 
+			for _, u := range chat.authorPool {
+				err = u.Conn.WriteJSON(bytes)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+			}
 		case scrollTitle:
 			sp, ok := msg.Payload.(ScrollPayload)
-			if !ok{
+			if !ok {
 				logger.Error("Something wrong with msg.Payload.(ScrollPayload)")
 			}
 			messages, err := database.GetInstance().GetMessages(roomId, sp.Since, limit)

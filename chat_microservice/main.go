@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/router"
 
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
@@ -19,12 +18,6 @@ func init() {
 
 func main() {
 	defer closer.Close()
-
-	msg, err := database.GetInstance().GetMessages(1, 5, 2)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	logger.Info(msg)
 
 	PORT := "8005"
 
