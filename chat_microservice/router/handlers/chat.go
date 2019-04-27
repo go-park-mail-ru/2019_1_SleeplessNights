@@ -52,7 +52,7 @@ func StartSendingTestMessages(conn *websocket.Conn) {
 	for {
 		sample := int64(rand.ExpFloat64() / SendingRate)
 		time.Sleep(time.Duration(sample) * time.Second)
-		err := conn.WriteJSON(messge.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path:"/static/avatar.jpg", "text":"Hello, Grand Webmaster"`})
+		err := conn.WriteJSON(messge.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path:"/img/default_avatar.jpg", "text":"Hello, Grand Webmaster"`})
 		if err != nil {
 			fmt.Println(err)
 			break
