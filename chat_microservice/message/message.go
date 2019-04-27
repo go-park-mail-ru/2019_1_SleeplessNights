@@ -1,7 +1,7 @@
 package message
 
 type Message struct {
-	Type    string      `json:"post"`
+	Title   string      `json:"title"`
 	Payload interface{} `json:"payload"`
 }
 

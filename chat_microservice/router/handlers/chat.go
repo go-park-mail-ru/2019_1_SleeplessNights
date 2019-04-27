@@ -25,14 +25,13 @@ func init() {
 
 func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{}
-	conn, err := upgrader.Upgrade(w, r, http.Header{"Upgrade": []string{"websocket"}})
+	conn, err := upgrader.Upgrade(w, r, nil)
 	logger.Info("Someone's connected to websocket chat, ID:%d", user.ID)
 
 	if err != nil {
 		logger.Error(`micro service error in "EnterChat" during connection"`, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-
 	}
 
 	err = conn.WriteJSON(messge.Message{Title: "INFO", Payload: "you've been connected to Chat"})
@@ -45,6 +44,8 @@ func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Info("Users authStatus=%d ID=%d", isAuthorized, user.ID)
 	//TODO GET chatroom pointer, try to add user to chat as a new chat member
+	//go MessageMux(user)
+
 	go StartSendingTestMessages(conn)
 }
 
