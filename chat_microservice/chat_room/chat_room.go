@@ -60,8 +60,8 @@ type Message struct {
 }
 
 const (
-	postTitle   = "post"
-	scrollTitle = "scroll"
+	postTitle   = "POST"
+	scrollTitle = "SCROLL"
 )
 
 type PostPayload struct {
