@@ -163,7 +163,7 @@ func (db *dbManager) UpdateUser(uid uint64, nickname string, avatarPath string) 
 		}
 	}()
 
-	row := db.dataBase.QueryRow(`SELECT * FROM ($1, $2, $3)`,
+	row := db.dataBase.QueryRow(`SELECT * FROM func_update_user ($1, $2, $3)`,
 		uid, nickname, avatarPath)
 	err = row.Scan(&id)
 	if err != nil{
@@ -193,7 +193,7 @@ func (db *dbManager) CreateRoom(users []uint64) (id uint64, err error) {
 		}
 	}()
 
-	row := db.dataBase.QueryRow(`SELECT * FROM ($1)`, users)
+	row := db.dataBase.QueryRow(`SELECT * FROM func_create_room ($1)`, users)
 	err = row.Scan(&id)
 	if err != nil{
 		return
