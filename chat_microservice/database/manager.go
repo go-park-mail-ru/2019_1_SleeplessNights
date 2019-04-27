@@ -160,6 +160,10 @@ func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (pay
 	payload = strings.Join(messages, ",")
 	payload = prefix + payload + suffix
 
+	if err != nil {
+		return
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		logger.Error(err.Error())

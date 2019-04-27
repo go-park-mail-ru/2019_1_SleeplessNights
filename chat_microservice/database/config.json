@@ -2,6 +2,6 @@
   "host": "localhost",
   "port": 5432,
   "user": "postgres",
-  "password": "12345qwert",
-  "dbname": "thegame"
+  "password": "1209qawsed",
+  "dbname": "database_chat"
 }
