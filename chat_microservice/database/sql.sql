@@ -266,3 +266,22 @@ ALTER TABLE ONLY public."Messages"
 -- PostgreSQL database dump complete
 --
 
+CREATE OR REPLACE FUNCTION public.func_update_user(arg_uid bigint, arg_nickname character varying, arg_avatar_path character varying)
+  RETURNS bigint
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+  result BIGINT;
+BEGIN
+  UPDATE "Authors" SET avatar_path = arg_avatar_path,
+                       nickname = arg_nickname
+  WHERE uid = arg_uid
+        RETURNING id into result;
+  IF not FOUND THEN
+    INSERT INTO "Authors" (uid, nickname, avatar_path)
+    VALUES (arg_uid, arg_nickname, arg_avatar_path)
+           RETURNING id INTO result;
+  END IF;
+  RETURN result;
+END;
+$function$
