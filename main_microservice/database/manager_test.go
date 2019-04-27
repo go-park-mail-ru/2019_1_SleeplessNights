@@ -3,7 +3,7 @@ package database_test
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"testing"
 )
 

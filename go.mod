@@ -19,7 +19,7 @@ require (
 	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/viper v1.3.2 // indirect
+	github.com/spf13/viper v1.3.2
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/xlab/closer v0.0.0-20190328110542-03326addb7c2
 	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734 // indirect

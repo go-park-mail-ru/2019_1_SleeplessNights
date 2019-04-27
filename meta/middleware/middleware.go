@@ -1,11 +1,11 @@
-package router
+package middleware
 
 import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -17,12 +17,12 @@ const (
 	MethodsCORS     = "GET, POST, PATCH, DELETE, OPTIONS"
 	CredentialsCORS = "true"
 	//TODO FIX CORS HEADERS
-	HeadersCORS     = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"
+	HeadersCORS = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"
 )
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Middleware")
 }
 
@@ -64,11 +64,15 @@ func MiddlewareRescue(next http.Handler) http.Handler {
 	})
 }
 
-func MiddlewareAuth(next AuthHandler) http.Handler {
+func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Add("Referer", r.URL.String())
 		sessionCookie, err := r.Cookie("session_token")
 		if err != nil {
+			if err == http.ErrNoCookie && !strict {
+				next(models.User{ID: 0}, w, r)
+				return
+			}
 			w.WriteHeader(http.StatusUnauthorized)
 			_, err = w.Write([]byte("{}"))
 			if err != nil {

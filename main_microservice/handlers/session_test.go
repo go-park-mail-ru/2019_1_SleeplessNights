@@ -5,7 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -204,7 +204,6 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 	}
 }
 
-
 func TestAuthDeleteHandlerSuccessful(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
@@ -245,7 +244,6 @@ func TestAuthDeleteHandlerSuccessful(t *testing.T) {
 			t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v;\n",
 				status, http.StatusOK)
 		}
-
 
 		if cookie := resp.Header().Get("Set-Cookie"); cookie != expected {
 			t.Errorf("\nhandler returned wrong cookie:\ngot %v\nwant %v;\n",

@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/middleware"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -21,18 +22,18 @@ func GetRouter() (router *mux.Router) {
 	api.HandleFunc("/leader", handlers.LeadersHandler).Methods(http.MethodGet)
 	api.HandleFunc("/profile", handlers.OptionsHandler).Methods(http.MethodOptions)
 	//Запросы, требующие авторизации
-	api.Handle("/profile", MiddlewareAuth(handlers.ProfileHandler)).Methods(http.MethodGet)
-	api.Handle("/profile", MiddlewareAuth(handlers.ProfileUpdateHandler)).Methods(http.MethodPatch)
+	api.Handle("/profile", middleware.MiddlewareAuth(handlers.ProfileHandler, true)).Methods(http.MethodGet)
+	api.Handle("/profile", middleware.MiddlewareAuth(handlers.ProfileUpdateHandler, true)).Methods(http.MethodPatch)
 
 	ws := router.PathPrefix("/ws").Subrouter()
-	ws.Handle("/connect", MiddlewareAuth(handlers.UpgradeWs))
+	ws.Handle("/connect", middleware.MiddlewareAuth(handlers.UpgradeWs, true))
 
 	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods(http.MethodOptions)
 	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods(http.MethodGet)
 
-	router.Use(MiddlewareBasicHeaders)
-	router.Use(MiddlewareCORS)
-	router.Use(MiddlewareLog)
-	router.Use(MiddlewareRescue)
+	router.Use(middleware.MiddlewareBasicHeaders)
+	router.Use(middleware.MiddlewareCORS)
+	router.Use(middleware.MiddlewareLog)
+	router.Use(middleware.MiddlewareRescue)
 	return
 }

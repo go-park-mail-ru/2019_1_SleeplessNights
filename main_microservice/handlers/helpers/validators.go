@@ -3,8 +3,8 @@ package helpers
 import (
 	"bytes"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"mime/multipart"
 	"net/http"
 	"regexp"
@@ -17,7 +17,7 @@ const (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Validator")
 }
 
