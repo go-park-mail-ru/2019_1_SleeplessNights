@@ -19,7 +19,7 @@ const (
 
 type chatRoom struct {
 	maxConnections int64
-	AuthorPool map[uint64]Author
+	AuthorPool     map[uint64]Author
 }
 
 func init() {
@@ -38,5 +38,3 @@ type Author struct {
 	AvatarPath string
 	Id         uint64
 }
-
-

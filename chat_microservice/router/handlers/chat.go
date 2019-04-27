@@ -24,7 +24,11 @@ func init() {
 }
 
 func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{}
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	logger.Info("Someone's connected to websocket chat, ID:%d", user.ID)
 
@@ -53,7 +57,7 @@ func StartSendingTestMessages(conn *websocket.Conn) {
 	for {
 		sample := int64(rand.ExpFloat64() / SendingRate)
 		time.Sleep(time.Duration(sample) * time.Second)
-		err := conn.WriteJSON(messge.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path:"/img/default_avatar.jpg", "text":"Hello, Grand Webmaster"`})
+		err := conn.WriteJSON(messge.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path:"/img/default_avatar.jpg", "text":"Hello, Grand Webmaster"}`})
 		if err != nil {
 			fmt.Println(err)
 			break

@@ -35,6 +35,7 @@ func MiddlewareCORS(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Methods", MethodsCORS)
 		w.Header().Set("Access-Control-Allow-Headers", HeadersCORS)
 		next.ServeHTTP(w, r)
+
 	})
 }
 
