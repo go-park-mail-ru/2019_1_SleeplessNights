@@ -7,6 +7,12 @@ import (
 	"github.com/jackc/pgx"
 	"github.com/xlab/closer"
 	"os"
+	"time"
+)
+
+const (
+	maxConnections = 3
+	acquireTimeout = 3 * time.Second
 )
 
 var db *dbManager
@@ -59,7 +65,7 @@ func loadConfiguration(file string) (pgxConfig pgx.ConnConfig) {
 func init() {
 
 	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/chat_microservice/database/config.json")
-	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: 3, AcquireTimeout: nil}
+	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
 
 	dateBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {
