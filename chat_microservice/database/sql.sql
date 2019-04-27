@@ -5,6 +5,8 @@
 -- Dumped from database version 10.7 (Ubuntu 10.7-0ubuntu0.18.04.1)
 -- Dumped by pg_dump version 10.7 (Ubuntu 10.7-0ubuntu0.18.04.1)
 
+CREATE SCHEMA public;
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -16,14 +18,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -37,29 +39,27 @@ SET default_with_oids = false;
 -- Name: Authors; Type: TABLE; Schema: public; Owner: maxim
 --
 
-CREATE TABLE public."Authors" (
-    id bigint NOT NULL,
-    uid bigint NOT NULL,
-    nickname character varying(2044) NOT NULL,
-    avatar_path character varying(2044) NOT NULL
+CREATE TABLE public."Authors"
+(
+  id          bigint                  NOT NULL,
+  uid         bigint                  NOT NULL,
+  nickname    character varying(2044) NOT NULL,
+  avatar_path character varying(2044) NOT NULL
 );
 
-
-ALTER TABLE public."Authors" OWNER TO maxim;
 
 --
 -- Name: Authors_id_seq; Type: SEQUENCE; Schema: public; Owner: maxim
 --
 
 CREATE SEQUENCE public."Authors_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+  START WITH 1
+  INCREMENT BY 1
+  NO MINVALUE
+  NO MAXVALUE
+  CACHE 1;
 
 
-ALTER TABLE public."Authors_id_seq" OWNER TO maxim;
 
 --
 -- Name: Authors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: maxim
@@ -72,29 +72,28 @@ ALTER SEQUENCE public."Authors_id_seq" OWNED BY public."Authors".id;
 -- Name: Messages; Type: TABLE; Schema: public; Owner: maxim
 --
 
-CREATE TABLE public."Messages" (
-    id bigint NOT NULL,
-    payload json NOT NULL,
-    author_id bigint NOT NULL,
-    room_id bigint NOT NULL
+CREATE TABLE public."Messages"
+(
+  id        bigint NOT NULL,
+  payload   json   NOT NULL,
+  author_id bigint NOT NULL,
+  room_id   bigint NOT NULL
 );
 
 
-ALTER TABLE public."Messages" OWNER TO maxim;
 
 --
 -- Name: Message_id_seq; Type: SEQUENCE; Schema: public; Owner: maxim
 --
 
 CREATE SEQUENCE public."Message_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+  START WITH 1
+  INCREMENT BY 1
+  NO MINVALUE
+  NO MAXVALUE
+  CACHE 1;
 
 
-ALTER TABLE public."Message_id_seq" OWNER TO maxim;
 
 --
 -- Name: Message_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: maxim
@@ -107,27 +106,25 @@ ALTER SEQUENCE public."Message_id_seq" OWNED BY public."Messages".id;
 -- Name: Rooms; Type: TABLE; Schema: public; Owner: maxim
 --
 
-CREATE TABLE public."Rooms" (
-    id bigint NOT NULL,
-    authors bigint[]
+CREATE TABLE public."Rooms"
+(
+  id      bigint NOT NULL,
+  authors bigint[]
 );
 
 
-ALTER TABLE public."Rooms" OWNER TO maxim;
 
 --
 -- Name: Rooms_id_seq; Type: SEQUENCE; Schema: public; Owner: maxim
 --
 
 CREATE SEQUENCE public."Rooms_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+  START WITH 1
+  INCREMENT BY 1
+  NO MINVALUE
+  NO MAXVALUE
+  CACHE 1;
 
-
-ALTER TABLE public."Rooms_id_seq" OWNER TO maxim;
 
 --
 -- Name: Rooms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: maxim
@@ -140,46 +137,24 @@ ALTER SEQUENCE public."Rooms_id_seq" OWNED BY public."Rooms".id;
 -- Name: Authors id; Type: DEFAULT; Schema: public; Owner: maxim
 --
 
-ALTER TABLE ONLY public."Authors" ALTER COLUMN id SET DEFAULT nextval('public."Authors_id_seq"'::regclass);
+ALTER TABLE ONLY public."Authors"
+  ALTER COLUMN id SET DEFAULT nextval('public."Authors_id_seq"'::regclass);
 
 
 --
 -- Name: Messages id; Type: DEFAULT; Schema: public; Owner: maxim
 --
 
-ALTER TABLE ONLY public."Messages" ALTER COLUMN id SET DEFAULT nextval('public."Message_id_seq"'::regclass);
+ALTER TABLE ONLY public."Messages"
+  ALTER COLUMN id SET DEFAULT nextval('public."Message_id_seq"'::regclass);
 
 
 --
 -- Name: Rooms id; Type: DEFAULT; Schema: public; Owner: maxim
 --
 
-ALTER TABLE ONLY public."Rooms" ALTER COLUMN id SET DEFAULT nextval('public."Rooms_id_seq"'::regclass);
-
-
---
--- Data for Name: Authors; Type: TABLE DATA; Schema: public; Owner: maxim
---
-
-COPY public."Authors" (id, uid, nickname, avatar_path) FROM stdin;
-\.
-
-
---
--- Data for Name: Messages; Type: TABLE DATA; Schema: public; Owner: maxim
---
-
-COPY public."Messages" (id, payload, author_id, room_id) FROM stdin;
-\.
-
-
---
--- Data for Name: Rooms; Type: TABLE DATA; Schema: public; Owner: maxim
---
-
-COPY public."Rooms" (id, authors) FROM stdin;
-\.
-
+ALTER TABLE ONLY public."Rooms"
+  ALTER COLUMN id SET DEFAULT nextval('public."Rooms_id_seq"'::regclass);
 
 --
 -- Name: Authors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: maxim
@@ -207,7 +182,7 @@ SELECT pg_catalog.setval('public."Rooms_id_seq"', 1, false);
 --
 
 ALTER TABLE ONLY public."Authors"
-    ADD CONSTRAINT "Authors_pkey" PRIMARY KEY (id);
+  ADD CONSTRAINT "Authors_pkey" PRIMARY KEY (id);
 
 
 --
@@ -215,7 +190,7 @@ ALTER TABLE ONLY public."Authors"
 --
 
 ALTER TABLE ONLY public."Messages"
-    ADD CONSTRAINT "Message_pkey" PRIMARY KEY (id);
+  ADD CONSTRAINT "Message_pkey" PRIMARY KEY (id);
 
 
 --
@@ -223,7 +198,7 @@ ALTER TABLE ONLY public."Messages"
 --
 
 ALTER TABLE ONLY public."Authors"
-    ADD CONSTRAINT "unique_Authors_id" UNIQUE (id);
+  ADD CONSTRAINT "unique_Authors_id" UNIQUE (id);
 
 
 --
@@ -231,7 +206,7 @@ ALTER TABLE ONLY public."Authors"
 --
 
 ALTER TABLE ONLY public."Authors"
-    ADD CONSTRAINT "unique_Authors_uid" UNIQUE (uid);
+  ADD CONSTRAINT "unique_Authors_uid" UNIQUE (uid);
 
 
 --
@@ -239,7 +214,7 @@ ALTER TABLE ONLY public."Authors"
 --
 
 ALTER TABLE ONLY public."Messages"
-    ADD CONSTRAINT "unique_Message_id" UNIQUE (id);
+  ADD CONSTRAINT "unique_Message_id" UNIQUE (id);
 
 
 --
@@ -247,7 +222,7 @@ ALTER TABLE ONLY public."Messages"
 --
 
 ALTER TABLE ONLY public."Rooms"
-    ADD CONSTRAINT "unique_Rooms_id" PRIMARY KEY (id);
+  ADD CONSTRAINT "unique_Rooms_id" PRIMARY KEY (id);
 
 
 --
@@ -276,7 +251,7 @@ CREATE INDEX index_room_id ON public."Messages" USING btree (room_id);
 --
 
 ALTER TABLE ONLY public."Messages"
-    ADD CONSTRAINT "lnk_Authors_Messages" FOREIGN KEY (author_id) REFERENCES public."Authors"(id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+  ADD CONSTRAINT "lnk_Authors_Messages" FOREIGN KEY (author_id) REFERENCES public."Authors" (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -284,10 +259,57 @@ ALTER TABLE ONLY public."Messages"
 --
 
 ALTER TABLE ONLY public."Messages"
-    ADD CONSTRAINT "lnk_Rooms_Messages" FOREIGN KEY (room_id) REFERENCES public."Rooms"(id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+  ADD CONSTRAINT "lnk_Rooms_Messages" FOREIGN KEY (room_id) REFERENCES public."Rooms" (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
 -- PostgreSQL database dump complete
 --
 
+CREATE OR REPLACE FUNCTION public.func_update_user(arg_uid bigint, arg_nickname character varying, arg_avatar_path character varying)
+  RETURNS bigint
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+  result BIGINT;
+BEGIN
+  UPDATE "Authors" SET avatar_path = arg_avatar_path,
+                       nickname = arg_nickname
+  WHERE uid = arg_uid
+        RETURNING id into result;
+  IF not FOUND THEN
+    INSERT INTO "Authors" (uid, nickname, avatar_path)
+    VALUES (arg_uid, arg_nickname, arg_avatar_path)
+           RETURNING id INTO result;
+  END IF;
+  RETURN result;
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.func_post_message(arg_post_message bigint, arg_payload json, arg_room_id bigint)
+  RETURNS void
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+BEGIN
+  INSERT INTO "Messages" (author_id, payload, room_id)
+  VALUES (arg_post_message, arg_payload, arg_room_id);
+  EXCEPTION
+  WHEN integrity_constraint_violation THEN
+    RAISE integrity_constraint_violation;
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.func_create_room(arg_authors bigint[])
+  RETURNS bigint
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+  result BIGINT;
+BEGIN
+  INSERT INTO "Rooms" (authors)
+  VALUES (arg_authors)
+         RETURNING id INTO result;
+  RETURN result;
+END;
+$function$;
