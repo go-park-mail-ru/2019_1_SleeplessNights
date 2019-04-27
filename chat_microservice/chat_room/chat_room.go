@@ -102,10 +102,16 @@ func (author *Author) StartListen(roomId uint64) {
 
 		switch msg.Title {
 		case postTitle:
-			postPayload, ok := msg.Payload.(PostPayload)
+			st, ok := msg.Payload.(map[string]interface{})
+
+			logger.Info(st)
 			if !ok {
-				logger.Error("Invalid payload came with post title, got error while spelling")
-				break
+				logger.Error("Something wrong with msg.Payload.(Post)")
+			}
+			text, ok := st["text"].(string)
+			logger.Info(text)
+			if !ok {
+				logger.Error(`st[text] error`)
 			}
 
 			//TODO switch for payload types
@@ -114,7 +120,7 @@ func (author *Author) StartListen(roomId uint64) {
 				Nickname:   author.Nickname,
 				AvatarPath: author.AvatarPath,
 				Id:         author.Id,
-				Text:       postPayload.Text,
+				Text:       text,
 			}
 
 			err := database.GetInstance().PostMessage(respMsg.Id, roomId, []byte(respMsg.Text))
@@ -135,18 +141,12 @@ func (author *Author) StartListen(roomId uint64) {
 			}
 		case scrollTitle:
 			{
-				/*logger.Info(msg.Payload)
-				sp, ok := msg.Payload.(ScrollPayload)
-				logger.Info(sp)
-				if !ok {
-					logger.Error("Something wrong with msg.Payload.(ScrollPayload)")
-				}*/
-
 				st, ok := msg.Payload.(map[string]interface{})
 				logger.Info(st)
 				if !ok {
 					logger.Error("Something wrong with msg.Payload.(ScrollPayload)")
 				}
+
 				since, ok := st["since"].(float64)
 				logger.Info(since)
 				if !ok {
