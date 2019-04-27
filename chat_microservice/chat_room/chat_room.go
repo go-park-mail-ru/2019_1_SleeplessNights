@@ -1,7 +1,6 @@
 package chat_room
 
 import (
-	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/gorilla/websocket"
@@ -17,13 +16,14 @@ func init() {
 }
 
 const (
-	maxConnections = 100
+	maxConnections        = 100
+	limit          uint64 = 5
 )
 
 type chatRoom struct {
 	maxConnections int64
-	authorPool map[uint64]Author
-	mx sync.Mutex
+	authorPool     map[uint64]Author
+	mx             sync.Mutex
 }
 
 func init() {
@@ -36,7 +36,7 @@ func GetInstance() *chatRoom {
 	return chat
 }
 
-func (chat *chatRoom)Join(author Author) {
+func (chat *chatRoom) Join(author Author) {
 	chat.mx.Lock()
 	chat.authorPool[author.Id] = author
 	chat.mx.Unlock()
@@ -109,9 +109,20 @@ func (author *Author)StartListen(roomId uint64) {
 			//TODO for each user in room send message
 
 		case scrollTitle:
+			sp, ok := msg.Payload.(ScrollPayload)
+			if !ok{
+				logger.Error("Something wrong with msg.Payload.(ScrollPayload)")
+			}
+			messages, err := database.GetInstance().GetMessages(roomId, sp.Since, limit)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			err = author.Conn.WriteJSON([]byte(messages))
+			if err != nil {
+				logger.Error(err.Error())
+			}
 		default:
-
+			logger.Error("Message title not valid")
 		}
 	}
 }
-
