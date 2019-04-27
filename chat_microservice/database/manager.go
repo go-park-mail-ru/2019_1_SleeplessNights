@@ -7,12 +7,13 @@ import (
 	"github.com/jackc/pgx"
 	"github.com/xlab/closer"
 	"os"
+	"strings"
 	"time"
 )
 
 const (
-	maxConnections = 3
-	acquireTimeout = 3 * time.Second
+	maxConnections        = 3
+	acquireTimeout        = 3 * time.Second
 )
 
 var db *dbManager
@@ -106,7 +107,7 @@ func (db *dbManager) PostMessage(userId uint64, roomId uint64, payload []byte) (
 
 	_, err = db.dataBase.Exec(`SELECT * FROM func_post_message ($1, $2, $3)`,
 		userId, payload, roomId)
-	if err != nil{
+	if err != nil {
 		return
 	}
 
@@ -119,7 +120,7 @@ func (db *dbManager) PostMessage(userId uint64, roomId uint64, payload []byte) (
 	return
 }
 
-func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (payload []byte, err error) {
+func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (payload string, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -133,12 +134,31 @@ func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (pay
 		}
 	}()
 
-	row := db.dataBase.QueryRow(`SELECT * FROM func_get_messages ($1, $2, $3)`,
+	var messages []string
+	rows, err:= db.dataBase.Query(`SELECT * FROM func_get_messages ($1, $2, $3)`,
 		roomId, since, limit)
-	err = row.Scan(&payload)
-	if err != nil{
+	if err != nil {
 		return
 	}
+
+	for rows.Next(){
+		var str string
+		err = rows.Scan(&str)
+		if err != nil {
+			return
+		}
+		messages = append(messages, str)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return
+	}
+
+	prefix := `"{"messages":[`
+	suffix := `]}"`
+	payload = strings.Join(messages, ",")
+	payload = prefix + payload + suffix
 
 	err = tx.Commit()
 	if err != nil {
@@ -166,7 +186,7 @@ func (db *dbManager) UpdateUser(uid uint64, nickname string, avatarPath string) 
 	row := db.dataBase.QueryRow(`SELECT * FROM func_update_user ($1, $2, $3)`,
 		uid, nickname, avatarPath)
 	err = row.Scan(&id)
-	if err != nil{
+	if err != nil {
 		return
 	}
 
@@ -195,7 +215,7 @@ func (db *dbManager) CreateRoom(users []uint64) (id uint64, err error) {
 
 	row := db.dataBase.QueryRow(`SELECT * FROM func_create_room ($1)`, users)
 	err = row.Scan(&id)
-	if err != nil{
+	if err != nil {
 		return
 	}
 
