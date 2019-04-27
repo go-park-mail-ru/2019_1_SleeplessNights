@@ -40,13 +40,48 @@ func (chat *chatRoom)Join(author Author) {
 }
 
 type Author struct {
-	Wc         *websocket.Conn
+	Conn       *websocket.Conn
 	Nickname   string
 	AvatarPath string
 	Id         uint64
 }
 
+type Message struct {
+	Title   string      `json:"title"`
+	Payload interface{} `json:"payload"`
+}
+
+const (
+	postTitle   = "post"
+	scrollTitle = "scroll"
+)
+
+type PostPayload struct {
+	Text string `json:"text,omitempty"`
+}
+
+type ScrollPayload struct {
+	Since uint64 `json:"since"`
+}
+
 func (author *Author)StartListen() {
-	//TODO handle messages
+	for {
+		var msg Message
+		err := author.Conn.ReadJSON(&msg)
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err) {
+				logger.Infof("Player %d closed the connection", author.Id)
+				return
+			}
+		}
+		logger.Info("Got from connection", msg)
+
+		switch msg.Title {
+		case postTitle:
+		case scrollTitle:
+		default:
+
+		}
+	}
 }
 
