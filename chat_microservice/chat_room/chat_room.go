@@ -3,6 +3,7 @@ package chat_room
 import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/gorilla/websocket"
+	"sync"
 )
 
 var chat *chatRoom
@@ -19,8 +20,8 @@ const (
 
 type chatRoom struct {
 	maxConnections int64
-	AuthorPool map[uint64]Author
-	//TODO add mutex
+	authorPool map[uint64]Author
+	mx sync.Mutex
 }
 
 func init() {
@@ -34,9 +35,13 @@ func GetInstance() *chatRoom {
 }
 
 func (chat *chatRoom)Join(author Author) {
-	//TODO join map
-	//TODO start listen author
-	//TODO kick author from map
+	chat.mx.Lock()
+	chat.authorPool[author.Id] = author
+	chat.mx.Unlock()
+	chat.authorPool[author.Id].StartListen()
+	chat.mx.Lock()
+	delete(chat.authorPool, author.Id)
+	chat.mx.Unlock()
 }
 
 type Author struct {
