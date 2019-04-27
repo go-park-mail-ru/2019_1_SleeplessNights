@@ -14,13 +14,13 @@ var logger *log.Logger
 
 const (
 	maxConnections        = 100
-	limit          uint64 = 5
+	limit          uint64 = 20
 )
 
 type chatRoom struct {
 	maxConnections int64
 	Id             uint64
-	authorPool     map[uint64]Author
+	authorPool     map[uint64]*Author
 	mx             sync.Mutex
 }
 
@@ -33,7 +33,7 @@ func init() {
 	chat = &chatRoom{
 		Id:             id,
 		maxConnections: maxConnections,
-		authorPool:     make(map[uint64]Author),
+		authorPool:     make(map[uint64]*Author),
 	}
 }
 
@@ -45,10 +45,16 @@ func (chat *chatRoom) Join(author Author) {
 	logger.Info("User ", author.Nickname, "Joined room")
 
 	chat.mx.Lock()
-	chat.authorPool[author.Id] = author
-	chat.mx.Unlock()
+	chat.authorPool[author.Id] = &author
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	logger.Info("Started Listening from User", author.Nickname)
-	author.StartListen(chat.Id)
+	go func() {
+		author.StartListen(chat.Id)
+		wg.Done()
+	}()
+	chat.mx.Unlock()
+	wg.Wait()
 	chat.mx.Lock()
 	logger.Info(" User", author.Nickname, "is Leaving Chat Room")
 	delete(chat.authorPool, author.Id)

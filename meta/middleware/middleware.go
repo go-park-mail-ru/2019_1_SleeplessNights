@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DomainsCORS     = "http://localhost:8000"
+	DomainsCORS     = "http://89.208.198.186:8000"
 	MethodsCORS     = "GET, POST, PATCH, DELETE, OPTIONS"
 	CredentialsCORS = "true"
 	//TODO FIX CORS HEADERS
