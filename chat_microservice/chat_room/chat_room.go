@@ -2,7 +2,7 @@ package chat_room
 
 import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 var chat *chatRoom
@@ -20,6 +20,7 @@ const (
 type chatRoom struct {
 	maxConnections int64
 	AuthorPool map[uint64]Author
+	//TODO add mutex
 }
 
 func init() {
@@ -32,6 +33,12 @@ func GetInstance() *chatRoom {
 	return chat
 }
 
+func (chat *chatRoom)Join(author Author) {
+	//TODO join map
+	//TODO start listen author
+	//TODO kick author from map
+}
+
 type Author struct {
 	Wc         *websocket.Conn
 	Nickname   string
@@ -39,4 +46,7 @@ type Author struct {
 	Id         uint64
 }
 
+func (author *Author)StartListen() {
+	//TODO handle messages
+}
 
