@@ -40,10 +40,6 @@ func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = conn.WriteJSON(messge.Message{Title: "Conn", Payload: "you've been connected to Chat"})
-	if err != nil {
-		fmt.Println(err)
-	}
 	isAuthorized := false
 	if user.ID != 0 {
 		isAuthorized = true
@@ -56,7 +52,7 @@ func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 	}
 	chat_room.GetInstance().Join(chat_room.Author{Conn: conn, Nickname: user.Nickname, AvatarPath: user.AvatarPath, Id: userId})
 	//go MessageMux(user)
-	go StartSendingTestMessages(conn)
+	//go StartSendingTestMessages(conn)
 }
 
 func StartSendingTestMessages(conn *websocket.Conn) {

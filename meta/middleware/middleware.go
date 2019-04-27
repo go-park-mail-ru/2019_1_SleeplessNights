@@ -71,7 +71,12 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 		sessionCookie, err := r.Cookie("session_token")
 		if err != nil {
 			if err == http.ErrNoCookie && !strict {
-				next(models.User{ID: 0}, w, r)
+				user := models.User{
+					ID: 0,
+					Nickname: "Guest",
+					AvatarPath: "default_avatar.jpg",
+				}
+				next(user, w, r)
 				return
 			}
 			w.WriteHeader(http.StatusUnauthorized)
