@@ -19,5 +19,10 @@ func GetRouter() (router *mux.Router) {
 	router = mux.NewRouter()
 	ws := router.PathPrefix("/chat").Subrouter()
 	ws.Handle("/connect", middleware.MiddlewareAuth(handlers.EnterChat, false))
+
+	router.Use(middleware.MiddlewareBasicHeaders)
+	router.Use(middleware.MiddlewareCORS)
+	router.Use(middleware.MiddlewareLog)
+	router.Use(middleware.MiddlewareRescue)
 	return
 }
