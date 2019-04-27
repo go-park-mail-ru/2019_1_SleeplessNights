@@ -1,8 +1,17 @@
 package chat_room
 
-import "golang.org/x/net/websocket"
+import (
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"golang.org/x/net/websocket"
+)
 
 var chat *chatRoom
+
+var logger *log.Logger
+
+func init() {
+	logger = log.GetLogger("DB")
+}
 
 const (
 	maxConnections = 100
@@ -10,7 +19,7 @@ const (
 
 type chatRoom struct {
 	maxConnections int64
-	ConnectionPool []*websocket.Conn
+	AuthorPool map[uint64]Author
 }
 
 func init() {
@@ -18,3 +27,16 @@ func init() {
 		maxConnections: maxConnections,
 	}
 }
+
+func GetInstance() *chatRoom {
+	return chat
+}
+
+type Author struct {
+	Wc         *websocket.Conn
+	Nickname   string
+	AvatarPath string
+	Id         uint64
+}
+
+
