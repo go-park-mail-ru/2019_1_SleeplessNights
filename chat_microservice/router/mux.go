@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/router/handlers"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/middleware"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -17,7 +18,6 @@ func init() {
 func GetRouter() (router *mux.Router) {
 	router = mux.NewRouter()
 	ws := router.PathPrefix("/chat").Subrouter()
-	ws.HandleFunc("/connect", handlers.EnterChat)
-
+	ws.Handle("/connect", middleware.MiddlewareAuth(handlers.EnterChat, false))
 	return
 }

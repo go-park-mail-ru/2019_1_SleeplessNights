@@ -3,8 +3,8 @@ package faker
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"github.com/manveru/faker"
 	"math/rand"
 )
@@ -18,7 +18,7 @@ const (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Faker")
 }
 

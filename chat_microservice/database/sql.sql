@@ -284,4 +284,32 @@ BEGIN
   END IF;
   RETURN result;
 END;
-$function$
+$function$;
+
+CREATE OR REPLACE FUNCTION public.func_post_message(arg_post_message bigint, arg_payload json, arg_room_id bigint)
+  RETURNS void
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+BEGIN
+  INSERT INTO "Messages" (author_id, payload, room_id)
+  VALUES (arg_post_message, arg_payload, arg_room_id);
+  EXCEPTION
+  WHEN integrity_constraint_violation THEN
+    RAISE integrity_constraint_violation;
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.func_create_room(arg_authors bigint[])
+  RETURNS bigint
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+  result BIGINT;
+BEGIN
+  INSERT INTO "Rooms" (authors)
+  VALUES (arg_authors)
+         RETURNING id INTO result;
+  RETURN result;
+END;
+$function$;

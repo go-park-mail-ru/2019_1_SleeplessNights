@@ -5,16 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
+
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"github.com/lib/pq"
 	"github.com/xlab/closer"
 	"os"
 )
 
 const (
-	SQLNoRows   = "sql: no rows in result set"
-	NoUserFound = "БД: Не был найден юзер"
+	SQLNoRows       = "sql: no rows in result set"
+	NoUserFound     = "БД: Не был найден юзер"
 	UniqueViolation = "pq: duplicate key value violates unique constraint \"users_email_ui\""
 )
 
@@ -22,7 +23,7 @@ var db *dbManager
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("DB")
 }
 

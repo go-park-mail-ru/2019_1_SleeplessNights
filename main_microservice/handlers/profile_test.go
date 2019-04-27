@@ -7,8 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/router"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/middleware"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -42,7 +42,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 		resp := httptest.NewRecorder()
 
-		router.MiddlewareAuth(handlers.ProfileHandler).ServeHTTP(resp, req)
+		middleware.MiddlewareAuth(handlers.ProfileHandler, true).ServeHTTP(resp, req)
 		if status := resp.Code; status == http.StatusInternalServerError {
 			t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
 				status)
@@ -74,7 +74,7 @@ func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	router.MiddlewareAuth(handlers.ProfileHandler).ServeHTTP(resp, req)
+	middleware.MiddlewareAuth(handlers.ProfileHandler, true).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
@@ -115,7 +115,7 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	router.MiddlewareAuth(handlers.ProfileHandler).ServeHTTP(resp, req)
+	middleware.MiddlewareAuth(handlers.ProfileHandler, true).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
@@ -224,7 +224,7 @@ func TestProfileUpdateHandlerSuccessful(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	router.MiddlewareAuth(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+	middleware.MiddlewareAuth(handlers.ProfileUpdateHandler, true).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
@@ -279,7 +279,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	router.MiddlewareAuth(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+	middleware.MiddlewareAuth(handlers.ProfileUpdateHandler, true).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",
@@ -367,7 +367,7 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutMultipartForm(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 
-	router.MiddlewareAuth(handlers.ProfileUpdateHandler).ServeHTTP(resp, req)
+	middleware.MiddlewareAuth(handlers.ProfileUpdateHandler, true).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
 		t.Errorf("\nhandler returned wrong status code: %v\n",

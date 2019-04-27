@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
 	"github.com/gorilla/websocket"
 	"net/http"
 )
