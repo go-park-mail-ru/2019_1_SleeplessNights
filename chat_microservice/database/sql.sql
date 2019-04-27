@@ -325,7 +325,7 @@ DECLARE
   result json;
   rec    RECORD;
 BEGIN
-  FOR rec in SELECT payload INTO result
+  FOR rec in SELECT payload
              FROM "Messages"
              WHERE id < arg_since
                AND room_id = arg_room_id

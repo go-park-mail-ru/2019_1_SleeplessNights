@@ -123,18 +123,18 @@ func (author *Author) StartListen(roomId uint64) {
 				Text:       text,
 			}
 
-			err := database.GetInstance().PostMessage(respMsg.Id, roomId, []byte(respMsg.Text))
-			if err != nil {
-				logger.Error(err.Error())
-			}
-
 			bytes, err := json.Marshal(respMsg)
 			if err != nil {
 				logger.Error(err.Error())
 			}
 
+			err = database.GetInstance().PostMessage(respMsg.Id, roomId, bytes)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+
 			for _, u := range chat.authorPool {
-				err = u.Conn.WriteJSON(bytes)
+				err = u.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())
 				}
@@ -146,7 +146,6 @@ func (author *Author) StartListen(roomId uint64) {
 				if !ok {
 					logger.Error("Something wrong with msg.Payload.(ScrollPayload)")
 				}
-
 				since, ok := st["since"].(float64)
 				logger.Info(since)
 				if !ok {
@@ -157,7 +156,8 @@ func (author *Author) StartListen(roomId uint64) {
 				if err != nil {
 					logger.Error(err.Error())
 				}
-				err = author.Conn.WriteJSON([]byte(messages))
+				logger.Info(messages)
+				err = author.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
 				if err != nil {
 					logger.Error(err.Error())
 				}
