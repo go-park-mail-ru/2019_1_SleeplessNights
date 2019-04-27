@@ -4,3 +4,4 @@ test.html
 server.log
 .idea
 main_microservice/database/config.json
+chat_microservice/database/config.json

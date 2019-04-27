@@ -9,7 +9,7 @@ require (
 	github.com/golang/protobuf v1.3.1
 	github.com/gorilla/mux v1.7.1
 	github.com/gorilla/websocket v1.4.0
-	github.com/jackc/pgx v3.3.0+incompatible // indirect
+	github.com/jackc/pgx v3.3.0+incompatible
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.0.0
