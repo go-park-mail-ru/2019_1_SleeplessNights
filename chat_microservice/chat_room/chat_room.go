@@ -70,8 +70,8 @@ type ScrollPayload struct {
 }
 
 func (author *Author)StartListen() {
+	var msg Message
 	for {
-		var msg Message
 		err := author.Conn.ReadJSON(&msg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err) {
