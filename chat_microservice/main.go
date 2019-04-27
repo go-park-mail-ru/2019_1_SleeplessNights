@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -18,13 +17,10 @@ func init() {
 
 func main() {
 	defer closer.Close()
-
 	PORT := "8005"
-
 	logger.Info("Chat microservice started listening on", PORT)
 	r := router.GetRouter()
 
 	logger.Fatal(http.ListenAndServe(":"+PORT, r))
 
 }
-

@@ -36,11 +36,14 @@ func GetInstance() *chatRoom {
 }
 
 func (chat *chatRoom) Join(author Author) {
+	logger.Info("User ", author.Nickname, "Joined room")
 	chat.mx.Lock()
 	chat.authorPool[author.Id] = author
 	chat.mx.Unlock()
-	chat.authorPool[author.Id].StartListen()
+	logger.Info("Started Listening from User", author.Nickname)
+	author.StartListen()
 	chat.mx.Lock()
+	logger.Info(" User", author.Nickname, "is Leaving Chat Room")
 	delete(chat.authorPool, author.Id)
 	chat.mx.Unlock()
 }

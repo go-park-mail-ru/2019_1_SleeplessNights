@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/chat_room"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
@@ -48,8 +50,12 @@ func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Info("Users authStatus=%d ID=%d", isAuthorized, user.ID)
 	//TODO GET chatroom pointer, try to add user to chat as a new chat member
+	userId, err := database.GetInstance().UpdateUser(user.ID, user.Nickname, user.AvatarPath)
+	if err != nil {
+		logger.Error("Failed to get user in ChatConnect, from db.getI.UpdateUser ")
+	}
+	chat_room.GetInstance().Join(chat_room.Author{Conn: conn, Nickname: user.Nickname, AvatarPath: user.AvatarPath, Id: userId})
 	//go MessageMux(user)
-
 	go StartSendingTestMessages(conn)
 }
 
