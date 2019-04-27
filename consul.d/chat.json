@@ -1,6 +1,5 @@
 {
   "service": {
-    "id": "chat",
     "name": "chat",
     "tags": ["go"],
     "port": 8005
