@@ -90,7 +90,7 @@ func GetInstance() *dbManager {
 	return db
 }
 
-func (db *dbManager) CreateMessage() (err error) {
+func (db *dbManager) PostMessage(userId uint64, roomId uint64, payload []byte) (err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -103,6 +103,12 @@ func (db *dbManager) CreateMessage() (err error) {
 			_ = tx.Rollback()
 		}
 	}()
+
+	_, err = db.dataBase.Exec(`SELECT * FROM ($1, $2, $3)`,
+		userId, roomId, payload)
+	if err != nil{
+		return
+	}
 
 	err = tx.Commit()
 	if err != nil {
@@ -113,7 +119,7 @@ func (db *dbManager) CreateMessage() (err error) {
 	return
 }
 
-func (db *dbManager) GetMessages() (err error) {
+func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (payload []byte, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -126,6 +132,72 @@ func (db *dbManager) GetMessages() (err error) {
 			_ = tx.Rollback()
 		}
 	}()
+
+	row := db.dataBase.QueryRow(`SELECT * FROM ($1, $2, $3)`,
+		roomId, since, limit)
+	err = row.Scan(&payload)
+	if err != nil{
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	txOK = true
+	return
+}
+
+func (db *dbManager) UpdateUser(uid uint64, nickname string, avatarPath string) (id uint64, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			_ = tx.Rollback()
+		}
+	}()
+
+	row := db.dataBase.QueryRow(`SELECT * FROM ($1, $2, $3)`,
+		uid, nickname, avatarPath)
+	err = row.Scan(&id)
+	if err != nil{
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	txOK = true
+	return
+}
+
+func (db *dbManager) CreateRoom(users []uint64) (id uint64, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			_ = tx.Rollback()
+		}
+	}()
+
+	row := db.dataBase.QueryRow(`SELECT * FROM ($1)`, users)
+	err = row.Scan(&id)
+	if err != nil{
+		return
+	}
 
 	err = tx.Commit()
 	if err != nil {
