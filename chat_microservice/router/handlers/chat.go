@@ -40,7 +40,7 @@ func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = conn.WriteJSON(messge.Message{Title: "INFO", Payload: "you've been connected to Chat"})
+	err = conn.WriteJSON(messge.Message{Title: "Conn", Payload: "you've been connected to Chat"})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -63,7 +63,7 @@ func StartSendingTestMessages(conn *websocket.Conn) {
 	for {
 		sample := int64(rand.ExpFloat64() / SendingRate)
 		time.Sleep(time.Duration(sample) * time.Second)
-		err := conn.WriteJSON(messge.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path:"/img/default_avatar.jpg", "text":"Hello, Grand Webmaster"}`})
+		err := conn.WriteJSON(messge.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path":"/default_avatar.jpg", "text":"Hello, Grand Webmaster"}`})
 		if err != nil {
 			fmt.Println(err)
 			break
