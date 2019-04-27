@@ -1,0 +1,8 @@
+{
+  "service": {
+    "id": "main",
+    "name": "main",
+    "tags": ["primary", "go"],
+    "port": 8080
+  }
+}

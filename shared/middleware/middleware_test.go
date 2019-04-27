@@ -1,7 +1,7 @@
 package middleware_test
 
 import (
-	m "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/middleware"
+	m "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/middleware"
 
 	"github.com/gorilla/mux"
 	"net/http"

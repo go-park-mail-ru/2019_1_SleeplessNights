@@ -3,8 +3,8 @@ package faker
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"github.com/manveru/faker"
 	"math/rand"
 )

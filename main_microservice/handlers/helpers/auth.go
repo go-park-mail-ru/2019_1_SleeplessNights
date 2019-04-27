@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"google.golang.org/grpc"
 	"net/http"
 	"time"

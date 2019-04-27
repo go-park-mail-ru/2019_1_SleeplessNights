@@ -3,7 +3,7 @@ package chat_room
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/gorilla/websocket"
 	"sync"
 )

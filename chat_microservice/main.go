@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/router"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
 	"net/http"

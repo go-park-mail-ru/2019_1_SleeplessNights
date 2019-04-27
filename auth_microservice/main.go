@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice/auth"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/services"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"net"

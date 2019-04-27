@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/middleware"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/middleware"
 	"github.com/gorilla/mux"
 	"net/http"
 )

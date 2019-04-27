@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"os"
 )
 
@@ -19,7 +19,6 @@ func main() {
 
 	conf := flag.String("-conf","DEV", "Sets the configuration to: DEV (default), TEST, LOCAL or PROD")
 	verb := flag.Bool("v", false, "Shows more info during the execution")
-
 	flag.Parse()
 
 	configs := make(map[string]struct{})

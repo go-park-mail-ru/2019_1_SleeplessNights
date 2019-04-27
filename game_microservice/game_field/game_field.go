@@ -6,7 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"math"
 )
 

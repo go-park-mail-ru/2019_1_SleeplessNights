@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"github.com/lib/pq"
 	"github.com/xlab/closer"
 	"os"

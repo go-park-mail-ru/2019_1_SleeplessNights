@@ -4,7 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"sync"
 )
 

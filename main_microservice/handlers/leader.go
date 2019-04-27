@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"math"
 	"net/http"
 	"strconv"
