@@ -90,11 +90,11 @@ func (author *Author) StartListen(roomId uint64) {
 			if !ok{
 				logger.Error("Something wrong with msg.Payload.(ScrollPayload)")
 			}
-			messages, err := database.GetInstance().GetMessages(roomId, sp.Since - limit, limit)
+			messages, err := database.GetInstance().GetMessages(roomId, sp.Since, limit)
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			err = author.Conn.WriteJSON([]byte(messages))
+			err := author.Conn.WriteJSON([]byte(messages))
 			if err != nil {
 				logger.Error(err.Error())
 			}
