@@ -94,7 +94,7 @@ func (author *Author) StartListen(roomId uint64) {
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			err := author.Conn.WriteJSON([]byte(messages))
+			err = author.Conn.WriteJSON([]byte(messages))
 			if err != nil {
 				logger.Error(err.Error())
 			}
