@@ -1,6 +1,7 @@
 package chat_room
 
 import (
+	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/gorilla/websocket"
@@ -67,8 +68,8 @@ type Message struct {
 }
 
 const (
-	postTitle   = "post"
-	scrollTitle = "scroll"
+	postTitle   = "POST"
+	scrollTitle = "SCROLL"
 )
 
 type PostPayload struct {
@@ -77,6 +78,13 @@ type PostPayload struct {
 
 type ScrollPayload struct {
 	Since uint64 `json:"since"`
+}
+
+type ResponseMessage struct {
+	Nickname   string `json:"nickname"`
+	AvatarPath string `json:"avatar_path"`
+	Id         uint64 `json:"id"`
+	Text       string `json:"text"`
 }
 
 func (author *Author) StartListen(roomId uint64) {
@@ -94,6 +102,37 @@ func (author *Author) StartListen(roomId uint64) {
 
 		switch msg.Title {
 		case postTitle:
+			postPayload, ok := msg.Payload.(PostPayload)
+			if !ok {
+				logger.Error("Invalid payload came with post title, got error while spelling")
+				break
+			}
+
+			//TODO switch for payload types
+
+			respMsg := ResponseMessage{
+				Nickname:   author.Nickname,
+				AvatarPath: author.AvatarPath,
+				Id:         author.Id,
+				Text:       postPayload.Text,
+			}
+
+			err := database.GetInstance().PostMessage(respMsg.Id, roomId, []byte(respMsg.Text))
+			if err != nil {
+				logger.Error(err.Error())
+			}
+
+			bytes, err := json.Marshal(respMsg)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+
+			for _, u := range chat.authorPool {
+				err = u.Conn.WriteJSON(bytes)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+			}
 		case scrollTitle:
 			{
 				/*logger.Info(msg.Payload)
