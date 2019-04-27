@@ -104,8 +104,8 @@ func (db *dbManager) PostMessage(userId uint64, roomId uint64, payload []byte) (
 		}
 	}()
 
-	_, err = db.dataBase.Exec(`SELECT * FROM ($1, $2, $3)`,
-		userId, roomId, payload)
+	_, err = db.dataBase.Exec(`SELECT * FROM func_post_message ($1, $2, $3)`,
+		userId, payload, roomId)
 	if err != nil{
 		return
 	}
@@ -133,7 +133,7 @@ func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (pay
 		}
 	}()
 
-	row := db.dataBase.QueryRow(`SELECT * FROM ($1, $2, $3)`,
+	row := db.dataBase.QueryRow(`SELECT * FROM func_get_messages ($1, $2, $3)`,
 		roomId, since, limit)
 	err = row.Scan(&payload)
 	if err != nil{

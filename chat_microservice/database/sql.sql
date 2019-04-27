@@ -266,21 +266,22 @@ ALTER TABLE ONLY public."Messages"
 -- PostgreSQL database dump complete
 --
 
-CREATE OR REPLACE FUNCTION public.func_update_user(arg_uid bigint, arg_nickname character varying, arg_avatar_path character varying)
+CREATE OR REPLACE FUNCTION public.func_update_user(arg_uid bigint, arg_nickname character varying,
+                                                   arg_avatar_path character varying)
   RETURNS bigint
   LANGUAGE plpgsql
-AS $function$
+AS
+$function$
 DECLARE
   result BIGINT;
 BEGIN
-  UPDATE "Authors" SET avatar_path = arg_avatar_path,
-                       nickname = arg_nickname
-  WHERE uid = arg_uid
-        RETURNING id into result;
+  UPDATE "Authors"
+  SET avatar_path = arg_avatar_path,
+      nickname    = arg_nickname
+  WHERE uid = arg_uid RETURNING id into result;
   IF not FOUND THEN
     INSERT INTO "Authors" (uid, nickname, avatar_path)
-    VALUES (arg_uid, arg_nickname, arg_avatar_path)
-           RETURNING id INTO result;
+    VALUES (arg_uid, arg_nickname, arg_avatar_path) RETURNING id INTO result;
   END IF;
   RETURN result;
 END;
@@ -289,12 +290,13 @@ $function$;
 CREATE OR REPLACE FUNCTION public.func_post_message(arg_post_message bigint, arg_payload json, arg_room_id bigint)
   RETURNS void
   LANGUAGE plpgsql
-AS $function$
+AS
+$function$
 DECLARE
 BEGIN
   INSERT INTO "Messages" (author_id, payload, room_id)
   VALUES (arg_post_message, arg_payload, arg_room_id);
-  EXCEPTION
+EXCEPTION
   WHEN integrity_constraint_violation THEN
     RAISE integrity_constraint_violation;
 END;
@@ -303,13 +305,34 @@ $function$;
 CREATE OR REPLACE FUNCTION public.func_create_room(arg_authors bigint[])
   RETURNS bigint
   LANGUAGE plpgsql
-AS $function$
+AS
+$function$
 DECLARE
   result BIGINT;
 BEGIN
   INSERT INTO "Rooms" (authors)
-  VALUES (arg_authors)
-         RETURNING id INTO result;
+  VALUES (arg_authors) RETURNING id INTO result;
   RETURN result;
 END;
 $function$;
+
+CREATE OR REPLACE FUNCTION public.func_get_messages(arg_room_id bigint, arg_since bigint, arg_limit bigint)
+  RETURNS SETOF json
+  LANGUAGE plpgsql
+AS
+$function$
+DECLARE
+  result json;
+  rec    RECORD;
+BEGIN
+  FOR rec in SELECT payload INTO result
+             FROM "Messages"
+             WHERE id < arg_since
+               AND room_id = arg_room_id
+             LIMIT arg_limit
+  LOOP
+    result := rec.payload;
+    RETURN NEXT result;
+  END LOOP;
+END;
+$function$
