@@ -1,6 +1,8 @@
 package chat_room
 
 import (
+	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/meta/logger"
 	"github.com/gorilla/websocket"
 	"sync"
@@ -69,7 +71,14 @@ type ScrollPayload struct {
 	Since uint64 `json:"since"`
 }
 
-func (author *Author)StartListen() {
+type ResponseMessage struct {
+	Nickname string `json:"nickname"`
+	AvatarPath string `json:"avatar_path"`
+	Id uint64 `json:"id"`
+	Text string `json:"text"`
+}
+
+func (author *Author)StartListen(roomId uint64) {
 	var msg Message
 	for {
 		err := author.Conn.ReadJSON(&msg)
@@ -83,6 +92,22 @@ func (author *Author)StartListen() {
 
 		switch msg.Title {
 		case postTitle:
+			postPayload, ok := msg.Payload.(PostPayload)
+			if !ok {
+				logger.Error("Invalid payload came with post title, got error while spelling")
+				break
+			}
+
+			//TODO switch for payload types
+
+			respMsg := ResponseMessage{
+				//TODO make struct
+			}
+
+			database.GetInstance().PostMessage(author.Id, roomId,)//TODO add message to DB
+
+			//TODO for each user in room send message
+
 		case scrollTitle:
 		default:
 
