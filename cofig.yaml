@@ -1,0 +1,46 @@
+dev/:
+  auth-ms/:
+    cookie_name: session_token
+    expiration_time: 86400
+    secret: VtlEXmW7NkRfoM9fED1f7brHnoF7Z1mK3FB29pDFFjxl4ZJufFCbKGUn0qmwHDrw
+  chat-ms/:
+  game-ms/:
+    max_rooms: 100
+    room/:
+      io_queues_len: 50
+      main_loop_interval: 500
+  main-ms/:
+    db:
+      host: localhost
+      port: 5432
+      user: ubuntu
+      password: ubuntu
+      dbname: questions
+  shared/:
+    log_level: trace
+    cors/:
+      credentials: true
+      domains: 'https://89.208.198.186:8000'
+      headers:
+        - X-Requested_With
+        - Content-type
+        - User-Agent
+        - Cache-Control
+        - Cookie
+        - Origin
+        - Accept-Encoding
+        - Connection
+        - Host
+        - Upgrade-Insecure-Requests
+        - User-Agent
+        - Referer
+        - Access-Control-Request-Method
+        - Access-Control-Request-Headers
+      methods:
+        - GET
+        - POST
+        - PATCH
+        - DELETE
+        - OPTIONS
+    scripts_path: '/home/maxim/Dev/Technopark/2_semester/Golang/2019_1_SleeplessNights/scripts'
+    static_path: '/home/maxim/Dev/Technopark/2_semester/Golang/2019_1_SleeplessNights/static'

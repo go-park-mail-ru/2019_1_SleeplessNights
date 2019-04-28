@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/coreos/etcd v3.3.12+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
-	github.com/fatih/color v1.7.0 // indirect
+	github.com/fatih/color v1.7.0
 	github.com/gbrlsnchs/jwt/v3 v3.0.0-beta.0
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gobwas/gws v0.0.0-20170427155341-6ec9a5ac805b // indirect

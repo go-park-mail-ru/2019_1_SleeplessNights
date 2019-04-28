@@ -2,8 +2,10 @@ package main
 
 import (
 	"flag"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/console"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"os"
+	"os/exec"
 )
 
 var logger *log.Logger
@@ -16,6 +18,28 @@ func init () {
 func main() {
 	//TODO MAKE SECRET MANAGER ?
 	//TODO DELETE DATA CREATOR
+	console.Title("Hello world from Sleepless Nights server!")
+	console.Message("Let's check your system first...")
+	//Проверяем зависимости по ПО
+	softwareDependencies := []string{"psql", "consul"}
+	ok := true
+	for _, dep := range softwareDependencies {
+		err := exec.Command(dep, "--version").Run()
+		if err != nil {
+			ok = false
+			console.Predicate(false, dep)
+		} else {
+			console.Predicate(true, dep)
+		}
+	}
+	if ok {
+		console.Success("All required software is available")
+	} else {
+		console.Error("Some software is missing")
+		return
+	}
+
+	return
 
 	conf := flag.String("-conf","DEV", "Sets the configuration to: DEV (default), TEST, LOCAL or PROD")
 	verb := flag.Bool("v", false, "Shows more info during the execution")
