@@ -1,0 +1,7 @@
+{
+  "consul": {
+    "node": "machine",
+    "http_port": 8010,
+    "client": "0.0.0.0"
+  }
+}
