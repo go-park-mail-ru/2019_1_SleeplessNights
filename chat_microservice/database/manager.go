@@ -65,7 +65,7 @@ func loadConfiguration(file string) (pgxConfig pgx.ConnConfig) {
 
 func init() {
 
-	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/chat_microservice/database/config.json")
+	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/chat_microservice/database/microservices.json")
 	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
 
 	dateBase, err := pgx.NewConnPool(pgxConnPoolConfig)

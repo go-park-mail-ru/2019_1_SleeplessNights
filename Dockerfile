@@ -76,7 +76,7 @@ CMD service postgresql start && go run main.go
 #RUN pg_lsclusters
 #RUN psql
 #RUN cat database/sql.sql | psql -d postgres -c
-#RUN cat database/deploy_config.json > database/config.json
+#RUN cat database/deploy_config.json > database/microservices.json
 #Запускаем сервер
 #USER root
 #RUN go get -u

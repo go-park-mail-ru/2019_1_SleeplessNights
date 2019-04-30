@@ -14,7 +14,7 @@ then
     client=$(jq -r '.consul.client' ${system_config})
     consul agent -dev -config-dir=$consul_config_dir -ui -node=$node -http-port $http_port -client $client
     else
-    echo "Can't find BASEPATH/system-config.json = $system_config"
+    echo "Can't find BASEPATH/system-microservices.json = $system_config"
     exit 1
     fi
 else

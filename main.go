@@ -35,7 +35,7 @@ var jobs map[string]int
 		return
 	}
 
-	output, err := exec.Command(os.Getenv(config.BASEPATH) +"/scripts/get-job-id.sh").Output()
+	output, err := exec.Command(os.Getenv(microservices.BASEPATH) +"/scripts/get-job-id.sh").Output()
 	if err != nil {
 		console.Error("Failed to get id of job started", script)
 		return err
@@ -136,15 +136,15 @@ func main() {
 	}
 	return
 
-	//jsonConfig, err := ioutil.ReadFile("config.json")
+	//jsonConfig, err := ioutil.ReadFile("microservices.json")
 	if err != nil {
-		console.Error("Failed to read config.json")
+		console.Error("Failed to read microservices.json")
 		return
 	}
 
 	//kvs, err := consulkvjson.ToKVs(jsonConfig)
 	if err != nil {
-		console.Error("Failed to convert JSON config into consul KV's")
+		console.Error("Failed to convert JSON microservices into consul KV's")
 		return
 	}
 
@@ -168,7 +168,7 @@ func main() {
 	}
 
 	if *verb {
-		logger.Debug("Setting config params to more verbose")
+		logger.Debug("Setting microservices params to more verbose")
 	}
 
 	/*err = exec.Command("go run auth_microservice/main.go").Run()
