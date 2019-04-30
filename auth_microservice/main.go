@@ -5,6 +5,7 @@ import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
+	"github.com/xlab/closer"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -17,6 +18,8 @@ func init() {
 }
 
 func main() {
+	defer closer.Close()
+
 	lis, err := net.Listen("tcp", ":8081")
 	if err != nil {
 		logger.Fatal("Auth microservice can't listen port", err)

@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
@@ -97,229 +96,29 @@ func GetInstance() *dbManager {
 	return db
 }
 
-func (db *dbManager) GetUserViaID(userID uint64) (user models.User, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	row := db.dataBase.QueryRow(
-		`SELECT * FROM public.users WHERE id = $1`, userID)
-	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
-		&user.AvatarPath)
-	if err != nil && err.Error() == SQLNoRows {
-		err = errors.New(NoUserFound)
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	row := db.dataBase.QueryRow(
-		`SELECT * FROM public.users WHERE email = $1`, email)
-	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
-		&user.AvatarPath)
-	if err != nil {
-		err = errors.New(NoUserFound)
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-
-	if !txOK {
-		err = tx.Rollback()
-		return
-	}
-	return
-}
-
-func (db *dbManager) AddUser(user models.User) (err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	_, err = db.dataBase.Exec(
-		`INSERT INTO public.users (email, password, salt, won, lost, playtime, nickname, avatarpath)
-			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		user.Email, user.Password, user.Salt, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) UpdateUser(user models.User, userID uint64) (err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	_, err = db.dataBase.Exec(
-		`UPDATE public.users 
-			SET nickname = CASE
-				WHEN $1 = '' THEN nickname ELSE $1 END,
-			    avatarpath = CASE
-				WHEN $2 = '' THEN avatarpath ELSE $2 END
-			WHERE id = $3`, user.Nickname, user.AvatarPath, userID)
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) GetLenUsers() (len int, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	row := db.dataBase.QueryRow(`SELECT COUNT(*) FROM public.users`)
-	err = row.Scan(&len)
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) GetUsers() (users []models.User, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	rows, err := db.dataBase.Query(
-		`SELECT * FROM public.users ORDER BY won DESC`)
-	if err != nil {
-		return
-	}
-
-	var user models.User
-	for rows.Next() {
-		err = rows.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
-			&user.AvatarPath)
-		if err != nil {
-			return
-		}
-
-		users = append(users, user)
-	}
-	err = rows.Err()
-	if err != nil {
-		return
-	}
-
-	err = rows.Close()
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
 func (db *dbManager) CleanerDBForTests() (err error) {
 
-	//tx, err := db.dataBase.Begin()
-	//if err != nil {
-	//	return
-	//}
-	//txOK := false
-	//defer func() {
-	//	if !txOK {
-	//		_ = tx.Rollback()
-	//	}
-	//}()
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			_ = tx.Rollback()
+		}
+	}()
 
-	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.users, public.question, public.question_pack RESTART IDENTITY`)
+	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.question, public.question_pack RESTART IDENTITY`)
 	if err != nil {
 		return
 	}
 
-	//err = tx.Commit()
-	//if err != nil {
-	//	return
-	//}
-	//txOK = true
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
 	return
 }
 
