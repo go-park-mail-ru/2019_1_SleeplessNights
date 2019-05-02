@@ -111,8 +111,8 @@ func (db *dbManager) GetUserViaID(userID uint64) (user services.User, err error)
 	}()
 
 	row := db.dataBase.QueryRow(
-		`SELECT email, nickname, avatar_path FROM public.users WHERE id = $1`, userID)
-	err = row.Scan(&user.Email, &user.Nickname, &user.AvatarPath)
+		`SELECT id, email, nickname, avatar_path FROM public.users WHERE id = $1`, userID)
+	err = row.Scan(&user.Id, &user.Email, &user.Nickname, &user.AvatarPath)
 	if err != nil && err.Error() == SQLNoRows {
 		err = errors.New(NoUserFound)
 		return
@@ -140,8 +140,8 @@ func (db *dbManager) GetUserViaEmail(email string) (user services.User, err erro
 	}()
 
 	row := db.dataBase.QueryRow(
-		`SELECT email, nickname, avatar_path FROM public.users WHERE email = $1`, email)
-	err = row.Scan(&user.Email, &user.Nickname, &user.AvatarPath)
+		`SELECT id, email, nickname, avatar_path FROM public.users WHERE email = $1`, email)
+	err = row.Scan(&user.Id, &user.Email, &user.Nickname, &user.AvatarPath)
 	if err != nil {
 		err = errors.New(NoUserFound)
 		return
@@ -233,14 +233,14 @@ func (db *dbManager) GetUsers(page *services.PageData) (users []*services.User, 
 		}
 	}()
 
-	rows, err := db.dataBase.Query(`SELECT email, nickname, avatar_path FROM public.users ORDER BY won DESC`)
+	rows, err := db.dataBase.Query(`SELECT id, email, nickname, avatar_path FROM public.users ORDER BY won DESC`)
 	if err != nil {
 		return
 	}
 
 	var user services.User
 	for rows.Next() {
-		err = rows.Scan(&user.Email,&user.Nickname, &user.AvatarPath)
+		err = rows.Scan(&user.Id, &user.Email,&user.Nickname, &user.AvatarPath)
 		if err != nil {
 			return
 		}

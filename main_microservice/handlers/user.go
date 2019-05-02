@@ -30,15 +30,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	salt, err := helpers.MakeSalt()
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
-	user.Salt = salt
-	user.Password = helpers.MakePasswordHash(r.Form.Get("password"), user.Salt)
-
-	err = database.GetInstance().AddUser(user)
+	err =
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

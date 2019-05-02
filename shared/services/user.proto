@@ -14,9 +14,10 @@ message UserSignature {
 }
 
 message User {
-    string email      = 1;
-    string nickname   = 2;
-    string avatarPath = 3;
+    uint64 id         = 1;
+    string email      = 2;
+    string nickname   = 3;
+    string avatarPath = 4;
 }
 
 message NewUserData {
