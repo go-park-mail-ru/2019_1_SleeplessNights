@@ -36,4 +36,7 @@ message LeaderBoardPage {
 
 service UserMS {
     rpc CheckToken (SessionToken) returns (User) {}
+    rpc MakeToken (UserSignature) returns (SessionToken) {}
+    rpc CreateUser (NewUserData) returns (SessionToken) {}
+    rpc GetLeaderBoardPage (PageData) returns (LeaderBoardPage) {}
 }
