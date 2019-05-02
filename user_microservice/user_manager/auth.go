@@ -2,16 +2,14 @@ package user_manager
 
 import (
 	"bytes"
-	"errors"
 	"github.com/gbrlsnchs/jwt/v3"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
 	"golang.org/x/net/context"
 	"strconv"
 	"time"
 )
-
-var wrongPassword = errors.New("error: passwords does not match")
 
 func (auth *authManager)CheckToken(ctx context.Context, in *services.SessionToken)(*services.User, error) {
 	rawToken, err := jwt.Parse([]byte(in.Token))
@@ -54,7 +52,7 @@ func (auth *authManager)MakeToken(ctx context.Context, in *services.UserSignatur
 	}
 
 	if !bytes.Equal(password, MakePasswordHash(in.Password, salt)) {
-		return nil, wrongPassword
+		return nil, errors.AuthWrongPassword
 	}
 
 	signer := jwt.NewHMAC(jwt.SHA512, auth.secret)
