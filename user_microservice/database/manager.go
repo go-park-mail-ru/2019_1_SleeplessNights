@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/jackc/pgx"
 	"github.com/xlab/closer"
 	"os"
@@ -37,7 +37,7 @@ type dbManager struct {
 type dbConfig struct {
 	Host     string `json:"host"`
 	Port     uint16 `json:"port"`
-	User     string `json:"user"`
+	User     string `json:"user_manager"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 }
@@ -97,7 +97,7 @@ func GetInstance() *dbManager {
 	return db
 }
 
-func (db *dbManager) GetUserViaID(userID uint64) (user models.User, err error) {
+func (db *dbManager) GetUserViaID(userID uint64) (user services.User, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -111,9 +111,8 @@ func (db *dbManager) GetUserViaID(userID uint64) (user models.User, err error) {
 	}()
 
 	row := db.dataBase.QueryRow(
-		`SELECT * FROM public.users WHERE id = $1`, userID)
-	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
-		&user.AvatarPath)
+		`SELECT email, nickname, avatar_path FROM public.users WHERE id = $1`, userID)
+	err = row.Scan(&user.Email, &user.Nickname, &user.AvatarPath)
 	if err != nil && err.Error() == SQLNoRows {
 		err = errors.New(NoUserFound)
 		return
@@ -127,7 +126,7 @@ func (db *dbManager) GetUserViaID(userID uint64) (user models.User, err error) {
 	return
 }
 
-func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error) {
+func (db *dbManager) GetUserViaEmail(email string) (user services.User, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -141,9 +140,8 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 	}()
 
 	row := db.dataBase.QueryRow(
-		`SELECT * FROM public.users WHERE email = $1`, email)
-	err = row.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
-		&user.AvatarPath)
+		`SELECT email, nickname, avatar_path FROM public.users WHERE email = $1`, email)
+	err = row.Scan(&user.Email, &user.Nickname, &user.AvatarPath)
 	if err != nil {
 		err = errors.New(NoUserFound)
 		return
@@ -162,7 +160,7 @@ func (db *dbManager) GetUserViaEmail(email string) (user models.User, err error)
 	return
 }
 
-func (db *dbManager) AddUser(user models.User) (err error) {
+func (db *dbManager) AddUser(email, nickname, avatarPath string, password, salt []byte) (err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -176,9 +174,9 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 	}()
 
 	_, err = db.dataBase.Exec(
-		`INSERT INTO public.users (email, password, salt, won, lost, playtime, nickname, avatarpath)
-			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		user.Email, user.Password, user.Salt, user.Won, user.Lost, user.PlayTime, user.Nickname, user.AvatarPath)
+		`INSERT INTO public.users (email, password, salt, nickname, avatar_path)
+			  VALUES ($1, $2, $3, $4, $5)`,
+		email, password, salt, nickname, avatarPath)
 	if err != nil {
 		return
 	}
@@ -191,8 +189,7 @@ func (db *dbManager) AddUser(user models.User) (err error) {
 	return
 }
 
-func (db *dbManager) UpdateUser(user models.User, userID uint64) (err error) {
-
+func (db *dbManager) UpdateUser(id uint64, nickname, avatarPath string) (err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return
@@ -208,9 +205,9 @@ func (db *dbManager) UpdateUser(user models.User, userID uint64) (err error) {
 		`UPDATE public.users 
 			SET nickname = CASE
 				WHEN $1 = '' THEN nickname ELSE $1 END,
-			    avatarpath = CASE
-				WHEN $2 = '' THEN avatarpath ELSE $2 END
-			WHERE id = $3`, user.Nickname, user.AvatarPath, userID)
+			    avatar_path = CASE
+				WHEN $2 = '' THEN avatar_path ELSE $2 END
+			WHERE id = $3`, nickname, avatarPath, id)
 	if err != nil {
 		return
 	}
@@ -223,7 +220,7 @@ func (db *dbManager) UpdateUser(user models.User, userID uint64) (err error) {
 	return
 }
 
-func (db *dbManager) GetLenUsers() (len int, err error) {
+func (db *dbManager) GetUsers(page *services.PageData) (users []*services.User, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -236,47 +233,19 @@ func (db *dbManager) GetLenUsers() (len int, err error) {
 		}
 	}()
 
-	row := db.dataBase.QueryRow(`SELECT COUNT(*) FROM public.users`)
-	err = row.Scan(&len)
+	rows, err := db.dataBase.Query(`SELECT email, nickname, avatar_path FROM public.users ORDER BY won DESC`)
 	if err != nil {
 		return
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) GetUsers() (users []models.User, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	rows, err := db.dataBase.Query(`SELECT * FROM public.users ORDER BY won DESC`)
-	if err != nil {
-		return
-	}
-
-	var user models.User
+	var user services.User
 	for rows.Next() {
-		err = rows.Scan(&user.ID, &user.Email, &user.Password, &user.Salt, &user.Won, &user.Lost, &user.PlayTime, &user.Nickname,
-			&user.AvatarPath)
+		err = rows.Scan(&user.Email,&user.Nickname, &user.AvatarPath)
 		if err != nil {
 			return
 		}
 
-		users = append(users, user)
+		users = append(users, &user)
 	}
 	err = rows.Err()
 	if err != nil {
@@ -292,8 +261,41 @@ func (db *dbManager) GetUsers() (users []models.User, err error) {
 	return
 }
 
-func (db *dbManager) CleanerDBForTests() (err error) {
+func (db *dbManager) GetUserSignature(email string)(id uint64, password, salt []byte, err error) {
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			_ = tx.Rollback()
+		}
+	}()
 
+	row := db.dataBase.QueryRow(
+		`SELECT id, password, salt FROM public.users WHERE email = $1`, email)
+	err = row.Scan(&id, &password, &salt)
+	if err != nil {
+		err = errors.New(NoUserFound)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
+
+	if !txOK {
+		err = tx.Rollback()
+		return
+	}
+	return
+}
+
+func (db *dbManager) CleanerDBForTests() (err error) {
+	//TODO remove?
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return

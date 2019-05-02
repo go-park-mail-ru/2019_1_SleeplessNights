@@ -34,15 +34,15 @@ func main () {
 		wg.Done()
 	}(&wg)
 
-	/*user, _ := database.GetInstance().GetUserViaID(1)
-	cookie, _ := auth_microservice.MakeSession(user)
+	/*user_manager, _ := database.GetInstance().GetUserViaID(1)
+	cookie, _ := user_microservice.MakeSession(user_manager)
 	connUser := exec.Command(`./scripts/ws-connect.sh`, PORT, cookie.Value)
 	err := connUser.Run()
 	if err != nil {
 		logger.Error(err)
 	}
-	user, _ = database.GetInstance().GetUserViaID(2)
-	cookie, _ = auth_microservice.MakeSession(user)
+	user_manager, _ = database.GetInstance().GetUserViaID(2)
+	cookie, _ = user_microservice.MakeSession(user_manager)
 	connUser = exec.Command(`./scripts/ws-connect.sh`, PORT, cookie.Value)
 	err = connUser.Run()
 	if err != nil {

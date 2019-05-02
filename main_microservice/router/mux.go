@@ -13,8 +13,8 @@ func GetRouter() (router *mux.Router) {
 	router = mux.NewRouter()
 
 	api := router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/user", handlers.RegisterHandler).Methods(http.MethodPost)
-	api.HandleFunc("/user", handlers.OptionsHandler).Methods(http.MethodOptions)
+	api.HandleFunc("/user_manager", handlers.RegisterHandler).Methods(http.MethodPost)
+	api.HandleFunc("/user_manager", handlers.OptionsHandler).Methods(http.MethodOptions)
 	api.HandleFunc("/session", handlers.AuthHandler).Methods(http.MethodPost)
 	api.HandleFunc("/session", handlers.AuthDeleteHandler).Methods(http.MethodDelete)
 	api.HandleFunc("/session", handlers.OptionsHandler).Methods(http.MethodOptions)

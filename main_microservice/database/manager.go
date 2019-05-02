@@ -33,7 +33,7 @@ type dbManager struct {
 type dbConfig struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
-	User     string `json:"user"`
+	User     string `json:"user_manager"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 }
@@ -56,7 +56,7 @@ func loadConfiguration(file string) (psqlInfo string) {
 		logger.Error(err.Error())
 		return
 	}
-	psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	psqlInfo = fmt.Sprintf("host=%s port=%d user_manager=%s password=%s dbname=%s sslmode=disable",
 		config.Host, config.Port, config.User, config.Password, config.DBName)
 
 	return

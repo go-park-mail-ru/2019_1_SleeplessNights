@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/auth_microservice/auth"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/user_manager"
 	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
 	"google.golang.org/grpc"
@@ -26,13 +26,15 @@ func main() {
 	}
 
 	server := grpc.NewServer()
-	services.RegisterAuthCheckerServer(server, auth.GetInstance())
+
+	server.
+	services.RegisterAuthCheckerServer(server, user_manager.GetInstance())
 
 	logger.Info("Auth microservice started listening at :8081")
 	err = server.Serve(lis)
 	if err != nil {
 		logger.Error("Auth microservice dropped with error")
-		logger.Info("Restarting auth microservice...")
+		logger.Info("Restarting user_manager microservice...")
 		logger.Info("Auth microservice started listening at :8081")
 		err = server.Serve(lis)
 	}

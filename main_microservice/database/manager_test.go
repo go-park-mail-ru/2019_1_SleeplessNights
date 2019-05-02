@@ -32,7 +32,7 @@ import (
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
 //	if newUser.ID != oldUser.ID || newUser.Email != oldUser.Email {
-//		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
+//		t.Errorf("DB returned wrong user_manager:\ngot %v, %v\nwant %v, %v\n",
 //			newUser.ID, newUser.Email, oldUser.ID, oldUser.Email)
 //	}
 //}
@@ -81,7 +81,7 @@ import (
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
 //	if newUser.Email != oldUser.Email || newUser.ID != oldUser.ID {
-//		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
+//		t.Errorf("DB returned wrong user_manager:\ngot %v, %v\nwant %v, %v\n",
 //			newUser.Email, newUser.ID, oldUser.Email, oldUser.ID)
 //	}
 //}
@@ -130,7 +130,7 @@ import (
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
 //	if newUser.Email != oldUser.Email || newUser.ID != oldUser.ID {
-//		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
+//		t.Errorf("DB returned wrong user_manager:\ngot %v, %v\nwant %v, %v\n",
 //			newUser.Email, newUser.ID, oldUser.Email, oldUser.ID)
 //	}
 //}
@@ -206,7 +206,7 @@ import (
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
 //	if newUser.Nickname != oldUser.Nickname || newUser.AvatarPath != oldUser.AvatarPath {
-//		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
+//		t.Errorf("DB returned wrong user_manager:\ngot %v, %v\nwant %v, %v\n",
 //			newUser.Nickname, oldUser.Nickname, newUser.AvatarPath, oldUser.AvatarPath)
 //	}
 //}
@@ -242,13 +242,13 @@ import (
 //		t.Errorf(err.Error())
 //	}
 //
-//	user := models.User{
+//	user_manager := models.User{
 //		Email:      "test@test.com",
 //		Nickname:   "test",
 //		AvatarPath: "default_avatar.jpg",
 //	}
 //
-//	err = database.GetInstance().AddUser(user)
+//	err = database.GetInstance().AddUser(user_manager)
 //	if err != nil {
 //		t.Error(err.Error())
 //		return
@@ -286,8 +286,8 @@ import (
 //		},
 //	}
 //
-//	for _, user := range oldUsers {
-//		err := database.GetInstance().AddUser(user)
+//	for _, user_manager := range oldUsers {
+//		err := database.GetInstance().AddUser(user_manager)
 //		if err != nil {
 //			t.Error(err.Error())
 //			return
@@ -300,7 +300,7 @@ import (
 //	}
 //	for i := range newUsers {
 //		if newUsers[i].Email != oldUsers[i].Email || newUsers[i].Nickname != oldUsers[i].Nickname || newUsers[i].AvatarPath != oldUsers[i].AvatarPath {
-//			t.Errorf("DB returned wrong user:\ngot %v, %v, %v\nwant %v, %v, %v\n",
+//			t.Errorf("DB returned wrong user_manager:\ngot %v, %v, %v\nwant %v, %v, %v\n",
 //				newUsers[i].Email, newUsers[i].Nickname, newUsers[i].AvatarPath,
 //				oldUsers[i].Email, oldUsers[i].Nickname, oldUsers[i].AvatarPath)
 //		}
@@ -314,13 +314,13 @@ import (
 //		t.Errorf(err.Error())
 //	}
 //
-//	user := models.User{
+//	user_manager := models.User{
 //		Email:      "test@test.com",
 //		Nickname:   "test",
 //		AvatarPath: "default_avatar.jpg",
 //	}
 //
-//	err = database.GetInstance().AddUser(user)
+//	err = database.GetInstance().AddUser(user_manager)
 //	if err != nil {
 //		t.Error(err.Error())
 //		return

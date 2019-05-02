@@ -45,13 +45,13 @@ func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 		isAuthorized = true
 	}
 	logger.Info("Users authStatus=%d ID=%d", isAuthorized, user.ID)
-	//TODO GET chatroom pointer, try to add user to chat as a new chat member
+	//TODO GET chatroom pointer, try to add user_manager to chat as a new chat member
 	userId, err := database.GetInstance().UpdateUser(user.ID, user.Nickname, user.AvatarPath)
 	if err != nil {
-		logger.Error("Failed to get user in ChatConnect, from db.getI.UpdateUser ")
+		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateUser ")
 	}
 	chat_room.GetInstance().Join(chat_room.Author{Conn: conn, Nickname: user.Nickname, AvatarPath: user.AvatarPath, Id: userId})
-	//go MessageMux(user)
+	//go MessageMux(user_manager)
 	//go StartSendingTestMessages(conn)
 }
 

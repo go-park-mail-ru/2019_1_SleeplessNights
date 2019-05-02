@@ -14,7 +14,7 @@ func BuildSessionCookie(userID uint64)(sessionCookie http.Cookie, err error) {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		logger.Error("Can't connect to auth microservice")
+		logger.Error("Can't connect to user_manager microservice")
 		return
 	}
 	defer grpcConn.Close()
@@ -26,7 +26,7 @@ func BuildSessionCookie(userID uint64)(sessionCookie http.Cookie, err error) {
 			ID: userID,
 		})
 	if err != nil {
-		logger.Error("Can't make token for this user")
+		logger.Error("Can't make token for this user_manager")
 		return
 	}
 

@@ -1,4 +1,4 @@
-package helpers
+package user_manager
 
 import (
 	"bytes"

@@ -44,7 +44,7 @@ func TestProfileHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 
 		middleware.MiddlewareAuth(handlers.ProfileHandler, true).ServeHTTP(resp, req)
 		if status := resp.Code; status == http.StatusInternalServerError {
-			t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
+			t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user_manager' into json\n",
 				status)
 		} else {
 			if status := resp.Code; status != http.StatusOK {
@@ -77,7 +77,7 @@ func TestProfileHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 	middleware.MiddlewareAuth(handlers.ProfileHandler, true).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
-		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
+		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user_manager' into json\n",
 			status)
 	} else {
 		if status := resp.Code; status != http.StatusUnauthorized {
@@ -118,7 +118,7 @@ func TestProfileHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 	middleware.MiddlewareAuth(handlers.ProfileHandler, true).ServeHTTP(resp, req)
 
 	if status := resp.Code; status == http.StatusInternalServerError {
-		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user' into json\n",
+		t.Errorf("\nhandler returned wrong status code: %v\nhandler can't write into responce or can't Marshal 'user_manager' into json\n",
 			status)
 	} else {
 		if status := resp.Code; status != http.StatusUnauthorized {
@@ -294,14 +294,14 @@ func TestProfileUpdateHandlerUnsuccessfulWithoutCookie(t *testing.T) {
 
 //func TestProfileUpdateHandlerUnsuccessfulWithWrongCookie(t *testing.T) {
 //
-//	user := models.User{
+//	user_manager := models.User{
 //		ID:         1,
 //		Email:      "first@mail.com",
 //		Nickname:   "first",
 //		AvatarPath: "none",
 //	}
 //
-//	cookie, err := auth_microservice.MakeSession(user)
+//	cookie, err := user_microservice.MakeSession(user_manager)
 //	if err != nil {
 //		t.Errorf("MakeSession returned error: %s\n", err.Error())
 //		return

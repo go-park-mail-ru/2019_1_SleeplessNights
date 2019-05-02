@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=services:. *.proto
+
+package services;
+
+message SessionToken {
+    string Token = 1;
+}
+
+message UserSignature {
+    string email    = 1;
+    string password = 2;
+}
+
+message User {
+    string email      = 1;
+    string nickname   = 2;
+    string avatarPath = 3;
+}
+
+message NewUserData {
+    string email    = 1;
+    string password = 2;
+    string nickname = 3;
+}
+
+message PageData {
+    uint64 since = 1;
+    uint64 limit = 2;
+}
+
+message LeaderBoardPage {
+    repeated User users = 1;
+}
+
+service UserMS {
+    rpc CheckToken (SessionToken) returns (User) {}
+}

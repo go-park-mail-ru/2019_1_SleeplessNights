@@ -31,7 +31,7 @@ type dbManager struct {
 type dbConfig struct {
 	Host     string `json:"host"`
 	Port     uint16 `json:"port"`
-	User     string `json:"user"`
+	User     string `json:"user_manager"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 }

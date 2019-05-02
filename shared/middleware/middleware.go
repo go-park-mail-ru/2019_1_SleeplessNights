@@ -93,7 +93,7 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 			grpc.WithInsecure(),
 		)
 		if err != nil {
-			logger.Error("Can't connect to auth microservice")
+			logger.Error("Can't connect to user_manager microservice")
 			helpers.Return500(&w, err)
 			return
 		}

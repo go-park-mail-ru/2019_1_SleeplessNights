@@ -22,7 +22,7 @@ func init() {
 	logger = log.GetLogger("Faker")
 }
 
-// Fills Users Map with user data
+// Fills Users Map with user_manager data
 func CreateFakeData(quantity int) {
 	fake, err := faker.New("en")
 	if err != nil {
