@@ -2,17 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/satori/go.uuid"
+	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-func ProfileHandler(user models.User, w http.ResponseWriter, r *http.Request) {
+func ProfileHandler(user services.User, w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(user)
 	if err != nil {
 		helpers.Return500(&w, err)
@@ -25,7 +25,7 @@ func ProfileHandler(user models.User, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ProfileUpdateHandler(user models.User, w http.ResponseWriter, r *http.Request) {
+func ProfileUpdateHandler(user services.User, w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(helpers.MaxPhotoSize)
 	if err != nil {
 		formErrorMessages := helpers.ErrorSet{
@@ -47,15 +47,11 @@ func ProfileUpdateHandler(user models.User, w http.ResponseWriter, r *http.Reque
 	}
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
-	newEmail := r.MultipartForm.Value["email"][0]
-	userID := user.ID
-	user.Email = newEmail
-
 	newAvatar := r.MultipartForm.File["avatar"][0]
 	avatarName := uuid.NewV4().String() + filepath.Ext(newAvatar.Filename)
 	user.AvatarPath = avatarName
 
-	err = database.GetInstance().UpdateUser(user, userID)
+	_, err = userManager.UpdateProfile(context.Background(), &user)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

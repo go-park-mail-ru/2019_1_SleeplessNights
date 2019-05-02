@@ -32,12 +32,21 @@ message PageData {
 }
 
 message LeaderBoardPage {
-    repeated User users = 1;
+    repeated Profile leaders = 1;
+}
+
+message Profile {
+    User   user    = 1;
+    float  winRate = 2;
+    uint32 rating  = 3;
+    uint32 matches = 4;
 }
 
 service UserMS {
-    rpc CheckToken (SessionToken) returns (User) {}
-    rpc MakeToken (UserSignature) returns (SessionToken) {}
-    rpc CreateUser (NewUserData) returns (SessionToken) {}
-    rpc GetLeaderBoardPage (PageData) returns (LeaderBoardPage) {}
+    rpc CheckToken         (SessionToken)  returns (User)            {}
+    rpc MakeToken          (UserSignature) returns (SessionToken)    {}
+    rpc CreateUser         (NewUserData)   returns (User)            {}
+    rpc GetProfile         (User)          returns (Profile)         {}
+    rpc UpdateProfile      (User)          returns (User)                {}
+    rpc GetLeaderBoardPage (PageData)      returns (LeaderBoardPage) {}
 }

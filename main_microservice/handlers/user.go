@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"golang.org/x/net/context"
 	"net/http"
 )
 
@@ -29,26 +30,33 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err := userManager.CreateUser(context.Background(),
+		&services.NewUserData{
+			Email:    r.Form.Get("email"),
+			Password: r.Form.Get("password"),
+			Nickname: r.Form.Get("nickname"),
+		})
+	switch err {
+	case nil:
+	case errors.DataBaseUniqueViolation:
+		helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
+		return
+	default:
+		helpers.Return500(&w, err)
+		return
+	}
 
-	err =
+	sessionToken, err := userManager.MakeToken(context.Background(),
+		&services.UserSignature{
+			Email:    r.Form.Get("email"),
+			Password: r.Form.Get("password"),
+		})
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
 
-	user, err = database.GetInstance().GetUserViaEmail(user.Email) //id присваивается только при добавлении в базу
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
-
-	sessionCookie, err := helpers.BuildSessionCookie(user.ID)
-	if err != nil {
-		logger.Error("Cant build session cookie:", err)
-		helpers.Return500(&w, err)
-		return
-	}
-
+	sessionCookie := helpers.BuildSessionCookie(sessionToken)
 	http.SetCookie(w, &sessionCookie)
 
 	data, err := json.Marshal(user)

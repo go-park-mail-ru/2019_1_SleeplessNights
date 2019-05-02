@@ -1,35 +1,12 @@
 package helpers
 
 import (
-	"context"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
-	"google.golang.org/grpc"
 	"net/http"
 	"time"
 )
 
-func BuildSessionCookie(userID uint64)(sessionCookie http.Cookie, err error) {
-	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
-		grpc.WithInsecure(),
-	)
-	if err != nil {
-		logger.Error("Can't connect to user_manager microservice")
-		return
-	}
-	defer grpcConn.Close()
-
-	authManager := services.NewAuthCheckerClient(grpcConn)
-
-	sessionToken, err := authManager.MakeToken(context.Background(),
-		&services.UserID{
-			ID: userID,
-		})
-	if err != nil {
-		logger.Error("Can't make token for this user_manager")
-		return
-	}
-
+func BuildSessionCookie(sessionToken *services.SessionToken)(sessionCookie http.Cookie) {
 	sessionCookie = http.Cookie{
 		Name: "session_token",
 		Value: sessionToken.Token,

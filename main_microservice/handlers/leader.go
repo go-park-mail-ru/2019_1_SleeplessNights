@@ -2,84 +2,43 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
-	"math"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
 )
 
-const (
-	PagesPerList = 10
-)
-
-type LeaderBoard struct {
-	PagesTotal  int           `json:"pages_total"`
-	CurrentPage int           `json:"page"`
-	Slice       []models.User `json:"data"`
-}
-
-func Paginate(data []interface{}, skip int) []interface{} {
-	//TODO MAKE UNIVERSAL AND MOVE TO HELPERS
-	if skip > len(data) {
-		skip = len(data)
-	}
-	end := skip + PagesPerList
-	if end > len(data) {
-		end = len(data)
-	}
-	return data[skip:end]
-}
+const limit = 10
 
 func LeadersHandler(w http.ResponseWriter, r *http.Request) {
-	page := r.URL.Query().Get("page")
-	if page == "" {
-		page = "1"
+	sinceStr := r.URL.Query().Get("since")
+	if sinceStr == "" {
+		sinceStr = "0"
 	}
-	usersTotal, err := database.GetInstance().GetLenUsers()
+
+	since, err := strconv.ParseUint(sinceStr, 10, 32)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
 
-	if usersTotal == 0 {
-		_, err := w.Write([]byte(`{"pages_total":0,"page":1,"data":[]}`))
-		if err != nil {
-			helpers.Return500(&w, err)
-		}
-		return
-	}
-
-	PageNum, err := strconv.Atoi(page)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	pagesTotal := int(math.Ceil(float64(usersTotal) / PagesPerList))
-	if PageNum > pagesTotal || PageNum < 1 {
-		helpers.Return400(&w, helpers.ErrorSet{`Invalid "Page" Value`})
-		return
-	}
-
-	userSlice := make([]interface{}, 0, usersTotal)
-	users, err := database.GetInstance().GetUsers()
+	leaders, err := userManager.GetLeaderBoardPage(context.Background(),
+		&services.PageData{
+			Since: since,
+			Limit: limit,
+		})
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
 	}
-	for _, v := range users {
-		userSlice = append(userSlice, v)
-	}
 
-	paginatedSlice := Paginate(userSlice, int(PagesPerList*(PageNum-1)))
-	var pageSlice []models.User
-	for _, user := range paginatedSlice {
-		pageSlice = append(pageSlice, user.(models.User))
+	data, err := json.Marshal(leaders)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
 	}
-
-	ResponseData, _ := json.Marshal(LeaderBoard{int(math.Ceil(float64(usersTotal / PagesPerList))), int(PageNum), pageSlice})
-	_, err = w.Write(ResponseData)
+	_, err = w.Write(data)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

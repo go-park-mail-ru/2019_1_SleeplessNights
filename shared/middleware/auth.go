@@ -15,16 +15,17 @@ func init() {
 	logger = log.GetLogger("Middleware")
 }
 
-var grpcConn *grpc.ClientConn
+var userManager services.UserMSClient
 func init() {
 	var err error
-	grpcConn, err = grpc.Dial(
+	grpcConn, err := grpc.Dial(
 		"127.0.0.1:8081",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
 		logger.Fatal("Can't connect to auth microservice via grpc")
 	}
+	userManager = services.NewUserMSClient(grpcConn)
 	closer.Bind(func() {
 		err := grpcConn.Close()
 		if err != nil {
@@ -59,7 +60,6 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 			return
 		}
 
-		userManager := services.NewUserMSClient(grpcConn)
 		user, err := userManager.CheckToken(context.Background(),
 			&services.SessionToken{
 				Token: sessionCookie.Value,

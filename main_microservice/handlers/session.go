@@ -3,6 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"golang.org/x/net/context"
 	"net/http"
 )
 
@@ -17,20 +20,38 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, user, err := helpers.ValidateAuthRequest(r)
+	requestErrors, err := helpers.ValidateAuthRequest(r)
 	if requestErrors != nil {
 		helpers.Return400(&w, requestErrors)
 		return
 	}
 
-	sessionCookie, err := helpers.BuildSessionCookie(user.ID)
-	if err != nil {
-		logger.Error("Cant build session cookie:", err)
+	sessionToken, err := userManager.MakeToken(context.Background(),
+		&services.UserSignature{
+		Email:    r.Form.Get("email"),
+		Password: r.Form.Get("password"),
+	})
+	switch err {
+	case nil:
+	case errors.DataBaseNoDataFound:
+		helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
+		return
+	case errors.AuthWrongPassword:
+		helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
+		return
+	default:
 		helpers.Return500(&w, err)
 		return
 	}
 
+	sessionCookie := helpers.BuildSessionCookie(sessionToken)
 	http.SetCookie(w, &sessionCookie)
+
+	user, err := userManager.CheckToken(context.Background(), sessionToken)
+	if err != nil {
+		helpers.Return500(&w, err)
+		return
+	}
 
 	data, err := json.Marshal(user)
 	if err != nil {

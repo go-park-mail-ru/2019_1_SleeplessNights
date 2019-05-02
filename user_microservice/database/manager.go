@@ -97,8 +97,7 @@ func GetInstance() *dbManager {
 	return db
 }
 
-func (db *dbManager) GetUserViaID(userID uint64) (user services.User, err error) {
-
+func (db *dbManager) AddUser(email, nickname, avatarPath string, password, salt []byte) (user services.User, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return
@@ -111,72 +110,10 @@ func (db *dbManager) GetUserViaID(userID uint64) (user services.User, err error)
 	}()
 
 	row := db.dataBase.QueryRow(
-		`SELECT id, email, nickname, avatar_path FROM public.users WHERE id = $1`, userID)
-	err = row.Scan(&user.Id, &user.Email, &user.Nickname, &user.AvatarPath)
-	if err != nil && err.Error() == SQLNoRows {
-		err = errors.New(NoUserFound)
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) GetUserViaEmail(email string) (user services.User, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	row := db.dataBase.QueryRow(
-		`SELECT id, email, nickname, avatar_path FROM public.users WHERE email = $1`, email)
-	err = row.Scan(&user.Id, &user.Email, &user.Nickname, &user.AvatarPath)
-	if err != nil {
-		err = errors.New(NoUserFound)
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-
-	if !txOK {
-		err = tx.Rollback()
-		return
-	}
-	return
-}
-
-func (db *dbManager) AddUser(email, nickname, avatarPath string, password, salt []byte) (err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	_, err = db.dataBase.Exec(
 		`INSERT INTO public.users (email, password, salt, nickname, avatar_path)
-			  VALUES ($1, $2, $3, $4, $5)`,
+			  VALUES ($1, $2, $3, $4, $5) RETURNING id, email, nickname, avatar_path`,
 		email, password, salt, nickname, avatarPath)
+	err = row.Scan(&user.Id, &user.Email, &user.Nickname, &user.AvatarPath)
 	if err != nil {
 		return
 	}
@@ -189,7 +126,7 @@ func (db *dbManager) AddUser(email, nickname, avatarPath string, password, salt 
 	return
 }
 
-func (db *dbManager) UpdateUser(id uint64, nickname, avatarPath string) (err error) {
+func (db *dbManager) UpdateUser(user *services.User) (err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return
@@ -207,7 +144,7 @@ func (db *dbManager) UpdateUser(id uint64, nickname, avatarPath string) (err err
 				WHEN $1 = '' THEN nickname ELSE $1 END,
 			    avatar_path = CASE
 				WHEN $2 = '' THEN avatar_path ELSE $2 END
-			WHERE id = $3`, nickname, avatarPath, id)
+			WHERE id = $3`, user.Nickname, user.AvatarPath, user.Id)
 	if err != nil {
 		return
 	}
@@ -220,8 +157,7 @@ func (db *dbManager) UpdateUser(id uint64, nickname, avatarPath string) (err err
 	return
 }
 
-func (db *dbManager) GetUsers(page *services.PageData) (users []*services.User, err error) {
-
+func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *services.LeaderBoardPage, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return
@@ -233,19 +169,29 @@ func (db *dbManager) GetUsers(page *services.PageData) (users []*services.User, 
 		}
 	}()
 
-	rows, err := db.dataBase.Query(`SELECT id, email, nickname, avatar_path FROM public.users ORDER BY won DESC`)
+	rows, err := db.dataBase.Query(`SELECT id, email, nickname, avatar_path, rating, win_rate, matches FROM public.users ORDER BY rating DESC`)
 	if err != nil {
 		return
 	}
 
-	var user services.User
+	var profiles []*services.Profile
+	var profile  services.Profile
 	for rows.Next() {
-		err = rows.Scan(&user.Id, &user.Email,&user.Nickname, &user.AvatarPath)
+		err = rows.Scan(
+			&profile.User.Id,
+			&profile.User.Email,
+			&profile.User.Nickname,
+			&profile.User.AvatarPath,
+			&profile.Rating,
+			&profile.WinRate,
+			&profile.Matches)
 		if err != nil {
 			return
 		}
-
-		users = append(users, &user)
+		profiles = append(profiles, &profile)
+	}
+	leaderBoardPage = &services.LeaderBoardPage{
+		Leaders: profiles,
 	}
 	err = rows.Err()
 	if err != nil {
@@ -258,6 +204,46 @@ func (db *dbManager) GetUsers(page *services.PageData) (users []*services.User, 
 		return
 	}
 	txOK = true
+	return
+}
+
+func (db *dbManager)GetProfile(userID uint64)(profile services.Profile, err error) {
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			_ = tx.Rollback()
+		}
+	}()
+
+	row := db.dataBase.QueryRow(
+		`SELECT id, email, nickname, avatar_path, rating, win_rate, matches FROM public.users WHERE id = $1`, userID)
+	err = row.Scan(
+		&profile.User.Id,
+		&profile.User.Email,
+		&profile.User.Nickname,
+		&profile.User.AvatarPath,
+		&profile.Rating,
+		&profile.WinRate,
+		&profile.Matches)
+	if err != nil {
+		err = errors.New(NoUserFound)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
+
+	if !txOK {
+		err = tx.Rollback()
+		return
+	}
 	return
 }
 

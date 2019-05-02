@@ -7,15 +7,10 @@ import (
 )
 
 func (auth *authManager)GetLeaderBoardPage(ctx context.Context, in *services.PageData)(*services.LeaderBoardPage, error) {
-	users, err := database.GetInstance().GetUsers(in)
+	page, err := database.GetInstance().GetUsers(in)
 	if err != nil {
 		return nil, err
 	}
-
-	page := services.LeaderBoardPage{
-		Users: users,
-	}
-
-	return &page, nil
+	return page, nil
 }
 

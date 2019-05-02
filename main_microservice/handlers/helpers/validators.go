@@ -1,10 +1,7 @@
 package helpers
 
 import (
-	"bytes"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"mime/multipart"
 	"net/http"
 	"regexp"
@@ -75,19 +72,10 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	if err != nil {
 		return
 	}
-
-	user, err := database.GetInstance().GetUserViaEmail(r.Form.Get("email"))
-	if err != nil && err.Error() != database.NoUserFound {
-		return
-	}
-	if user.ID != 0 {
-		requestErrors = append(requestErrors, UniqueEmailErrorMsg)
-	}
-
 	return requestErrors, nil
 }
 
-func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.User, err error) {
+func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, err error) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
 	err = validateEmail(email, &requestErrors)
@@ -100,23 +88,7 @@ func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, user models.U
 	if err != nil {
 		return
 	}
-
-	user, err = database.GetInstance().GetUserViaEmail(email)
-	if err != nil {
-		if err.Error() == database.NoUserFound {
-			requestErrors = append(requestErrors, MissedUserErrorMsg)
-			return
-		} else {
-			return
-		}
-	}
-
-	hashedPassword := MakePasswordHash(password, user.Salt)
-	if bytes.Compare(hashedPassword, user.Password) != 0 {
-		requestErrors = append(requestErrors, WrongPassword)
-	}
-
-	return requestErrors, user, nil
+	return requestErrors,nil
 }
 
 func validateEmail(email string, requestErrors *ErrorSet) (err error) {

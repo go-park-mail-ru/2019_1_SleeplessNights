@@ -8,7 +8,7 @@ import (
 
 const defaultAvatar = "default_avatar.jpg"
 
-func (auth *authManager)CreateUser(ctx context.Context, in *services.NewUserData)(*services.SessionToken, error) {
+func (auth *authManager)CreateUser(ctx context.Context, in *services.NewUserData)(*services.User, error) {
 	salt, err := MakeSalt()
 	if err != nil {
 		return nil, err
@@ -16,19 +16,10 @@ func (auth *authManager)CreateUser(ctx context.Context, in *services.NewUserData
 
 	password := MakePasswordHash(in.Password, salt)
 
-	err = database.GetInstance().AddUser(in.Email, in.Nickname, defaultAvatar, password, salt)
+	user, err := database.GetInstance().AddUser(in.Email, in.Nickname, defaultAvatar, password, salt)
 	if err != nil {
 		return nil, err
 	}
 
-	signature := services.UserSignature{
-		Email:    in.Email,
-		Password: in.Password,
-	}
-	token, err := auth.MakeToken(ctx, &signature)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
+	return &user, nil
 }
