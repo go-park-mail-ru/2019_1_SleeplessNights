@@ -39,7 +39,7 @@ func (auth *authManager)CheckToken(ctx context.Context, in *services.SessionToke
 	}
 
 	var user services.User
-	user, err = database.GetInstance().GetUserViaID(userID)
+	user, err = database.GetInstance().GetUserByID(userID)
 	if err !=nil {
 		return nil, err
 	}

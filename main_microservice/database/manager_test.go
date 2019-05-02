@@ -27,7 +27,7 @@ import (
 //		return
 //	}
 //
-//	newUser, err := database.GetInstance().GetUserViaID(oldUser.ID)
+//	newUser, err := database.GetInstance().GetUserByID(oldUser.ID)
 //	if err != nil {
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
@@ -47,7 +47,7 @@ import (
 //	var userID uint64 = 1
 //	expected := database.NoUserFound
 //
-//	_, err = database.GetInstance().GetUserViaID(userID)
+//	_, err = database.GetInstance().GetUserByID(userID)
 //	if err == nil {
 //		t.Errorf("DB didn't return error")
 //	} else if err.Error() != expected {
@@ -76,7 +76,7 @@ import (
 //		return
 //	}
 //
-//	newUser, err := database.GetInstance().GetUserViaEmail(oldUser.Email)
+//	newUser, err := database.GetInstance().GetUserByEmail(oldUser.Email)
 //	if err != nil {
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
@@ -96,7 +96,7 @@ import (
 //	var userEmail = "test@test.com"
 //	expected := database.NoUserFound
 //
-//	_, err = database.GetInstance().GetUserViaEmail(userEmail)
+//	_, err = database.GetInstance().GetUserByEmail(userEmail)
 //	if err == nil {
 //		t.Errorf("DB didn't return error")
 //	} else if err.Error() != expected {
@@ -125,7 +125,7 @@ import (
 //		return
 //	}
 //
-//	newUser, err := database.GetInstance().GetUserViaEmail(oldUser.Email)
+//	newUser, err := database.GetInstance().GetUserByEmail(oldUser.Email)
 //	if err != nil {
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
@@ -201,7 +201,7 @@ import (
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}
 //
-//	newUser, err := database.GetInstance().GetUserViaID(oldUser.ID)
+//	newUser, err := database.GetInstance().GetUserByID(oldUser.ID)
 //	if err != nil {
 //		t.Errorf("DB returned error: %v", err.Error())
 //	}

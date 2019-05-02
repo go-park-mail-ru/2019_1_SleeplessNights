@@ -97,6 +97,69 @@ func GetInstance() *dbManager {
 	return db
 }
 
+func (db *dbManager) GetUserByID(userID uint64) (user services.User, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			_ = tx.Rollback()
+		}
+	}()
+
+	row := db.dataBase.QueryRow(
+		`SELECT id, email, nickname, avatar_path FROM public.users WHERE id = $1`, userID)
+	err = row.Scan(&user.Id, &user.Email, &user.Nickname, &user.AvatarPath)
+	if err != nil && err.Error() == SQLNoRows {
+		err = errors.New(NoUserFound)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
+	return
+}
+
+func (db *dbManager) GetUserByEmail(email string) (user services.User, err error) {
+
+	tx, err := db.dataBase.Begin()
+	if err != nil {
+		return
+	}
+	txOK := false
+	defer func() {
+		if !txOK {
+			_ = tx.Rollback()
+		}
+	}()
+
+	row := db.dataBase.QueryRow(
+		`SELECT id, email, nickname, avatar_path FROM public.users WHERE email = $1`, email)
+	err = row.Scan(&user.Id, &user.Email, &user.Nickname, &user.AvatarPath)
+	if err != nil {
+		err = errors.New(NoUserFound)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
+	txOK = true
+
+	if !txOK {
+		err = tx.Rollback()
+		return
+	}
+	return
+}
+
 func (db *dbManager) AddUser(email, nickname, avatarPath string, password, salt []byte) (user services.User, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
