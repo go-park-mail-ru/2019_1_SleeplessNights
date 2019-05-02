@@ -29,14 +29,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := models.User{
-		Email:      r.Form.Get("email"),
-		Won:        0,
-		Lost:       0,
-		PlayTime:   0,
-		Nickname:   r.Form.Get("nickname"),
-		AvatarPath: "default_avatar.jpg",
-	}
+
 	salt, err := helpers.MakeSalt()
 	if err != nil {
 		helpers.Return500(&w, err)

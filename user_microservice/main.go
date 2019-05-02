@@ -27,8 +27,7 @@ func main() {
 
 	server := grpc.NewServer()
 
-	server.
-	services.RegisterAuthCheckerServer(server, user_manager.GetInstance())
+	services.RegisterUserMSServer(server, user_manager.GetInstance())
 
 	logger.Info("Auth microservice started listening at :8081")
 	err = server.Serve(lis)
