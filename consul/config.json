@@ -1,0 +1,31 @@
+{
+  "leave_on_terminate": true,
+  "datacenter": "dc1",
+  "node_name": "machine",
+  "ports": {
+    "http": 8500,
+    "https": 8501,
+    "grpc": 8502
+  },
+  "client_addr": "0.0.0.0",
+  "advertise_addr": "127.0.0.1",
+  "bind_addr": "127.0.0.1",
+
+  "services": [
+    {
+      "name": "auth",
+      "tags": ["primary", "go"],
+      "port": 8081
+    },
+    {
+      "name": "chat",
+      "tags": ["go"],
+      "port": 8005
+    },
+    {
+      "name": "main",
+      "tags": ["primary", "go"],
+      "port": 8080
+    }
+  ]
+}

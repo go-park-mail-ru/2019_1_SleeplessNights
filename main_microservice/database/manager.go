@@ -64,7 +64,7 @@ func loadConfiguration(file string) (psqlInfo string) {
 }
 
 func init() {
-	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/main_microservice/database/config.json")
+	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/main_microservice/database/microservices.json")
 
 	dateBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {

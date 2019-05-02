@@ -1,7 +1,0 @@
-{
-  "service": {
-    "name": "chat",
-    "tags": ["go"],
-    "port": 8005
-  }
-}

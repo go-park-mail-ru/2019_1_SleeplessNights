@@ -1,7 +1,0 @@
-{
-  "service": {
-    "name": "main",
-    "tags": ["primary", "go"],
-    "port": 8080
-  }
-}
