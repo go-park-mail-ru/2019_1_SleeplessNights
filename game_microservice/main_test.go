@@ -1,4 +1,4 @@
-package game_microservice
+package main
 
 import (
 	"github.com/xlab/closer"

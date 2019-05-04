@@ -1,9 +1,9 @@
 package database_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"testing"
 )
 
@@ -432,7 +432,7 @@ func TestAddQuestion(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	question := models.Question{
+	question := main.Question{
 		Answers: []string{},
 		Correct: 2,
 		Text:    "",

@@ -1,11 +1,11 @@
 package handlers_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"net/http"
 	"net/http/httptest"
 	"net/url"

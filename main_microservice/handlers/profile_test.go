@@ -3,12 +3,12 @@ package handlers_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/middleware"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"io"
 	"mime/multipart"
 	"net/http"

@@ -1,13 +1,13 @@
 package messge
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 )
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Message")
 }
 
@@ -71,8 +71,8 @@ type MoveRequest struct {
 
 //response from sever with question
 type Question struct {
-	PlayerId uint64             `json:"player_id"`
-	Question questions.Question `json:"question"`
+	PlayerId uint64          `json:"player_id"`
+	Question models.Question `json:"question"`
 }
 
 //response from client with answer_id

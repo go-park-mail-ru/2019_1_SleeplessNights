@@ -18,8 +18,8 @@ const (
 )
 
 const (
-	SQLNoRows       = "sql: no rows in result set"
-	NoUserFound     = "БД: Не был найден юзер"
+	SQLNoRows   = "sql: no rows in result set"
+	NoUserFound = "БД: Не был найден юзер"
 )
 
 var db *dbManager
@@ -37,7 +37,7 @@ type dbManager struct {
 type dbConfig struct {
 	Host     string `json:"host"`
 	Port     uint16 `json:"port"`
-	User     string `json:"user_manager"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 }
@@ -71,7 +71,7 @@ func loadConfiguration(file string) (pgxConfig pgx.ConnConfig) {
 
 func init() {
 
-	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/chat_microservice/database/config.json")
+	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/user_microservice/database/config.json")
 	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
 
 	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
@@ -238,7 +238,7 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 	}
 
 	var profiles []*services.Profile
-	var profile  services.Profile
+	var profile services.Profile
 	for rows.Next() {
 		err = rows.Scan(
 			&profile.User.Id,
@@ -270,7 +270,7 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 	return
 }
 
-func (db *dbManager)GetProfile(userID uint64)(profile services.Profile, err error) {
+func (db *dbManager) GetProfile(userID uint64) (profile services.Profile, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return
@@ -310,7 +310,7 @@ func (db *dbManager)GetProfile(userID uint64)(profile services.Profile, err erro
 	return
 }
 
-func (db *dbManager) GetUserSignature(email string)(id uint64, password, salt []byte, err error) {
+func (db *dbManager) GetUserSignature(email string) (id uint64, password, salt []byte, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return

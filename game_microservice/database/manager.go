@@ -4,8 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice"
-
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/lib/pq"
 	"github.com/xlab/closer"
@@ -33,7 +32,7 @@ type dbManager struct {
 type dbConfig struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
-	User     string `json:"user_manager"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 }
@@ -56,7 +55,7 @@ func loadConfiguration(file string) (psqlInfo string) {
 		logger.Error(err.Error())
 		return
 	}
-	psqlInfo = fmt.Sprintf("host=%s port=%d user_manager=%s password=%s dbname=%s sslmode=disable",
+	psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.Host, config.Port, config.User, config.Password, config.DBName)
 
 	return
@@ -64,7 +63,7 @@ func loadConfiguration(file string) (psqlInfo string) {
 
 func init() {
 	//TODO check config loading
-	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/main_microservice/database/microservices.json")
+	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/game_microservice/database/config.json")
 
 	dataBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -123,7 +122,7 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	return
 }
 
-func (db *dbManager) GetPacksOfQuestions(n int) (packs []main.Pack, err error) {
+func (db *dbManager) GetPacksOfQuestions(n int) (packs []models.Pack, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -145,7 +144,7 @@ func (db *dbManager) GetPacksOfQuestions(n int) (packs []main.Pack, err error) {
 		return
 	}
 
-	var pack pack.Pack
+	var pack models.Pack
 	for rows.Next() {
 
 		err = rows.Scan(&pack.ID, &pack.Theme)
@@ -173,7 +172,7 @@ func (db *dbManager) GetPacksOfQuestions(n int) (packs []main.Pack, err error) {
 	return
 }
 
-func (db *dbManager) GetQuestions(ids []int) (questions []main.Question, err error) {
+func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -193,7 +192,7 @@ func (db *dbManager) GetQuestions(ids []int) (questions []main.Question, err err
 		return
 	}
 
-	var question main.Question
+	var question models.Question
 	for rows.Next() {
 		err = rows.Scan(&question.ID, pq.Array(&question.Answers), &question.Correct, &question.Text, &question.PackID)
 		if err != nil {
@@ -247,7 +246,7 @@ func (db *dbManager) AddQuestionPack(theme string) (err error) {
 	return
 }
 
-func (db *dbManager) AddQuestion(question main.Question) (err error) {
+func (db *dbManager) AddQuestion(question models.Question) (err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {

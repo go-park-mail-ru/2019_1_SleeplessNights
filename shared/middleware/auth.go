@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/xlab/closer"
@@ -11,11 +10,13 @@ import (
 )
 
 var logger *log.Logger
+
 func init() {
 	logger = log.GetLogger("Middleware")
 }
 
 var userManager services.UserMSClient
+
 func init() {
 	var err error
 	grpcConn, err := grpc.Dial(
@@ -54,7 +55,8 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 			_, err = w.Write([]byte("{}"))
 			if err != nil {
-				helpers.Return500(&w, err)
+				//helpers.Return500(&w, err)
+				(w).WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			return
@@ -68,7 +70,8 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 			_, err = w.Write([]byte("{}"))
 			if err != nil {
-				helpers.Return500(&w, err)
+				//helpers.Return500(&w, err)
+				(w).WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			return

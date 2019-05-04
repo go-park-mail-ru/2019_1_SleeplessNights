@@ -1,13 +1,11 @@
 package faker
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/middleware"
 	"github.com/manveru/faker"
-	"math/rand"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -20,44 +18,8 @@ const (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("Faker")
-}
-
-// Fills Users Map with user_manager data
-func CreateFakeData(quantity int) {
-	fake, err := faker.New("en")
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	for i := 1; i <= quantity; i++ {
-		salt, err := MakeSalt()
-		if err != nil {
-			logger.Error(err.Error())
-			continue
-		}
-
-		email := fake.Email()
-		_, err = database.GetInstance().GetUserViaEmail(email)
-		if err == nil {
-			quantity++
-			continue
-		}
-		user := models.User{
-			Email:      email,
-			Password:   helpers.MakePasswordHash(FakeUserPassword, salt),
-			Salt:       salt,
-			Won:        uint(rand.Uint32()),
-			Lost:       uint(rand.Uint32()),
-			PlayTime:   0,
-			Nickname:   fake.UserName(),
-			AvatarPath: "default_avatar.jpg",
-		}
-		err = database.GetInstance().AddUser(user)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-	}
+	logger = log.GetLogger("GameMS_Faker")
+	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 func CreateFakePacks() {
@@ -88,7 +50,7 @@ func CreateFakePacks() {
 					answer := fake.CompanyName()
 					answers = append(answers, answer)
 				}
-				question := main.Question{
+				question := models.Question{
 					Answers: answers,
 					Correct: 1,
 					Text:    fake.Paragraph(1, true),

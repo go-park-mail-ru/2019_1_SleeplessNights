@@ -1,11 +1,9 @@
 package room
 
 import (
-	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
-	local "github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 	"time"
 )
 
@@ -25,21 +23,25 @@ func (r *Room) buildEnv() {
 		logger.Error("Error occurred while fetching question from DB:", err)
 		//TODO deal with error, maybe kill the room
 	}
-	var localQuestions [game_field.QuestionsNum]local.Question
-	var lq local.Question
-	for i := 0; i < len(localQuestions); i++  {
-		questionJSON, err := json.Marshal(questions[i])
-		if err != nil {
-			logger.Error("Error occurred while marshalling question into JSON:", err)
-			//TODO deal with error, maybe refresh questions
-		}
-		lq = local.Question{PackID: uint64(questions[i].ID),
-			QuestionJson: string(questionJSON),
-			CorrectAnswerId: questions[i].Correct}
-		localQuestions[i] = lq
-	}
 
-	r.field.Build(localQuestions)
+	/*
+		var localQuestions [game_field.QuestionsNum]models.Question
+		var lq models.Question
+		for i := 0; i < len(localQuestions); i++ {
+			questionJSON, err := json.Marshal(questions[i])
+			if err != nil {
+				logger.Error("Error occurred while marshalling question into JSON:", err)
+				//TODO deal with error, maybe refresh questions
+			}
+			lq = models.Question{PackID: uint(questions[i].ID),
+				QuestionJson:    string(questionJSON),
+				CorrectAnswerId: questions[i].Correct}
+			localQuestions[i] = lq
+		}
+
+		r.field.Build(localQuestions)*/
+
+	r.field.Build(questions)
 	//Процедура должна пересоздавать игровое поле, запрашивать новый список тем из БД и готовить комнату к новой игре
 	//При этом она должна уметь работать асинхронно и не выбрасывать пользователей из комнаты во время работы
 }
@@ -61,7 +63,7 @@ func (r *Room) prepareMatch() {
 		logger.Error("Failed to notify all players:", err)
 	}
 	logger.Info("Игрокам Отправлены StartGame")
-	r.waitForSyncMsg=messge.Ready
+	r.waitForSyncMsg = messge.Ready
 	//Read Messages from Players
 	//Moved message receive conditions to Requests handler
 

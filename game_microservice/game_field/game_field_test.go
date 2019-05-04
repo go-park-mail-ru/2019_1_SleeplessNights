@@ -1,7 +1,7 @@
 package game_field
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"math/rand"
 	"sync/atomic"
 	"testing"
@@ -11,16 +11,16 @@ func TestGameField_Build(t *testing.T) {
 	gf := GameField{}
 	var idSource uint64
 	idSource = 0
-	getRandQuestion := func(idSource *uint64) questions.Question {
+	getRandQuestion := func(idSource *uint64) database.Question {
 		atomic.AddUint64(idSource, 1)
-		return questions.Question{
-			PackID: *idSource,
-			QuestionJson: "{}",
+		return database.Question{
+			PackID:          *idSource,
+			QuestionJson:    "{}",
 			CorrectAnswerId: rand.Int() % 4,
 		}
 	}
 
-	var qArray [QuestionsNum]questions.Question
+	var qArray [QuestionsNum]database.Question
 	for i := range qArray {
 		qArray[i] = getRandQuestion(&idSource)
 	}
@@ -29,7 +29,7 @@ func TestGameField_Build(t *testing.T) {
 
 	result := gf.field
 
-	getAnswer := func(id uint64) int{
+	getAnswer := func(id uint64) int {
 		for i := 0; i < fieldSize; i++ {
 			for j := 0; j < fieldSize; j++ {
 				if !result[i][j].isAvailable {

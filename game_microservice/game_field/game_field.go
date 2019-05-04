@@ -3,16 +3,17 @@ package game_field
 import (
 	"errors"
 	"fmt"
+
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"math"
 )
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("GameField")
 }
 
@@ -31,7 +32,7 @@ func init() {
 
 type gameCell struct {
 	isAvailable bool
-	question    *questions.Question
+	question    *models.Question
 }
 
 type pair struct {
@@ -52,7 +53,7 @@ type GameField struct {
 
 	regX        int
 	regY        int
-	regQuestion questions.Question
+	regQuestion models.Question
 
 	//Тут уровень абстракции уже достаточно постой для понимания, поэтому оставляю реализацию на ваше усмотрение
 	//По ответственности, если навскидку, игровое поле должно:
@@ -73,8 +74,8 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
-func (gf *GameField) Build(qArray [QuestionsNum]questions.Question) {
-	qSlice := qArray[:]
+func (gf *GameField) Build(qArray []models.Question) {
+	qSlice := qArray
 	index := 0
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
@@ -228,7 +229,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	ms := struct {
 		question string
 	}{
-		gf.GetQuestionByCell(nextX, nextY).QuestionJson,
+		gf.GetQuestionByCell(nextX, nextY).ToJson(),
 	}
 
 	e = make([]event.Event, 0)
@@ -236,9 +237,9 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	return
 }
 
-func (gf *GameField) GetQuestionByCell(x, y int) (question questions.Question) {
+func (gf *GameField) GetQuestionByCell(x, y int) (question *models.Question) {
 	logger.Infof("GetQuestionByCell x:%d,y:%d ", x, y)
-	question = *(gf.field[y][x].question)
+	question = gf.field[y][x].question
 	return
 }
 
@@ -276,7 +277,7 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 	if !gf.validateAnswerId(answerIdx) {
 		return false
 	}
-	if gf.regQuestion.CorrectAnswerId == answerIdx {
+	if gf.regQuestion.Correct == answerIdx {
 		return true
 	}
 	return false

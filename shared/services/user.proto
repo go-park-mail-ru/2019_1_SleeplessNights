@@ -50,3 +50,4 @@ service UserMS {
     rpc UpdateProfile      (User)          returns (User)                {}
     rpc GetLeaderBoardPage (PageData)      returns (LeaderBoardPage) {}
 }
+
