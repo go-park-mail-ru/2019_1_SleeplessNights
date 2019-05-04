@@ -8,7 +8,7 @@ import (
 
 const defaultAvatar = "default_avatar.jpg"
 
-func (auth *authManager)CreateUser(ctx context.Context, in *services.NewUserData)(*services.User, error) {
+func (us *userManager) CreateUser(ctx context.Context, in *services.NewUserData) (*services.User, error) {
 	salt, err := MakeSalt()
 	if err != nil {
 		return nil, err

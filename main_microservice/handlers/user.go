@@ -36,14 +36,18 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 			Nickname: r.Form.Get("nickname"),
 		})
-	switch err {
-	case nil:
-	case errors.DataBaseUniqueViolation:
-		helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
-		return
-	default:
-		helpers.Return500(&w, err)
-		return
+	logger.Error(err.Error())
+	logger.Error(errors.DataBaseUniqueViolation)
+	if err != nil {
+		switch err.Error() {
+		case errors.DataBaseUniqueViolation.Error():
+			logger.Error(err.Error())
+			helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
+			return
+		default:
+			helpers.Return500(&w, err)
+			return
+		}
 	}
 
 	sessionToken, err := userManager.MakeToken(context.Background(),

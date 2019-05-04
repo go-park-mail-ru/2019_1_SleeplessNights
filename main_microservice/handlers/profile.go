@@ -51,7 +51,7 @@ func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Re
 	avatarName := uuid.NewV4().String() + filepath.Ext(newAvatar.Filename)
 	user.AvatarPath = avatarName
 
-	_, err = userManager.UpdateProfile(context.Background(), &user)
+	_, err = userManager.UpdateProfile(context.Background(), user)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
