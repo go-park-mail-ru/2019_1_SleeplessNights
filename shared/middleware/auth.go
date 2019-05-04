@@ -42,7 +42,10 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 		r.Header.Add("Referer", r.URL.String())
 		sessionCookie, err := r.Cookie("session_token")
 		if err != nil {
+			logger.Info("Got connection with missing cookie")
 			if err == http.ErrNoCookie && !strict {
+				logger.Info("Trying to connect anonymous client")
+
 				user := services.User{
 					Id:         0,
 					Email:      "",

@@ -39,7 +39,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		})
 
 	//logger.Error(err.Error())
-	logger.Error(errors.DataBaseUniqueViolation)
+	//logger.Error(errors.DataBaseUniqueViolation)
 	if err != nil {
 
 		switch err.Error() {

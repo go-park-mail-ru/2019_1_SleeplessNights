@@ -4,8 +4,17 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/sirupsen/logrus"
 	"time"
 )
+
+var logger *log.Logger
+
+func init() {
+	logger = log.GetLogger("ChatMS")
+	logger.SetLogLevel(logrus.TraceLevel)
+}
 
 func (r *Room) buildEnv() {
 	packs, err := database.GetInstance().GetPacksOfQuestions(10)
@@ -23,35 +32,30 @@ func (r *Room) buildEnv() {
 		logger.Error("Error occurred while fetching question from DB:", err)
 		//TODO deal with error, maybe kill the room
 	}
-
-	/*
-		var localQuestions [game_field.QuestionsNum]models.Question
-		var lq models.Question
-		for i := 0; i < len(localQuestions); i++ {
-			questionJSON, err := json.Marshal(questions[i])
-			if err != nil {
-				logger.Error("Error occurred while marshalling question into JSON:", err)
-				//TODO deal with error, maybe refresh questions
-			}
-			lq = models.Question{PackID: uint(questions[i].ID),
-				QuestionJson:    string(questionJSON),
-				CorrectAnswerId: questions[i].Correct}
-			localQuestions[i] = lq
+	/*var localQuestions [game_field.QuestionsNum]local.Question
+	var lq local.Question
+	for i := 0; i < len(localQuestions); i++ {
+		questionJSON, err := json.Marshal(questions[i])
+		if err != nil {
+			logger.Error("Error occurred while marshalling question into JSON:", err)
+			//TODO deal with error, maybe refresh questions
 		}
-
-		r.field.Build(localQuestions)*/
-
+		lq = local.Question{PackID: uint64(questions[i].ID),
+			QuestionJson:    string(questionJSON),
+			CorrectAnswerId: questions[i].Correct}
+		localQuestions[i] = lq
+	}
+	*/
 	r.field.Build(questions)
 	//Процедура должна пересоздавать игровое поле, запрашивать новый список тем из БД и готовить комнату к новой игре
 	//При этом она должна уметь работать асинхронно и не выбрасывать пользователей из комнаты во время работы
 }
 
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
-//
 
 func (r *Room) prepareMatch() {
 	logger.Info("Entered Prepare Match")
-	//r.buildEnv()
+	r.buildEnv()
 	r.requestsQueue = make(chan MessageWrapper, channelCapacity)
 	r.responsesQueue = make(chan MessageWrapper, channelCapacity)
 

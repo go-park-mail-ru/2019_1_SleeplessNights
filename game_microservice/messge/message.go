@@ -1,7 +1,7 @@
 package messge
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
+	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 )
 
@@ -29,6 +29,12 @@ const (
 	Loss           = "LOSS"            //Оповещаем клиента о его поражении
 	Win            = "WIN"             //Оповещаем клиента о его победе
 
+	WannaPlayAgain   = "WANNA_PLAY_AGAIN"   // Даём клиенту выбор продолжить играть или нет
+	OpponentLeaves   = "OPPONENT_QUITS"     //Оповещаем клиента о желании соперника продолжить
+	OpponentContines = "OPPONENT_CONTINUES" //Оповещаем клиента о желании выйти из игры
+
+	CurrentState = "CURRENT_STATE" //Текущее состояние игры
+
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
 	//Асинхронные команды всегда принимаются и добавляются в очередь входных сообщений комнаты
@@ -42,6 +48,13 @@ const (
 	GoTo         = "GO_TO"  //SYNC Оповещаем клиента о клетке, которую выбрали для хода; payload = pair
 	ClientAnswer = "ANSWER" //SYNC Оповещаем сервер о выбранном ответе на вопрос; payload = int
 	Leave        = "LEAVE"  //ASYNC Оповещаем клиента о выходе из комнаты
+
+	//Ответы игроков после того, как матч завершиться (ответы на запрос WannaPlayAgain)
+	Quit           = "QUIT"            //  Оповещаем сервер о желании выйти из игры и в главное меню
+	Continue       = "CONTINUE"        //  Оповещаем сервер о желании продолжить игру с тем же соперником
+	ChangeOpponent = "CHANGE_OPPONENT" //  Оповещаем сервер о желании продолжить игру с другим соперником
+
+	State = "STATE" //Запрос текущего состояния игры
 )
 
 type Message struct {
@@ -57,22 +70,19 @@ type Message struct {
 }
 
 type Coordinates struct {
+	//Achtung!!!!
 	X int `json:"x"`
 	Y int `json:"y"`
 }
 
 //Request TryMove to a cell
 
-type MoveRequest struct {
-	PlayerId        uint64      `json:"player_id"`
-	CurrentPosition Coordinates `json:"curr_pos"`
-	DesiredPosition Coordinates `json:"desired_pos"`
-}
-
 //response from sever with question
 type Question struct {
-	PlayerId uint64          `json:"player_id"`
-	Question models.Question `json:"question"`
+	Question string `json:"question"`
+}
+type GameState struct {
+	State string `json:"state"`
 }
 
 //response from client with answer_id
@@ -82,12 +92,12 @@ type Answer struct {
 
 //Response to players answer
 type AnswerResult struct {
-	AnswerResult bool `json:"answer_id"`
+	AnswerResult  bool `json:"answer_id"`
+	CorrectAnswer int  `json:"correct_answer"`
 }
 
-//Убрать валидации для поля гейм филд, Зделать валидаторы для каждого уровня игры
 func (m *Message) IsValid() bool {
-
+	fmt.Println(m.Payload)
 	switch m.Title {
 	case Ready:
 		{
@@ -95,26 +105,52 @@ func (m *Message) IsValid() bool {
 		}
 	case GoTo:
 		{
-			_, ok := m.Payload.(*MoveRequest)
+
+			st, ok := m.Payload.(map[string]interface{})
 			if !ok {
-				logger.Error("Message validator, Type=GoTo, error:interface->MoveRequest casting error")
+				logger.Error("Message validator, Title=GO_TO, error:interface->Answer casting error")
 				return false
 			}
-			logger.Info("Received Message is Valid")
+			if _, ok := st["x"]; !ok {
+				return false
+			}
+			if _, ok := st["y"]; !ok {
+				return false
+			}
 			return true
 
 		}
 	case ClientAnswer:
 		{
-			_, ok := m.Payload.(*Answer)
+			st, ok := m.Payload.(map[string]interface{})
 			if !ok {
 				logger.Error("Message validator, Title=ClientAnswer, error:interface->Answer casting error")
+				return false
+			}
+			if _, ok := st["answer_id"]; !ok {
 				return false
 			}
 
 			return true
 		}
 	case Leave:
+		{
+			return true
+		}
+
+	case Continue:
+		{
+			return true
+		}
+	case ChangeOpponent:
+		{
+			return true
+		}
+	case Quit:
+		{
+			return true
+		}
+	case State:
 		{
 			return true
 		}
