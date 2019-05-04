@@ -17,7 +17,7 @@ CREATE TABLE public.users
   win_rate    DOUBLE PRECISION DEFAULT 0 NOT NULL,
   matches     DOUBLE PRECISION DEFAULT 0 NOT NULL,
   wins        DOUBLE PRECISION DEFAULT 0 NOT NULL,
-  rating      DOUBLE PRECISION DEFAULT 0 NOT NULL
+  rating      INT              DEFAULT 0 NOT NULL
 );
 
 
