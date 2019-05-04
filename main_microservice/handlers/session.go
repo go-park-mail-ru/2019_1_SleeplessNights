@@ -28,20 +28,21 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionToken, err := userManager.MakeToken(context.Background(),
 		&services.UserSignature{
-		Email:    r.Form.Get("email"),
-		Password: r.Form.Get("password"),
-	})
-	switch err {
-	case nil:
-	case errors.DataBaseNoDataFound:
-		helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
-		return
-	case errors.AuthWrongPassword:
-		helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
-		return
-	default:
-		helpers.Return500(&w, err)
-		return
+			Email:    r.Form.Get("email"),
+			Password: r.Form.Get("password"),
+		})
+	if err != nil {
+		switch err.Error() {
+		case errors.DataBaseNoDataFound.Error():
+			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
+			return
+		case errors.AuthWrongPassword.Error():
+			helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
+			return
+		default:
+			helpers.Return500(&w, err)
+			return
+		}
 	}
 
 	sessionCookie := helpers.BuildSessionCookie(sessionToken)
@@ -64,7 +65,6 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 
 func AuthDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
