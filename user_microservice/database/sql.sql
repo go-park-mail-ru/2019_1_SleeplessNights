@@ -8,16 +8,16 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 -- table users
 CREATE TABLE public.users
 (
-  id          BIGSERIAL         NOT NULL,
-  email       CITEXT            NOT NULL,
-  password    BYTEA             NOT NULL,
-  salt        BYTEA             NOT NULL,
-  nickname    TEXT              NOT NULL,
-  avatar_path TEXT              NOT NULL,
-  win_rate    BIGINT  DEFAULT 0 NOT NULL,
-  matches     BIGINT  DEFAULT 0 NOT NULL,
-  wins        BIGINT  DEFAULT 0 NOT NULL,
-  rating      INTEGER DEFAULT 0 NOT NULL
+  id          BIGSERIAL                  NOT NULL,
+  email       CITEXT                     NOT NULL,
+  password    BYTEA                      NOT NULL,
+  salt        BYTEA                      NOT NULL,
+  nickname    TEXT                       NOT NULL,
+  avatar_path TEXT                       NOT NULL,
+  win_rate    DOUBLE PRECISION DEFAULT 0 NOT NULL,
+  matches     DOUBLE PRECISION DEFAULT 0 NOT NULL,
+  wins        DOUBLE PRECISION DEFAULT 0 NOT NULL,
+  rating      DOUBLE PRECISION DEFAULT 0 NOT NULL
 );
 
 
