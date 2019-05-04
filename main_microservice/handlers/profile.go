@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 )
 
-func ProfileHandler(user services.User, w http.ResponseWriter, r *http.Request) {
+func ProfileHandler(user *services.User, w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(user)
 	if err != nil {
 		helpers.Return500(&w, err)
@@ -25,7 +25,7 @@ func ProfileHandler(user services.User, w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func ProfileUpdateHandler(user services.User, w http.ResponseWriter, r *http.Request) {
+func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(helpers.MaxPhotoSize)
 	if err != nil {
 		formErrorMessages := helpers.ErrorSet{

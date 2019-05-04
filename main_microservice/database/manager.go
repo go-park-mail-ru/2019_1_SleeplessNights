@@ -65,19 +65,19 @@ func loadConfiguration(file string) (psqlInfo string) {
 func init() {
 	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/main_microservice/database/microservices.json")
 
-	dateBase, err := sql.Open("postgres", psqlInfo)
+	dataBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 
-	err = dateBase.Ping()
+	err = dataBase.Ping()
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 	fmt.Println("DB connection opened")
 
 	db = &dbManager{
-		dataBase: dateBase,
+		dataBase: dataBase,
 	}
 
 	closer.Bind(closeConnection)

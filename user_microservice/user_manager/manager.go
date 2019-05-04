@@ -14,18 +14,15 @@ const (
 )
 
 var logger *log.Logger
-
 func init() {
 	logger = log.GetLogger("Auth")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 var auth *authManager
-
 type authManager struct {
 	secret []byte
 }
-
 func init() {
 	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
 	defer func() {

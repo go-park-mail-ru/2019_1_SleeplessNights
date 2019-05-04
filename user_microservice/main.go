@@ -11,7 +11,6 @@ import (
 )
 
 var logger *log.Logger
-
 func init() {
 	logger = log.GetLogger("AuthMS")
 	logger.SetLogLevel(logrus.TraceLevel)

@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func UpgradeWs(user services.User, w http.ResponseWriter, r *http.Request) {
+func UpgradeWs(user *services.User, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{}
 	conn, err := upgrader.Upgrade(w, r, http.Header{"Upgrade": []string{"websocket"}})
 	logger.Infof("player with ID = %d connected to socket", user.Id)

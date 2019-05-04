@@ -74,7 +74,7 @@ func init() {
 	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/chat_microservice/database/config.json")
 	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
 
-	dateBase, err := pgx.NewConnPool(pgxConnPoolConfig)
+	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -82,7 +82,7 @@ func init() {
 	fmt.Println("DB connection opened")
 
 	db = &dbManager{
-		dataBase: dateBase,
+		dataBase: dataBase,
 	}
 
 	closer.Bind(closeConnection)
