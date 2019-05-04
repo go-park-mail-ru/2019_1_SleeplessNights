@@ -6,7 +6,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (auth *authManager)GetProfile(ctx context.Context, in *services.User)(*services.Profile, error) {
+func (us *userManager)GetProfile(ctx context.Context, in *services.User)(*services.Profile, error) {
 	profile, err := database.GetInstance().GetProfile(in.Id)
 	if err != nil {
 		return nil, err
@@ -14,7 +14,7 @@ func (auth *authManager)GetProfile(ctx context.Context, in *services.User)(*serv
 	return &profile, nil
 }
 
-func (auth *authManager)UpdateProfile(ctx context.Context, in *services.User)(*services.User, error) {
+func (us *userManager)UpdateProfile(ctx context.Context, in *services.User)(*services.User, error) {
 	err := database.GetInstance().UpdateUser(in)
 	if err != nil {
 		return nil, err

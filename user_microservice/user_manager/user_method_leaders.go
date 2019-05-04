@@ -6,7 +6,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (auth *authManager)GetLeaderBoardPage(ctx context.Context, in *services.PageData)(*services.LeaderBoardPage, error) {
+func (us *userManager)GetLeaderBoardPage(ctx context.Context, in *services.PageData)(*services.LeaderBoardPage, error) {
 	page, err := database.GetInstance().GetUsers(in)
 	if err != nil {
 		return nil, err

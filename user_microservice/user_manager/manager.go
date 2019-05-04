@@ -19,8 +19,8 @@ func init() {
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
-var auth *authManager
-type authManager struct {
+var user *userManager
+type userManager struct {
 	secret []byte
 }
 func init() {
@@ -41,13 +41,13 @@ func init() {
 		return
 	}
 
-	auth = &authManager{
+	user = &userManager{
 		secret: secret,
 	}
 }
 
-func GetInstance() *authManager {
-	return auth
+func GetInstance() *userManager {
+	return user
 }
 
 
