@@ -3,6 +3,7 @@ package main
 import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/user_manager"
 	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
@@ -24,115 +25,115 @@ func main() {
 		logger.Fatal("Auth microservice can't listen port", err)
 	}
 
-	//user, err := database.GetInstance().AddUser("test@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//user, err = database.GetInstance().AddUser("test@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
+	user, err := database.GetInstance().AddUser("test@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	user, err = database.GetInstance().AddUser("test@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
 	//err = database.GetInstance().CleanerDBForTests()
 	//if err != nil {
 	//	logger.Error(err.Error())
 	//}
-	//
-	//user, err = database.GetInstance().AddUser("test@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//user.Nickname = "sdfsdf"
-	//
-	//err = database.GetInstance().UpdateUser(&user)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//user.Id = 100
-	//
-	//err = database.GetInstance().UpdateUser(&user)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//profile, err := database.GetInstance().GetProfile(1)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(profile)
-	//
-	//profile, err = database.GetInstance().GetProfile(100)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(profile)
-	//
-	//user, err = database.GetInstance().GetUserByEmail("test@test.com")
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//user, err = database.GetInstance().GetUserByEmail("test3@test.com")
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//id, password, salt, err := database.GetInstance().GetUserSignature("test@test.com")
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(id)
-	//logger.Info(password)
-	//logger.Info(salt)
-	//
-	//
-	//id, password, salt, err = database.GetInstance().GetUserSignature("test3@test.com")
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//
-	//user, err = database.GetInstance().AddUser("test2@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//user, err = database.GetInstance().AddUser("test3@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//var page services.PageData
-	//page.Limit = 1
-	//page.Since = 1
-	//users, err := database.GetInstance().GetUsers(&page)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(users)
-	//
-	//user, err = database.GetInstance().GetUserByID(1)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
-	//
-	//user, err = database.GetInstance().GetUserByID(100)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-	//logger.Info(user)
+
+	user, err = database.GetInstance().AddUser("test@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	user.Nickname = "sdfsdf"
+
+	err = database.GetInstance().UpdateUser(&user)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	user.Id = 100
+
+	err = database.GetInstance().UpdateUser(&user)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	profile, err := database.GetInstance().GetProfile(1)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(profile)
+
+	profile, err = database.GetInstance().GetProfile(100)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(profile)
+
+	user, err = database.GetInstance().GetUserByEmail("test@test.com")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	user, err = database.GetInstance().GetUserByEmail("test3@test.com")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	id, password, salt, err := database.GetInstance().GetUserSignature("test@test.com")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(id)
+	logger.Info(password)
+	logger.Info(salt)
+
+
+	id, password, salt, err = database.GetInstance().GetUserSignature("test3@test.com")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	user, err = database.GetInstance().AddUser("test2@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	user, err = database.GetInstance().AddUser("test3@test.com", "boob", "ghghhg.img", []byte{}, []byte{})
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	var page services.PageData
+	page.Limit = 1
+	page.Since = 1
+	users, err := database.GetInstance().GetUsers(&page)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(users)
+
+	user, err = database.GetInstance().GetUserByID(1)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
+
+	user, err = database.GetInstance().GetUserByID(100)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info(user)
 
 	server := grpc.NewServer()
 

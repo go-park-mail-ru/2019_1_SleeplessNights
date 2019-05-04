@@ -8,16 +8,16 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 -- table users
 CREATE TABLE public.users
 (
-  id          BIGSERIAL                            NOT NULL,
-  email       CITEXT                               NOT NULL,
-  password    BYTEA                                NOT NULL,
-  salt        BYTEA                                NOT NULL,
-  nickname    TEXT                                 NOT NULL,
-  avatar_path TEXT    DEFAULT 'default_avatar.jpg' NOT NULL,
-  win_rate    FLOAT   DEFAULT 0                    NOT NULL,
-  matches     INTEGER DEFAULT 0                    NOT NULL,
-  wins        INTEGER DEFAULT 0                    NOT NULL,
-  rating      INTEGER DEFAULT 0                    NOT NULL
+  id          BIGSERIAL         NOT NULL,
+  email       CITEXT            NOT NULL,
+  password    BYTEA             NOT NULL,
+  salt        BYTEA             NOT NULL,
+  nickname    TEXT              NOT NULL,
+  avatar_path TEXT              NOT NULL,
+  win_rate    BIGINT  DEFAULT 0 NOT NULL,
+  matches     BIGINT  DEFAULT 0 NOT NULL,
+  wins        BIGINT  DEFAULT 0 NOT NULL,
+  rating      INTEGER DEFAULT 0 NOT NULL
 );
 
 
@@ -42,13 +42,14 @@ CREATE OR REPLACE FUNCTION public.update_rating()
 $BODY$
 BEGIN
   NEW.win_rate := NEW.wins / NEW.matches;
-  NEW.rating := OLD.rating + NEW.rating;
+  --   NEW.rating := OLD.rating + NEW.rating;
+  RETURN NEW;
 END;
 $BODY$
   LANGUAGE plpgsql;
 
 CREATE TRIGGER update_users_rating
-  BEFORE UPDATE OF matches, wins, rating
+  BEFORE UPDATE OF matches, wins
   ON public.users
   FOR EACH ROW
 EXECUTE PROCEDURE public.update_rating();
@@ -211,7 +212,8 @@ BEGIN
   FOR rec IN SELECT *
              FROM users
              WHERE id > arg_since
-             LIMIT arg_limit
+             ORDER BY rating
+             LIMIT arg_limit OFFSET arg_since
     LOOP
       result.id := rec.id;
       result.email := rec.email;
