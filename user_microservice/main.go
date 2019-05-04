@@ -17,6 +17,7 @@ func init() {
 }
 
 func main() {
+	logger.SetLogLevel(logrus.DebugLevel)
 	defer closer.Close()
 
 	lis, err := net.Listen("tcp", ":8081")

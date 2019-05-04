@@ -31,18 +31,20 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		Email:    r.Form.Get("email"),
 		Password: r.Form.Get("password"),
 	})
-	switch err {
-	case nil:
-	case errors.DataBaseNoDataFound:
-		helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
-		return
-	case errors.AuthWrongPassword:
-		helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
-		return
-	default:
-		helpers.Return500(&w, err)
-		return
+	if err != nil{
+		switch err.Error() {
+		case errors.DataBaseNoDataFound.Error():
+			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
+			return
+		case errors.AuthWrongPassword.Error():
+			helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
+			return
+		default:
+			helpers.Return500(&w, err)
+			return
+		}
 	}
+
 
 	sessionCookie := helpers.BuildSessionCookie(sessionToken)
 	http.SetCookie(w, &sessionCookie)
