@@ -9,10 +9,10 @@ type websocketPlayer struct {
 	//TODO develop Close() method
 	//С помощью этой структуры будем делать игрока по вебсокету на фабрике
 	//Она уже реализует интерфейс Player, поэтому нам нужно будет просто сделатьинстанс этой структуры
-	id        uint64
-	uid       uint64
-	in        chan messge.Message
-	conn      *websocket.Conn
+	id   uint64
+	uid  uint64
+	in   chan messge.Message
+	conn *websocket.Conn
 }
 
 func (wsPlayer *websocketPlayer) StartListen() {
@@ -26,9 +26,10 @@ func (wsPlayer *websocketPlayer) StartListen() {
 			//она была разовой и не критической
 			//Нужно сформировать кастомое сообщение и отправить его серверу,
 			// то-то типа "от кигрока пришло битое сообщение"
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
+			if websocket.IsUnexpectedCloseError(err) {
 				logger.Infof("Player %d closed the connection", wsPlayer.uid)
-				wsPlayer.in <- messge.Message{Title:messge.Leave}
+				wsPlayer.in <- messge.Message{Title: messge.Leave}
+				wsPlayer.Close()
 				return
 			}
 		}
@@ -56,4 +57,13 @@ func (wsPlayer *websocketPlayer) ID() uint64 {
 
 func (wsPlayer *websocketPlayer) UID() uint64 {
 	return wsPlayer.uid
+}
+func (wsPlayer *websocketPlayer) Close() {
+	logger.Infof("Player %d closed the connection", wsPlayer.uid)
+	err := wsPlayer.conn.Close()
+	if err != nil {
+		logger.Error(err)
+	}
+	wsPlayer.in <- messge.Message{Title: messge.Leave}
+	close(wsPlayer.in)
 }

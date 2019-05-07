@@ -42,6 +42,10 @@ func (r *Room) MessageHandlerMux(m MessageWrapper) {
 		{
 			r.CurrentStateHandler(m)
 		}
+	case messge.ThemesRequest:
+		{
+			r.ThemesRequestHandler(m)
+		}
 	}
 }
 
@@ -269,4 +273,9 @@ func (r *Room) getPlayerIdx(p *player.Player) int {
 
 func (r *Room) CurrentStateHandler(m MessageWrapper) {
 	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.CurrentState, Payload: messge.GameState{r.field.GetCurrentState()}}}
+}
+
+func (r *Room) ThemesRequestHandler(m MessageWrapper) {
+	packArray := r.field.GetThemesArray()
+	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.ThemesResponse, Payload: packArray}}
 }

@@ -17,23 +17,24 @@ const (
 	//поэтому значения приведены просто для примера и поменяются при реализации
 
 	//ИСХОДЯЩИЕ
-	StartGame      = "START_GAME"      //Оповещаем клиентов о том, что комната готова и они могут начать её отрисовывать
-	YourTurn       = "YOUR_TURN"       //Оповещаем клиента о начале его хода
-	EnemyTurn      = "ENEMY_TURN"      //Оповещаемк клиента о том, что ходит его оппонент
-	AvailableCells = "AVAILABLE_CELLS" //Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
-	YourQuestion   = "QUESTION"        //Даём клиенту вопрос, связанный с клеткой; payload = question
-	EnemyQuestion  = "ENEMY_QUESTION"  //Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
-	EnemyAnswer    = "ENEMY_ANSWER"    //Оповещаем клиента об ответе, который дал его оппонент; payload = int
-	Correct        = "CORRECT"         //Оповещаем обоих клиентов о том, что ответ на вопрос верен
-	Incorrect      = "INCORRECT"       //Оповещаем обоих клиентов о том, что ответ на вопрос неверен
-	Loss           = "LOSS"            //Оповещаем клиента о его поражении
-	Win            = "WIN"             //Оповещаем клиента о его победе
-
+	StartGame        = "START_GAME"         //Оповещаем клиентов о том, что комната готова и они могут начать её отрисовывать
+	YourTurn         = "YOUR_TURN"          //Оповещаем клиента о начале его хода
+	EnemyTurn        = "ENEMY_TURN"         //Оповещаемк клиента о том, что ходит его оппонент
+	AvailableCells   = "AVAILABLE_CELLS"    //Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
+	YourQuestion     = "QUESTION"           //Даём клиенту вопрос, связанный с клеткой; payload = question
+	EnemyQuestion    = "ENEMY_QUESTION"     //Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
+	EnemyAnswer      = "ENEMY_ANSWER"       //Оповещаем клиента об ответе, который дал его оппонент; payload = int
+	Correct          = "CORRECT"            //Оповещаем обоих клиентов о том, что ответ на вопрос верен
+	Incorrect        = "INCORRECT"          //Оповещаем обоих клиентов о том, что ответ на вопрос неверен
+	Loss             = "LOSS"               //Оповещаем клиента о его поражении
+	Win              = "WIN"                //Оповещаем клиента о его победе
+	OpponentProfile  = "OPPONENT_PROFILE"   // Данные оппонента
 	WannaPlayAgain   = "WANNA_PLAY_AGAIN"   // Даём клиенту выбор продолжить играть или нет
 	OpponentLeaves   = "OPPONENT_QUITS"     //Оповещаем клиента о желании соперника продолжить
 	OpponentContines = "OPPONENT_CONTINUES" //Оповещаем клиента о желании выйти из игры
 
-	CurrentState = "CURRENT_STATE" //Текущее состояние игры
+	CurrentState  = "CURRENT_STATE"  //Текущее состояние игры
+	ThemesRequest = "THEMES_REQUEST" //матрица тем игрового поля
 
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
@@ -54,7 +55,8 @@ const (
 	Continue       = "CONTINUE"        //  Оповещаем сервер о желании продолжить игру с тем же соперником
 	ChangeOpponent = "CHANGE_OPPONENT" //  Оповещаем сервер о желании продолжить игру с другим соперником
 
-	State = "STATE" //Запрос текущего состояния игры
+	State          = "STATE"           //Запрос текущего состояния игры
+	ThemesResponse = "THEMES_RESPONSE" //Запрос  матрицы тем игрового поля
 )
 
 type Message struct {
@@ -74,8 +76,15 @@ type Coordinates struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 }
+type ThemeArray struct {
+	ThemesArray []string `json:"theme_array"`
+}
 
 //Request TryMove to a cell
+type ThemePack struct {
+	Id    uint   `json:"pack"`
+	Theme string `json:"theme_name"`
+}
 
 //response from sever with question
 type Question struct {
@@ -151,6 +160,10 @@ func (m *Message) IsValid() bool {
 			return true
 		}
 	case State:
+		{
+			return true
+		}
+	case ThemesRequest:
 		{
 			return true
 		}

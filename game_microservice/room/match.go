@@ -5,7 +5,11 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
+	"github.com/xlab/closer"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"time"
 )
 
@@ -16,6 +20,26 @@ func init() {
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
+var userManager services.UserMSClient
+
+func init() {
+	var err error
+	grpcConn, err := grpc.Dial(
+		"127.0.0.1:8081",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		logger.Fatal("Can't connect to auth microservice via grpc")
+	}
+	userManager = services.NewUserMSClient(grpcConn)
+	closer.Bind(func() {
+		err := grpcConn.Close()
+		if err != nil {
+			logger.Error("Error occurred while closing grpc connection", err)
+		}
+	})
+}
+
 func (r *Room) buildEnv() {
 	packs, err := database.GetInstance().GetPacksOfQuestions(10)
 	if err != nil {
@@ -23,8 +47,9 @@ func (r *Room) buildEnv() {
 		//TODO deal with error, maybe kill the room
 	}
 	packIDs := make([]int, len(packs))
-	for _, pack := range packs {
+	for idx, pack := range packs {
 		packIDs = append(packIDs, int(pack.ID))
+		(*r.field.GetThemesSlice())[idx] = pack.Theme
 	}
 
 	questions, err := database.GetInstance().GetQuestions(packIDs)
@@ -63,9 +88,20 @@ func (r *Room) prepareMatch() {
 	p2Chan := r.p2.Subscribe()
 
 	err := r.notifyAll(messge.Message{Title: messge.StartGame, Payload: nil})
+
 	if err != nil {
 		logger.Error("Failed to notify all players:", err)
 	}
+
+	err = r.notifyP1(messge.Message{Title: messge.OpponentProfile, Payload: userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})})
+	if err != nil {
+		logger.Error("Failed to notify Player 1:", err)
+	}
+	err = r.notifyP2(messge.Message{Title: messge.OpponentProfile, Payload: userManager.GetUserById(context.Background(), &services.UserId{Id: r.p1.UID()})})
+	if err != nil {
+		logger.Error("Failed to notify Player 2:", err)
+	}
+
 	logger.Info("Игрокам Отправлены StartGame")
 	r.waitForSyncMsg = messge.Ready
 	//Read Messages from Players

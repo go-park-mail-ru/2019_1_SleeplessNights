@@ -10,7 +10,6 @@ CREATE TABLE question_pack
 ALTER TABLE ONLY public.question_pack
   ADD CONSTRAINT question_pack_pk PRIMARY KEY (id);
 
-
 -- table question
 CREATE TABLE question
 (

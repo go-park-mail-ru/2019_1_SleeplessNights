@@ -45,9 +45,10 @@ type gfPlayer struct {
 }
 
 type GameField struct {
-	field [fieldSize][fieldSize]gameCell
-	p1    gfPlayer
-	p2    gfPlayer
+	themes []string
+	field  [fieldSize][fieldSize]gameCell
+	p1     gfPlayer
+	p2     gfPlayer
 	//Out   []event.Event
 	regX        int
 	regY        int
@@ -70,6 +71,11 @@ func isPrizePosition(x, y int) bool {
 		}
 	}
 	return false
+}
+
+func (gf *GameField) GetThemesSlice() (ThemeSlice *[]string) {
+	return &gf.themes
+
 }
 
 func (gf *GameField) Build(qArray []models.Question) {
@@ -232,6 +238,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
 
 		//TODO переместить в начало метода GetAvailableCells
+
 	}*/
 
 	//Здесь проверяем, если следущая клетка выигрышная
@@ -316,18 +323,16 @@ func (gf *GameField) ResetPlayersPositions() {
 
 }
 
-/*
- x0 x1 x2 x3 x4 x5 x6 x7
- __ __ __ __ __ __ __ __
-|__|__|__|__|P2|__|__|__|  y0
-|__|__|__|__|_X|_X|__|__|  y1
-|__|__|__|__|_X|_X|_X|_X|  y2
-|__|__|__|Pr|Pr|p1|__|__|  y3
-|__|__|__|Pr|Pr|__|__|__|  y4
-|__|__|__|__|_X|__|__|__|  y5
-|__|__|__|__|_X|__|__|__|  y6
-|__|__|__|P1|__|__|__|__|  y7
-*/
+func (gf *GameField) GetThemesArray() (packArray []string) {
+
+	for i := 0; i < fieldSize; i++ {
+		for j := 0; j < fieldSize; j++ {
+			packArray = append(packArray, gf.themes[(gf.field[i][j]).question.PackID])
+		}
+	}
+
+	return
+}
 func (gf *GameField) GetCurrentState() string {
 	fieldState := fmt.Sprintln("\n x0 x1 x2 x3 x4 x5 x6 x7\n __ __ __ __ __ __ __ __")
 	for i := 0; i < fieldSize; i++ {
