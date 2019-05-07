@@ -26,9 +26,11 @@ func (wsPlayer *websocketPlayer) StartListen() {
 			//она была разовой и не критической
 			//Нужно сформировать кастомое сообщение и отправить его серверу,
 			// то-то типа "от кигрока пришло битое сообщение"
+
 			if websocket.IsUnexpectedCloseError(err) {
 				logger.Infof("Player %d closed the connection", wsPlayer.uid)
 				wsPlayer.in <- messge.Message{Title: messge.Leave}
+
 				wsPlayer.Close()
 				return
 			}
