@@ -92,12 +92,19 @@ func (r *Room) prepareMatch() {
 	if err != nil {
 		logger.Error("Failed to notify all players:", err)
 	}
-
-	err = r.notifyP1(messge.Message{Title: messge.OpponentProfile, Payload: userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})})
+	user2, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
+	if err != nil {
+		logger.Error("failed to get userprofile2 from grpc:", err)
+	}
+	err = r.notifyP1(messge.Message{Title: messge.OpponentProfile, Payload: user2})
 	if err != nil {
 		logger.Error("Failed to notify Player 1:", err)
 	}
-	err = r.notifyP2(messge.Message{Title: messge.OpponentProfile, Payload: userManager.GetUserById(context.Background(), &services.UserId{Id: r.p1.UID()})})
+	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
+	if err != nil {
+		logger.Error("failed to get userprofile2 from grpc:", err)
+	}
+	err = r.notifyP2(messge.Message{Title: messge.OpponentProfile, Payload: user1})
 	if err != nil {
 		logger.Error("Failed to notify Player 2:", err)
 	}
