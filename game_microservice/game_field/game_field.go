@@ -8,6 +8,8 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"math"
+	"math/rand"
+	"time"
 )
 
 var logger *log.Logger
@@ -89,9 +91,18 @@ func (gf *GameField) GetQuestionsThemes() (packArray []uint) {
 	}
 	return
 }
+func Shuffle(questions *[]models.Question) {
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	for n := len(*questions); n > 0; n-- {
+		randIndex := r.Intn(n)
+		(*questions)[n-1], (*questions)[randIndex] = (*questions)[randIndex], (*questions)[n-1]
+	}
 
+}
 func (gf *GameField) Build(qArray []models.Question) {
+	Shuffle(&qArray)
 	qSlice := qArray
+
 	index := 0
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {

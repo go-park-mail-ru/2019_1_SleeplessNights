@@ -79,7 +79,7 @@ func (r *Room) prepareMatch() {
 
 	err := r.notifyAll(messge.Message{Title: messge.StartGame, Payload: nil})
 	if err != nil {
-		logger.Error("Failed to notify all players:", err)
+		logger.Error("Failed to notify about StartGame ,to all players:", err)
 	}
 
 	user2, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
@@ -100,6 +100,17 @@ func (r *Room) prepareMatch() {
 	}
 
 	logger.Info("Игрокам Отправлены StartGame")
+
+	err = r.notifyAll(messge.Message{Title: messge.ThemesResponse, Payload: r.field.GetThemesSlice()})
+	if err != nil {
+		logger.Error("Failed to send ThemesResponse , to all players:", err)
+	}
+	packArray := r.field.GetQuestionsThemes()
+	err = r.notifyAll(messge.Message{Title: messge.QuestionsThemesResponse, Payload: packArray})
+
+	if err != nil {
+		logger.Error("Failed to send QuestionsThemesResponse , to all players:", err)
+	}
 	r.waitForSyncMsg = messge.Ready
 	//Read Messages from Players
 	//Moved message receive conditions to Requests handler

@@ -280,7 +280,6 @@ func (r *Room) CurrentStateHandler(m MessageWrapper) {
 }
 
 func (r *Room) ThemesRequestHandler(m MessageWrapper) {
-
 	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.ThemesResponse, Payload: r.field.GetThemesSlice()}}
 
 }
@@ -288,6 +287,5 @@ func (r *Room) ThemesRequestHandler(m MessageWrapper) {
 //Maybe send response to websocket connection without request
 func (r *Room) QuestionsThemesHandler(m MessageWrapper) {
 	packArray := r.field.GetQuestionsThemes()
-	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.ThemesResponse, Payload: packArray}}
-
+	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.QuestionsThemesResponse, Payload: packArray}}
 }
