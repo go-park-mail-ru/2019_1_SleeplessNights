@@ -1,2 +1,3 @@
 dev:
-  #Конфигурация для разработки
+  main_ms: #Конфигурация main microservice
+    port: 8080
