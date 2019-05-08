@@ -1,8 +1,7 @@
 package handlers_test
-
+//
 //
 //import (
-//	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
 //	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
 //	"net/http"
 //	"net/http/httptest"
@@ -20,11 +19,6 @@ package handlers_test
 //}
 //
 //func TestRegisterHandlerSuccessful(t *testing.T) {
-//
-//	err := database.GetInstance().CleanerDBForTests()
-//	if err != nil {
-//		t.Errorf(err.Error())
-//	}
 //
 //	cases := []TestCaseReg{
 //		TestCaseReg{
@@ -133,11 +127,6 @@ package handlers_test
 //}
 //
 //func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
-//
-//	err := database.GetInstance().CleanerDBForTests()
-//	if err != nil {
-//		t.Errorf(err.Error())
-//	}
 //
 //	cases := []TestCaseReg{
 //		TestCaseReg{

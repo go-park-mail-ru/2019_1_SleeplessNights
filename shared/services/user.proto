@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-// protoc --go_out=plugins=services:. *.proto
+// protoc --go_out=plugins=grpc:. *.proto
 
 package services;
 
@@ -42,12 +42,17 @@ message Profile {
     uint32 matches = 4;
 }
 
+message Nothing {
+
+}
+
 service UserMS {
     rpc CheckToken         (SessionToken)  returns (User)            {}
     rpc MakeToken          (UserSignature) returns (SessionToken)    {}
     rpc CreateUser         (NewUserData)   returns (User)            {}
     rpc GetProfile         (User)          returns (Profile)         {}
-    rpc UpdateProfile      (User)          returns (User)                {}
+    rpc UpdateProfile      (User)          returns (User)            {}
     rpc GetLeaderBoardPage (PageData)      returns (LeaderBoardPage) {}
+    rpc ClearDB            (Nothing)       returns (Nothing)         {}
 }
 
