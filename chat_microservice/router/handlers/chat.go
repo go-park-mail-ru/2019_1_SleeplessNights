@@ -6,7 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"math/rand"
@@ -25,14 +25,14 @@ func init() {
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
-func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
+func EnterChat(user services.User, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
-	logger.Info("Someone's connected to websocket chat, ID:%d", user.ID)
+	logger.Info("Someone's connected to websocket chat, Id:%d", user.Id)
 
 	if err != nil {
 		logger.Error(`micro service error in "EnterChat" during connection"`, err)
@@ -41,12 +41,12 @@ func EnterChat(user models.User, w http.ResponseWriter, r *http.Request) {
 	}
 
 	isAuthorized := false
-	if user.ID != 0 {
+	if user.Id != 0 {
 		isAuthorized = true
 	}
-	logger.Info("Users authStatus=%d ID=%d", isAuthorized, user.ID)
+	logger.Info("Users authStatus=%d ID=%d", isAuthorized, user.Id)
 	//TODO GET chatroom pointer, try to add user_manager to chat as a new chat member
-	userId, err := database.GetInstance().UpdateUser(user.ID, user.Nickname, user.AvatarPath)
+	userId, err := database.GetInstance().UpdateUser(user.Id, user.Nickname, user.AvatarPath)
 	if err != nil {
 		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateUser ")
 	}

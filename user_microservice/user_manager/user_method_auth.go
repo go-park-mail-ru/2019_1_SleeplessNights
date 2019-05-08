@@ -11,12 +11,12 @@ import (
 	"time"
 )
 
-func (auth *authManager)CheckToken(ctx context.Context, in *services.SessionToken)(*services.User, error) {
+func (us *userManager) CheckToken(ctx context.Context, in *services.SessionToken) (*services.User, error) {
 	rawToken, err := jwt.Parse([]byte(in.Token))
 	if err != nil {
 		return nil, err
 	}
-	verifier := jwt.NewHMAC(jwt.SHA512, auth.secret)
+	verifier := jwt.NewHMAC(jwt.SHA512, us.secret)
 	err = rawToken.Verify(verifier)
 	if err != nil {
 		return nil, err
@@ -38,14 +38,14 @@ func (auth *authManager)CheckToken(ctx context.Context, in *services.SessionToke
 
 	var user services.User
 	user, err = database.GetInstance().GetUserByID(userID)
-	if err !=nil {
+	if err != nil {
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (auth *authManager)MakeToken(ctx context.Context, in *services.UserSignature)(*services.SessionToken, error) {
+func (us *userManager) MakeToken(ctx context.Context, in *services.UserSignature) (*services.SessionToken, error) {
 	id, password, salt, err := database.GetInstance().GetUserSignature(in.Email)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (auth *authManager)MakeToken(ctx context.Context, in *services.UserSignatur
 		return nil, errors.AuthWrongPassword
 	}
 
-	signer := jwt.NewHMAC(jwt.SHA512, auth.secret)
+	signer := jwt.NewHMAC(jwt.SHA512, us.secret)
 	header := jwt.Header{}
 	expiresAt := time.Now().Add(sessionLifeLen)
 	payload := jwt.Payload{

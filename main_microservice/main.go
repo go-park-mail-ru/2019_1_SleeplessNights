@@ -11,12 +11,12 @@ import (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Main")
 	//logger.SetLogLevel(logrus.TraceLevel)
 }
 
-func main () {
+func main() {
 	defer closer.Close()
 	//faker.CreateFakeData(10)
 	//faker.CreateFakePacks()

@@ -3,7 +3,7 @@ package middleware
 import "net/http"
 
 const (
-	DomainsCORS     = "https://sleepless-nights--frontend.herokuapp.com"
+	DomainsCORS     = "http://localhost:8000"
 	MethodsCORS     = "GET, POST, PATCH, DELETE, OPTIONS"
 	CredentialsCORS = "true"
 	//TODO FIX CORS HEADERS

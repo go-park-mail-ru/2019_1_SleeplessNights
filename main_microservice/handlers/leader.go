@@ -12,12 +12,12 @@ import (
 const limit = 10
 
 func LeadersHandler(w http.ResponseWriter, r *http.Request) {
-	sinceStr := r.URL.Query().Get("since")
-	if sinceStr == "" {
-		sinceStr = "0"
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "0"
 	}
 
-	since, err := strconv.ParseUint(sinceStr, 10, 32)
+	since, err := strconv.ParseUint(page, 10, 32)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return
@@ -25,7 +25,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 
 	leaders, err := userManager.GetLeaderBoardPage(context.Background(),
 		&services.PageData{
-			Since: since,
+			Since: since * limit,
 			Limit: limit,
 		})
 	if err != nil {

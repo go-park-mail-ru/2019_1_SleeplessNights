@@ -8,14 +8,18 @@ import (
 	"sync"
 )
 
-var chat *chatRoom
-
-var logger *log.Logger
-
 const (
 	maxConnections        = 100
 	limit          uint64 = 20
 )
+
+var chat *chatRoom
+
+var logger *log.Logger
+
+func init() {
+	logger = log.GetLogger("DB")
+}
 
 type chatRoom struct {
 	maxConnections int64
@@ -25,7 +29,6 @@ type chatRoom struct {
 }
 
 func init() {
-	logger = log.GetLogger("DB")
 	id, err := database.GetInstance().CreateRoom(nil)
 	if err != nil {
 		logger.Error("Chat_room init", err)

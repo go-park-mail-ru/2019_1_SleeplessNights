@@ -1,13 +1,13 @@
 package messge
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
+	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 )
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Message")
 }
 
@@ -17,17 +17,24 @@ const (
 	//поэтому значения приведены просто для примера и поменяются при реализации
 
 	//ИСХОДЯЩИЕ
-	StartGame      = "START_GAME"      //Оповещаем клиентов о том, что комната готова и они могут начать её отрисовывать
-	YourTurn       = "YOUR_TURN"       //Оповещаем клиента о начале его хода
-	EnemyTurn      = "ENEMY_TURN"      //Оповещаемк клиента о том, что ходит его оппонент
-	AvailableCells = "AVAILABLE_CELLS" //Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
-	YourQuestion   = "QUESTION"        //Даём клиенту вопрос, связанный с клеткой; payload = question
-	EnemyQuestion  = "ENEMY_QUESTION"  //Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
-	EnemyAnswer    = "ENEMY_ANSWER"    //Оповещаем клиента об ответе, который дал его оппонент; payload = int
-	Correct        = "CORRECT"         //Оповещаем обоих клиентов о том, что ответ на вопрос верен
-	Incorrect      = "INCORRECT"       //Оповещаем обоих клиентов о том, что ответ на вопрос неверен
-	Loss           = "LOSS"            //Оповещаем клиента о его поражении
-	Win            = "WIN"             //Оповещаем клиента о его победе
+	StartGame        = "START_GAME"         //Оповещаем клиентов о том, что комната готова и они могут начать её отрисовывать
+	YourTurn         = "YOUR_TURN"          //Оповещаем клиента о начале его хода
+	EnemyTurn        = "ENEMY_TURN"         //Оповещаемк клиента о том, что ходит его оппонент
+	AvailableCells   = "AVAILABLE_CELLS"    //Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
+	YourQuestion     = "QUESTION"           //Даём клиенту вопрос, связанный с клеткой; payload = question
+	EnemyQuestion    = "ENEMY_QUESTION"     //Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
+	EnemyAnswer      = "ENEMY_ANSWER"       //Оповещаем клиента об ответе, который дал его оппонент; payload = int
+	Correct          = "CORRECT"            //Оповещаем обоих клиентов о том, что ответ на вопрос верен
+	Incorrect        = "INCORRECT"          //Оповещаем обоих клиентов о том, что ответ на вопрос неверен
+	Loss             = "LOSS"               //Оповещаем клиента о его поражении
+	Win              = "WIN"                //Оповещаем клиента о его победе
+	OpponentProfile  = "OPPONENT_PROFILE"   // Данные оппонента
+	WannaPlayAgain   = "WANNA_PLAY_AGAIN"   // Даём клиенту выбор продолжить играть или нет
+	OpponentLeaves   = "OPPONENT_QUITS"     //Оповещаем клиента о желании соперника продолжить
+	OpponentContines = "OPPONENT_CONTINUES" //Оповещаем клиента о желании выйти из игры
+
+	CurrentState  = "CURRENT_STATE"  //Текущее состояние игры
+	ThemesRequest = "THEMES_REQUEST" //матрица тем игрового поля
 
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
@@ -42,6 +49,14 @@ const (
 	GoTo         = "GO_TO"  //SYNC Оповещаем клиента о клетке, которую выбрали для хода; payload = pair
 	ClientAnswer = "ANSWER" //SYNC Оповещаем сервер о выбранном ответе на вопрос; payload = int
 	Leave        = "LEAVE"  //ASYNC Оповещаем клиента о выходе из комнаты
+
+	//Ответы игроков после того, как матч завершиться (ответы на запрос WannaPlayAgain)
+	Quit           = "QUIT"            //  Оповещаем сервер о желании выйти из игры и в главное меню
+	Continue       = "CONTINUE"        //  Оповещаем сервер о желании продолжить игру с тем же соперником
+	ChangeOpponent = "CHANGE_OPPONENT" //  Оповещаем сервер о желании продолжить игру с другим соперником
+
+	State          = "STATE"           //Запрос текущего состояния игры
+	ThemesResponse = "THEMES_RESPONSE" //Запрос  матрицы тем игрового поля
 )
 
 type Message struct {
@@ -57,22 +72,26 @@ type Message struct {
 }
 
 type Coordinates struct {
+	//Achtung!!!!
 	X int `json:"x"`
 	Y int `json:"y"`
 }
+type ThemeArray struct {
+	ThemesArray []string `json:"theme_array"`
+}
 
 //Request TryMove to a cell
-
-type MoveRequest struct {
-	PlayerId        uint64      `json:"player_id"`
-	CurrentPosition Coordinates `json:"curr_pos"`
-	DesiredPosition Coordinates `json:"desired_pos"`
+type ThemePack struct {
+	Id    uint   `json:"pack"`
+	Theme string `json:"theme_name"`
 }
 
 //response from sever with question
 type Question struct {
-	PlayerId uint64             `json:"player_id"`
-	Question questions.Question `json:"question"`
+	Question string `json:"question"`
+}
+type GameState struct {
+	State string `json:"state"`
 }
 
 //response from client with answer_id
@@ -82,12 +101,12 @@ type Answer struct {
 
 //Response to players answer
 type AnswerResult struct {
-	AnswerResult bool `json:"answer_id"`
+	AnswerResult  bool `json:"answer_id"`
+	CorrectAnswer int  `json:"correct_answer"`
 }
 
-//Убрать валидации для поля гейм филд, Зделать валидаторы для каждого уровня игры
 func (m *Message) IsValid() bool {
-
+	fmt.Println(m.Payload)
 	switch m.Title {
 	case Ready:
 		{
@@ -95,26 +114,56 @@ func (m *Message) IsValid() bool {
 		}
 	case GoTo:
 		{
-			_, ok := m.Payload.(*MoveRequest)
+
+			st, ok := m.Payload.(map[string]interface{})
 			if !ok {
-				logger.Error("Message validator, Type=GoTo, error:interface->MoveRequest casting error")
+				logger.Error("Message validator, Title=GO_TO, error:interface->Answer casting error")
 				return false
 			}
-			logger.Info("Received Message is Valid")
+			if _, ok := st["x"]; !ok {
+				return false
+			}
+			if _, ok := st["y"]; !ok {
+				return false
+			}
 			return true
 
 		}
 	case ClientAnswer:
 		{
-			_, ok := m.Payload.(*Answer)
+			st, ok := m.Payload.(map[string]interface{})
 			if !ok {
 				logger.Error("Message validator, Title=ClientAnswer, error:interface->Answer casting error")
+				return false
+			}
+			if _, ok := st["answer_id"]; !ok {
 				return false
 			}
 
 			return true
 		}
 	case Leave:
+		{
+			return true
+		}
+
+	case Continue:
+		{
+			return true
+		}
+	case ChangeOpponent:
+		{
+			return true
+		}
+	case Quit:
+		{
+			return true
+		}
+	case State:
+		{
+			return true
+		}
+	case ThemesRequest:
 		{
 			return true
 		}

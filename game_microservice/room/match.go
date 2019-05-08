@@ -1,13 +1,44 @@
 package room
 
 import (
-	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
-	local "github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/database"
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"github.com/sirupsen/logrus"
+	"github.com/xlab/closer"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"time"
 )
+
+var logger *log.Logger
+
+func init() {
+	logger = log.GetLogger("ChatMS")
+	logger.SetLogLevel(logrus.TraceLevel)
+}
+
+var userManager services.UserMSClient
+
+func init() {
+	var err error
+	grpcConn, err := grpc.Dial(
+		"127.0.0.1:8081",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		logger.Fatal("Can't connect to auth microservice via grpc")
+	}
+	userManager = services.NewUserMSClient(grpcConn)
+	closer.Bind(func() {
+		err := grpcConn.Close()
+		if err != nil {
+			logger.Error("Error occurred while closing grpc connection", err)
+		}
+	})
+}
 
 func (r *Room) buildEnv() {
 	packs, err := database.GetInstance().GetPacksOfQuestions(10)
@@ -16,8 +47,9 @@ func (r *Room) buildEnv() {
 		//TODO deal with error, maybe kill the room
 	}
 	packIDs := make([]int, len(packs))
-	for _, pack := range packs {
+	for idx, pack := range packs {
 		packIDs = append(packIDs, int(pack.ID))
+		(*r.field.GetThemesSlice())[idx] = pack.Theme
 	}
 
 	questions, err := database.GetInstance().GetQuestions(packIDs)
@@ -25,31 +57,30 @@ func (r *Room) buildEnv() {
 		logger.Error("Error occurred while fetching question from DB:", err)
 		//TODO deal with error, maybe kill the room
 	}
-	var localQuestions [game_field.QuestionsNum]local.Question
+	/*var localQuestions [game_field.QuestionsNum]local.Question
 	var lq local.Question
-	for i := 0; i < len(localQuestions); i++  {
+	for i := 0; i < len(localQuestions); i++ {
 		questionJSON, err := json.Marshal(questions[i])
 		if err != nil {
 			logger.Error("Error occurred while marshalling question into JSON:", err)
 			//TODO deal with error, maybe refresh questions
 		}
 		lq = local.Question{PackID: uint64(questions[i].ID),
-			QuestionJson: string(questionJSON),
+			QuestionJson:    string(questionJSON),
 			CorrectAnswerId: questions[i].Correct}
 		localQuestions[i] = lq
 	}
-
-	r.field.Build(localQuestions)
+	*/
+	r.field.Build(questions)
 	//Процедура должна пересоздавать игровое поле, запрашивать новый список тем из БД и готовить комнату к новой игре
 	//При этом она должна уметь работать асинхронно и не выбрасывать пользователей из комнаты во время работы
 }
 
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
-//
 
 func (r *Room) prepareMatch() {
 	logger.Info("Entered Prepare Match")
-	//r.buildEnv()
+	r.buildEnv()
 	r.requestsQueue = make(chan MessageWrapper, channelCapacity)
 	r.responsesQueue = make(chan MessageWrapper, channelCapacity)
 
@@ -57,11 +88,29 @@ func (r *Room) prepareMatch() {
 	p2Chan := r.p2.Subscribe()
 
 	err := r.notifyAll(messge.Message{Title: messge.StartGame, Payload: nil})
+
 	if err != nil {
 		logger.Error("Failed to notify all players:", err)
 	}
+	user2, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
+	if err != nil {
+		logger.Error("failed to get userprofile2 from grpc:", err)
+	}
+	err = r.notifyP1(messge.Message{Title: messge.OpponentProfile, Payload: user2})
+	if err != nil {
+		logger.Error("Failed to notify Player 1:", err)
+	}
+	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
+	if err != nil {
+		logger.Error("failed to get userprofile2 from grpc:", err)
+	}
+	err = r.notifyP2(messge.Message{Title: messge.OpponentProfile, Payload: user1})
+	if err != nil {
+		logger.Error("Failed to notify Player 2:", err)
+	}
+
 	logger.Info("Игрокам Отправлены StartGame")
-	r.waitForSyncMsg=messge.Ready
+	r.waitForSyncMsg = messge.Ready
 	//Read Messages from Players
 	//Moved message receive conditions to Requests handler
 

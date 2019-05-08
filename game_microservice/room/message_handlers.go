@@ -26,6 +26,26 @@ func (r *Room) MessageHandlerMux(m MessageWrapper) {
 			r.LeaveHandler(m)
 		}
 
+	case messge.Continue:
+		{
+			r.ContinueHandler(m)
+		}
+	case messge.ChangeOpponent:
+		{
+			r.ChangeOpponentHandler(m)
+		}
+	case messge.Quit:
+		{
+			r.QuitHandler(m)
+		}
+	case messge.State:
+		{
+			r.CurrentStateHandler(m)
+		}
+	case messge.ThemesRequest:
+		{
+			r.ThemesRequestHandler(m)
+		}
 	}
 }
 
@@ -87,10 +107,24 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 
 	for _, e := range eventSlice {
 		if e.Etype == event.Info {
-			data := e.Edata.(*event.Question)
-			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourQuestion, Payload: data}}
-			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.EnemyQuestion, Payload: data}}
-
+			logger.Info("player", (*r.active).ID(), "got question", e.Edata)
+			q, ok := e.Edata.(messge.Question)
+			if !ok {
+				logger.Error("Go_To handler couldn't cast Edata interface with question to string")
+				return false
+			}
+			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourQuestion, Payload: q}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.EnemyQuestion, Payload: q}}
+			r.waitForSyncMsg = "ANSWER"
+		}
+		if e.Etype == event.WinPrize {
+			//Write to DB results of the match
+			logger.Info("player", (*r.active).ID(), "Has Won the prize")
+			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Win, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.Loss, Payload: nil}}
+			r.waitForSyncMsg = "Leave"
+			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.WannaPlayAgain, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.WannaPlayAgain, Payload: nil}}
 		}
 	}
 
@@ -102,25 +136,125 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	logger.Infof("player %d answered to ClientAnswerHandler", (*m.player).UID())
 	r.mu.Lock()
-	answerId := m.msg.Payload.(*messge.Answer).AnswerId
-	if !r.field.CheckAnswer(answerId) {
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
+	st, ok := m.msg.Payload.(map[string]interface{})
+	if !ok {
+		logger.Error("ClientAnswerHandler, couldn't cast payload with answer_id to map[string]interface{}")
 	}
-	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
+	answerId, ok := st["answer_id"].(float64)
+	if !ok {
+		logger.Error(`ClientAnswerHandler, couldn't find value in map st with key "answer_id" `)
+	}
+
+	if !r.field.CheckAnswer(int(answerId)) {
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
+	} else {
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
+		r.field.Move(r.getPlayerIdx(r.active))
+	}
 
 	//Смена хода после ответа игрока
 	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
 	r.changeTurn()
-	r.waitForSyncMsg = "GoTo"
+	r.waitForSyncMsg = messge.GoTo
 	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourTurn, Payload: nil}}
+	cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
+
+	//Send Available cells to active player (Do it every time, after giving player a turn rights
+	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
 
 	r.mu.Unlock()
 	return true
 }
 
 func (r *Room) LeaveHandler(m MessageWrapper) bool {
-
 	r.mu.Lock()
+
+	r.mu.Unlock()
+	return true
+}
+
+//Оставить комнату с теми же игроками, создать для них новое игровое поле
+//Если один из них голосует выйти, то написать об этом другому
+func (r *Room) ContinueHandler(m MessageWrapper) bool {
+	r.mu.Lock()
+	var secondPlayer *player.Player
+
+	if &r.p1 == m.player {
+		r.p1Status = StatusWannaContinue
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		r.p2Status = StatusWannaContinue
+		secondPlayer = &r.p1
+	}
+	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentContines, Payload: nil}}
+	//Если оба игрока согласны продолжить игру, то при получении последнего
+	// "WannaContinue" собираем игровое поле заново с другими вопросами
+
+	if r.p2Status == StatusWannaContinue && r.p1Status == StatusWannaContinue {
+		logger.Info("Both players wanna continue gaming, preparing new Match")
+		r.field.ResetPlayersPositions()
+		// Получить новый пак вопросов, заново заполнить ячейками игровое поле
+		// Поставить состояние  игрового цикла в начало
+		logger.Info("Building new environment")
+		r.buildEnv()
+		r.p1Status = StatusReady
+		r.p2Status = StatusReady
+		//Здесь перезупускаем игровой процесс с теми же игроками
+		r.responsesQueue <- MessageWrapper{&r.p1, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{&r.p2, messge.Message{Title: messge.YourTurn, Payload: nil}}
+		r.active = &r.p2
+		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
+
+		//Send Available cells to active player (Do it every time, after giving player a turn rights
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
+
+		r.waitForSyncMsg = messge.GoTo
+
+	}
+	r.mu.Unlock()
+	return true
+}
+
+//Выбросить "игрока" из комнаты, поместить в другую (пока не надо трогать)
+func (r *Room) ChangeOpponentHandler(m MessageWrapper) bool {
+	r.mu.Lock()
+
+	var secondPlayer *player.Player
+	//var thisPlayer *player.Player
+
+	if &r.p1 == m.player {
+		//thisPlayer = &r.p1
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		//thisPlayer = &r.p2
+		secondPlayer = &r.p1
+	}
+
+	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentLeaves, Payload: nil}}
+
+	r.mu.Unlock()
+	return true
+
+}
+
+//Выбросить "пользователя" в главное меню,  connection "игрока" уничтожить
+func (r *Room) QuitHandler(m MessageWrapper) bool {
+	r.mu.Lock()
+
+	var secondPlayer *player.Player
+	//var thisPlayer *player.Player
+
+	if &r.p1 == m.player {
+		///	thisPlayer=&r.p1
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		///	thisPlayer = &r.p2
+		secondPlayer = &r.p1
+	}
+	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentLeaves, Payload: nil}}
 
 	r.mu.Unlock()
 	return true
@@ -130,10 +264,18 @@ func (r *Room) getPlayerIdx(p *player.Player) int {
 	if &r.p1 == p {
 		return 1
 	}
-
 	if &r.p2 == p {
 		return 2
 	}
 	logger.Errorf("Player with address %d was not found, couldn't get idx", (*p).UID())
 	return 1
+}
+
+func (r *Room) CurrentStateHandler(m MessageWrapper) {
+	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.CurrentState, Payload: messge.GameState{r.field.GetCurrentState()}}}
+}
+
+func (r *Room) ThemesRequestHandler(m MessageWrapper) {
+	packArray := r.field.GetThemesArray()
+	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.ThemesResponse, Payload: packArray}}
 }

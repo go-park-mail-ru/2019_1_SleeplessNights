@@ -1,4 +1,4 @@
-package game_microservice
+package game
 
 //TODO ADD TO PACKAGE:
 //TODO - panic handling
@@ -28,23 +28,23 @@ import (
 
 var logger *log.Logger
 
-func init () {
+func init() {
 	logger = log.GetLogger("Game")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 const (
-	maxRooms = 100
+	maxRooms                = 100
 	maxPlayersInputQueueLen = 100
 )
 
 var game *gameFacade
-var in   chan player.Player //Через этот канал игроки попадают из фабрики в комнаты
+var in chan player.Player //Через этот канал игроки попадают из фабрики в комнаты
 //in вынесен за пределы игры, чтобы улучшить масштабируемость на случай,
 //если мы быдем поднимать несколько инстансов микросервиса игры
 
 type gameFacade struct {
-	maxRooms int                //Макисмальное количество комнат в мапе, которое мы готовы поддерживать
+	maxRooms int //Макисмальное количество комнат в мапе, которое мы готовы поддерживать
 	rooms    map[uint64]*room.Room
 	idSource uint64
 	mu       sync.Mutex

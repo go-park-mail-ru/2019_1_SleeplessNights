@@ -3,6 +3,5 @@
   "port": 5432,
   "user": "jahongir",
   "password": "Password1234",
-  "dbname": "userdb"
-
+  "dbname": "gamedb"
 }

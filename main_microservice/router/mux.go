@@ -13,8 +13,8 @@ func GetRouter() (router *mux.Router) {
 	router = mux.NewRouter()
 
 	api := router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/user_manager", handlers.RegisterHandler).Methods(http.MethodPost)
-	api.HandleFunc("/user_manager", handlers.OptionsHandler).Methods(http.MethodOptions)
+	api.HandleFunc("/user", handlers.RegisterHandler).Methods(http.MethodPost)
+	api.HandleFunc("/user", handlers.OptionsHandler).Methods(http.MethodOptions)
 	api.HandleFunc("/session", handlers.AuthHandler).Methods(http.MethodPost)
 	api.HandleFunc("/session", handlers.AuthDeleteHandler).Methods(http.MethodDelete)
 	api.HandleFunc("/session", handlers.OptionsHandler).Methods(http.MethodOptions)
@@ -24,9 +24,6 @@ func GetRouter() (router *mux.Router) {
 	//Запросы, требующие авторизации
 	api.Handle("/profile", middleware.MiddlewareAuth(handlers.ProfileHandler, true)).Methods(http.MethodGet)
 	api.Handle("/profile", middleware.MiddlewareAuth(handlers.ProfileUpdateHandler, true)).Methods(http.MethodPatch)
-
-	ws := router.PathPrefix("/ws").Subrouter()
-	ws.Handle("/connect", middleware.MiddlewareAuth(handlers.UpgradeWs, true))
 
 	router.HandleFunc("/img/{path}", handlers.OptionsHandler).Methods(http.MethodOptions)
 	router.HandleFunc("/img/{path}", handlers.ImgHandler).Methods(http.MethodGet)

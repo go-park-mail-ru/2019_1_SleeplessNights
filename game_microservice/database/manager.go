@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/models"
 	"github.com/lib/pq"
 	"github.com/xlab/closer"
 	"os"
@@ -33,7 +32,7 @@ type dbManager struct {
 type dbConfig struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
-	User     string `json:"user_manager"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 }
@@ -56,14 +55,15 @@ func loadConfiguration(file string) (psqlInfo string) {
 		logger.Error(err.Error())
 		return
 	}
-	psqlInfo = fmt.Sprintf("host=%s port=%d user_manager=%s password=%s dbname=%s sslmode=disable",
+	psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.Host, config.Port, config.User, config.Password, config.DBName)
 
 	return
 }
 
 func init() {
-	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/main_microservice/database/microservices.json")
+	//TODO check config loading
+	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/game_microservice/database/config.json")
 
 	dataBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -198,7 +198,6 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 		if err != nil {
 			return
 		}
-
 		questions = append(questions, question)
 	}
 	err = rows.Err()
@@ -220,7 +219,6 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 }
 
 func (db *dbManager) AddQuestionPack(theme string) (err error) {
-
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return

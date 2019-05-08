@@ -4,7 +4,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"sync"
 )
 
@@ -25,6 +24,9 @@ const (
 	StatusJoined = iota
 	StatusReady
 	StatusLeft
+	StatusWannaContinue
+	StatusWannaChangeOpponent
+	StatusWannaQuit
 )
 
 type MessageWrapper struct {
@@ -48,12 +50,6 @@ type Room struct {
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно
-}
-
-var logger *log.Logger
-
-func init() {
-	logger = log.GetLogger("Room")
 }
 
 func (r *Room) TryJoin(p player.Player) (success bool) {
@@ -138,8 +134,18 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 //Проверка Уместности сообщения ( на уровне комнаты)
 func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	r.mu.Lock()
-	if wm.msg.Title==messge.Leave{
-		isValid=true
+	if wm.msg.Title == messge.Leave {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == messge.ChangeOpponent || wm.msg.Title == messge.Quit || wm.msg.Title == messge.Continue {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == messge.State {
+		isValid = true
 		r.mu.Unlock()
 		return
 	}
@@ -147,10 +153,14 @@ func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	if wm.player != r.active && (wm.msg.Title != messge.Ready) {
 		logger.Error("isSync Player addr error")
 		isValid = false
+		r.mu.Unlock()
+		return
 	}
 	if r.waitForSyncMsg != wm.msg.Title {
 		logger.Error("isSync title error")
 		isValid = false
+		r.mu.Unlock()
+		return
 	}
 	isValid = true
 	r.mu.Unlock()

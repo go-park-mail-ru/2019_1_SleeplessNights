@@ -19,7 +19,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return400(&w, formErrorMessages)
 		return
 	}
-
+	logger.Debug("ParseForm_OK")
 	requestErrors, err := helpers.ValidateRegisterRequest(r)
 	if err != nil {
 		helpers.Return500(&w, err)
@@ -29,6 +29,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return400(&w, requestErrors)
 		return
 	}
+	logger.Debug("ValidateRegisterRequest_OK")
 
 	user, err := userManager.CreateUser(context.Background(),
 		&services.NewUserData{
@@ -36,15 +37,22 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 			Nickname: r.Form.Get("nickname"),
 		})
-	switch err {
-	case nil:
-	case errors.DataBaseUniqueViolation:
-		helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
-		return
-	default:
-		helpers.Return500(&w, err)
-		return
+
+	//logger.Error(err.Error())
+	//logger.Error(errors.DataBaseUniqueViolation)
+	if err != nil {
+
+		switch err.Error() {
+		case errors.DataBaseUniqueViolation.Error():
+			helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
+			return
+		default:
+			helpers.Return500(&w, err)
+			return
+		}
 	}
+
+	logger.Debug("CreateUser_OK")
 
 	sessionToken, err := userManager.MakeToken(context.Background(),
 		&services.UserSignature{
@@ -55,6 +63,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return500(&w, err)
 		return
 	}
+	logger.Debug("MakeToken_OK")
 
 	sessionCookie := helpers.BuildSessionCookie(sessionToken)
 	http.SetCookie(w, &sessionCookie)
@@ -69,4 +78,5 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return500(&w, err)
 		return
 	}
+	logger.Debug("BuildSessionCookie_OK")
 }

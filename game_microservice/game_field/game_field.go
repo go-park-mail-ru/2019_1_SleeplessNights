@@ -3,18 +3,14 @@ package game_field
 import (
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/questions"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"math"
 )
 
 var logger *log.Logger
-
-func init () {
-	logger = log.GetLogger("GameField")
-}
 
 const (
 	fieldSize    = 8
@@ -24,14 +20,15 @@ const (
 var prizePos []pair
 
 //В начале иры й игроков не существует никаких позиций, они находятся как бы вне поля
-
 func init() {
+	logger = log.GetLogger("GameField")
 	prizePos = []pair{{3, 3}, {3, 4}, {4, 3}, {4, 4}}
 }
 
 type gameCell struct {
-	isAvailable bool
-	question    *questions.Question
+	isAvailable  bool
+	answerResult int
+	question     *models.Question
 }
 
 type pair struct {
@@ -40,19 +37,22 @@ type pair struct {
 }
 
 type gfPlayer struct {
-	pos *pair //Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
-	id  uint64
+	pos          *pair //Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
+	rightAnswers int
+	falseAnswers int
+	partyCounter int
+	id           uint64
 }
 
 type GameField struct {
-	field [fieldSize][fieldSize]gameCell
-	p1    gfPlayer
-	p2    gfPlayer
+	themes []string
+	field  [fieldSize][fieldSize]gameCell
+	p1     gfPlayer
+	p2     gfPlayer
 	//Out   []event.Event
-
 	regX        int
 	regY        int
-	regQuestion questions.Question
+	regQuestion models.Question
 
 	//Тут уровень абстракции уже достаточно постой для понимания, поэтому оставляю реализацию на ваше усмотрение
 	//По ответственности, если навскидку, игровое поле должно:
@@ -73,15 +73,20 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
-func (gf *GameField) Build(qArray [QuestionsNum]questions.Question) {
-	qSlice := qArray[:]
+func (gf *GameField) GetThemesSlice() (ThemeSlice *[]string) {
+	return &gf.themes
+
+}
+
+func (gf *GameField) Build(qArray []models.Question) {
+	qSlice := qArray
 	index := 0
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
 			if isPrizePosition(rowIdx, colIdx) {
-				gf.field[rowIdx][colIdx] = gameCell{true, nil}
+				gf.field[rowIdx][colIdx] = gameCell{true, 0, nil}
 			} else {
-				gf.field[rowIdx][colIdx] = gameCell{true, &qSlice[index]}
+				gf.field[rowIdx][colIdx] = gameCell{true, 0, &qSlice[index]}
 				index++
 			}
 		}
@@ -138,7 +143,9 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	//Get rows
 	if player.pos == nil {
 		for x := 0; x < fieldSize; x++ {
-			cellsCoordinates = append(cellsCoordinates, pair{x, rowIdx})
+			if gf.field[rowIdx][x].isAvailable {
+				cellsCoordinates = append(cellsCoordinates, pair{x, rowIdx})
+			}
 		}
 		return
 	}
@@ -161,14 +168,22 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	return
 }
 
-func (gf *GameField) Move(player *gfPlayer) {
-	//TODO этот метод должен получать ответ на regQuestion и проверять правильноть этого ответа
-	player.pos.X = gf.regX
-	player.pos.Y = gf.regY
+//Поле для перемещения берется из регистров
+func (gf *GameField) Move(playerIdx int) {
+	var player *gfPlayer
 
-	if gf.checkWinner(*player.pos) {
-		//gf.Out <- event.Event{Etype: event.WinPrize, Edata: player.id}
-		return
+	if playerIdx == 1 {
+		player = &gf.p1
+	} else {
+		player = &gf.p2
+	}
+
+	//TODO этот метод должен получать ответ на regQuestion и проверять правильноть этого ответа
+	if player.pos == nil {
+		player.pos = &pair{gf.regX, gf.regY}
+	} else {
+		player.pos.X = gf.regX
+		player.pos.Y = gf.regY
 	}
 
 	//gf.Out <- event.Event{Etype: event.Move, Edata: player.id}
@@ -177,9 +192,9 @@ func (gf *GameField) Move(player *gfPlayer) {
 }
 
 func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err error) {
-	nextX := m.Payload.(*messge.Coordinates).X
-	nextY := m.Payload.(*messge.Coordinates).Y
-
+	st := m.Payload.(map[string]interface{})
+	nextX := int(st["x"].(float64))
+	nextY := int(st["y"].(float64))
 	if !gf.validateMoveCoordinates(&gf.p1, nextX, nextY) {
 		err = errors.New(fmt.Sprintf("tried moving to invalid position x:%d ,y:%d", nextX, nextY))
 		return
@@ -193,9 +208,9 @@ func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err erro
 }
 
 func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err error) {
-	nextX := m.Payload.(*messge.Coordinates).X
-	nextY := m.Payload.(*messge.Coordinates).Y
-
+	st := m.Payload.(map[string]interface{})
+	nextX := int(st["x"].(float64))
+	nextY := int(st["y"].(float64))
 	if !gf.validateMoveCoordinates(&gf.p2, nextX, nextY) {
 		err = errors.New(fmt.Sprintf("tried moving to invalid position x:%d ,y:%d", nextX, nextY))
 		return
@@ -219,26 +234,31 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	gf.regX = nextX
 
 	//Пока не трогать
-	if !gf.checkRouteAvailable(*gf.p1.pos) {
+	/*if !gf.checkRouteAvailable(*gf.p1.pos) {
 		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
 
 		//TODO переместить в начало метода GetAvailableCells
-	}
 
-	ms := struct {
-		question string
-	}{
-		gf.GetQuestionByCell(nextX, nextY).QuestionJson,
+	}*/
+
+	//Здесь проверяем, если следущая клетка выигрышная
+
+	if gf.checkWinner(pair{nextX, nextY}) {
+		e = make([]event.Event, 0)
+		e = append(e, event.Event{Etype: event.WinPrize, Edata: nil})
+		return
 	}
+	gf.regQuestion = *(gf.GetQuestionByCell(nextX, nextY))
+	ms := messge.Question{Question: gf.GetQuestionByCell(nextX, nextY).ToJson()}
 
 	e = make([]event.Event, 0)
-	e = append(e, event.Event{Etype: event.Move, Edata: ms})
+	e = append(e, event.Event{Etype: event.Info, Edata: ms})
 	return
 }
 
-func (gf *GameField) GetQuestionByCell(x, y int) (question questions.Question) {
+func (gf *GameField) GetQuestionByCell(x, y int) (question *models.Question) {
 	logger.Infof("GetQuestionByCell x:%d,y:%d ", x, y)
-	question = *(gf.field[y][x].question)
+	question = (gf.field[x][y].question)
 	return
 }
 
@@ -276,9 +296,13 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 	if !gf.validateAnswerId(answerIdx) {
 		return false
 	}
-	if gf.regQuestion.CorrectAnswerId == answerIdx {
+	if gf.regQuestion.Correct == answerIdx {
+		(gf.field[gf.regY][gf.regX]).isAvailable = false
+		(gf.field[gf.regY][gf.regX]).answerResult = 1
 		return true
 	}
+	(gf.field[gf.regY][gf.regX]).isAvailable = false
+	(gf.field[gf.regY][gf.regX]).answerResult = -1
 	return false
 }
 
@@ -289,4 +313,69 @@ func (gf *GameField) validateAnswerId(answerId int) bool {
 		return false
 	}
 	return true
+}
+
+//Cell coordinates are taken from gamefield register
+
+func (gf *GameField) ResetPlayersPositions() {
+	gf.p1.pos = nil
+	gf.p2.pos = nil
+
+}
+
+func (gf *GameField) GetThemesArray() (packArray []string) {
+
+	for i := 0; i < fieldSize; i++ {
+		for j := 0; j < fieldSize; j++ {
+			packArray = append(packArray, gf.themes[(gf.field[i][j]).question.PackID])
+		}
+	}
+
+	return
+}
+func (gf *GameField) GetCurrentState() string {
+	fieldState := fmt.Sprintln("\n x0 x1 x2 x3 x4 x5 x6 x7\n __ __ __ __ __ __ __ __")
+	for i := 0; i < fieldSize; i++ {
+		for j := 0; j < fieldSize; j++ {
+			if gf.p1.pos != nil {
+				if (*gf.p1.pos) == (pair{j, i}) {
+					fieldState = fieldState + "|P1"
+					continue
+				}
+			}
+			if gf.p2.pos != nil {
+				if (*gf.p2.pos) == (pair{j, i}) {
+					fieldState = fieldState + "|P2"
+					continue
+				}
+			}
+			if isPrizePosition(j, i) {
+				fieldState = fieldState + "|Pr"
+				continue
+			}
+			if gf.field[i][j].answerResult == 1 {
+				fieldState = fieldState + "|+_"
+			}
+			if gf.field[i][j].answerResult == -1 {
+				fieldState = fieldState + "|-_"
+			}
+			if gf.field[i][j].answerResult == 0 {
+				fieldState = fieldState + "|__"
+			}
+			if j == 7 {
+				fieldState = fieldState + fmt.Sprintln("|  y", i)
+			}
+			if i == 7 && j == 7 {
+				fieldState = fieldState + fmt.Sprintln()
+			}
+		}
+	}
+	p1State := ""
+	p2State := ""
+	if gf.p1.pos != nil && gf.p2.pos != nil {
+		p1State = fmt.Sprintf("\n\n player1 %d, {X:%d, Y:%d},answers: +:%d -:%d \n", gf.p1.id, gf.p1.pos.X, gf.p1.pos.Y, gf.p1.rightAnswers, gf.p1.falseAnswers)
+		p2State = fmt.Sprintf("\n\n player1 %d, {X:%d, Y:%d},answers: +:%d -:%d \n ", gf.p2.id, gf.p2.pos.X, gf.p2.pos.Y, gf.p1.rightAnswers, gf.p1.falseAnswers)
+
+	}
+	return (fieldState + p1State + p2State)
 }

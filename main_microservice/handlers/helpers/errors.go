@@ -22,15 +22,14 @@ const (
 	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 10МБайт)"
 )
 
-
 type ErrorSet []string
 type errorResponse struct {
-	Email     string   `json:"email, omitempty"`
-	Password  string   `json:"password, omitempty"`
-	Password2 string   `json:"password2, omitempty"`
-	Nickname  string   `json:"nickname, omitempty"`
-	Avatar    string   `json:"avatar, omitempty"`
-	Error     []string `json:"error, omitempty"`
+	Email     string   `json:"email,omitempty"`
+	Password  string   `json:"password,omitempty"`
+	Password2 string   `json:"password2,omitempty"`
+	Nickname  string   `json:"nickname,omitempty"`
+	Avatar    string   `json:"avatar,omitempty"`
+	Error     []string `json:"error,omitempty"`
 }
 
 func MarshalToJSON(errSet ErrorSet) ([]byte, error) {
