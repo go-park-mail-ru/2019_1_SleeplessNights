@@ -21,7 +21,6 @@ func main() {
 	defer closer.Close()
 
 	//In case of a lack of data, break parentheses
-
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
 		logger.Errorf(err.Error())

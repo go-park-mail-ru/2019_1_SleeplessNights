@@ -46,6 +46,10 @@ func (r *Room) MessageHandlerMux(m MessageWrapper) {
 		{
 			r.ThemesRequestHandler(m)
 		}
+	case messge.QuestionsThemesRequest:
+		{
+			r.QuestionsThemesHandler(m)
+		}
 	}
 }
 
@@ -83,7 +87,7 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 }
 
 func (r *Room) GoToHandler(m MessageWrapper) bool {
-	logger.Infof("player %d requested GoTo", (*m.player).UID())
+	logger.Infof("player UID %d requested GoTo", (*m.player).UID())
 
 	r.mu.Lock()
 	var eventSlice []event.Event
@@ -134,7 +138,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 }
 
 func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
-	logger.Infof("player %d answered to ClientAnswerHandler", (*m.player).UID())
+	logger.Infof("player UID %d answered to ClientAnswerHandler", (*m.player).UID())
 	r.mu.Lock()
 	st, ok := m.msg.Payload.(map[string]interface{})
 	if !ok {
@@ -276,6 +280,12 @@ func (r *Room) CurrentStateHandler(m MessageWrapper) {
 }
 
 func (r *Room) ThemesRequestHandler(m MessageWrapper) {
-	packArray := r.field.GetThemesArray()
-	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.ThemesResponse, Payload: packArray}}
+	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.ThemesResponse, Payload: r.field.GetThemesSlice()}}
+
+}
+
+//Maybe send response to websocket connection without request
+func (r *Room) QuestionsThemesHandler(m MessageWrapper) {
+	packArray := r.field.GetQuestionsThemes()
+	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.QuestionsThemesResponse, Payload: packArray}}
 }

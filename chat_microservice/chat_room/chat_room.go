@@ -107,7 +107,7 @@ func (author *Author) StartListen(roomId uint64) {
 				return
 			}
 		}
-		logger.Info("Got from connection", msg)
+		logger.Info("Got Message from connection", msg)
 
 		switch msg.Title {
 		case postTitle:
