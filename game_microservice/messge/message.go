@@ -94,6 +94,7 @@ type ThemePack struct {
 type Question struct {
 	Question string `json:"question"`
 }
+
 type GameState struct {
 	State string `json:"state"`
 }

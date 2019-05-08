@@ -60,6 +60,7 @@ func (wsPlayer *websocketPlayer) ID() uint64 {
 func (wsPlayer *websocketPlayer) UID() uint64 {
 	return wsPlayer.uid
 }
+
 func (wsPlayer *websocketPlayer) Close() {
 	logger.Infof("Player UID  %d closed the connection", wsPlayer.uid)
 	err := wsPlayer.conn.Close()

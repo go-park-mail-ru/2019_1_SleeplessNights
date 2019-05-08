@@ -1,6 +1,7 @@
 package game_field
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
@@ -272,7 +273,12 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		return
 	}
 	gf.regQuestion = *(gf.GetQuestionByCell(nextX, nextY))
-	ms := messge.Question{Question: gf.GetQuestionByCell(nextX, nextY).ToJson()}
+	question, err := json.Marshal(gf.GetQuestionByCell(nextX, nextY))
+	if err != nil {
+		logger.Info("question unmarshal error")
+		return
+	}
+	ms := messge.Question{Question: string(question)}
 
 	e = make([]event.Event, 0)
 	e = append(e, event.Event{Etype: event.Info, Edata: ms})
