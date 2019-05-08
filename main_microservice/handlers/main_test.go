@@ -1,12 +1,11 @@
 package handlers_test
 
-//
-//import (
-//	"github.com/xlab/closer"
-//	"testing"
-//)
-//
-//func TestMain(m *testing.M) {
-//	defer closer.Close()
-//	m.Run()
-//}
+import (
+	"github.com/xlab/closer"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	defer closer.Close()
+	m.Run()
+}
