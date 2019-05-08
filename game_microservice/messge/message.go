@@ -33,8 +33,9 @@ const (
 	OpponentLeaves   = "OPPONENT_QUITS"     //Оповещаем клиента о желании соперника продолжить
 	OpponentContines = "OPPONENT_CONTINUES" //Оповещаем клиента о желании выйти из игры
 
-	CurrentState  = "CURRENT_STATE"  //Текущее состояние игры
-	ThemesRequest = "THEMES_REQUEST" //матрица тем игрового поля
+	CurrentState           = "CURRENT_STATE"           //Текущее состояние игры
+	ThemesRequest          = "THEMES_REQUEST"          //массив тем игрового поля
+	QuestionsThemesRequest = "QUESTION_THEMES_REQUEST" //массив id тем для вопросов
 
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
@@ -55,8 +56,11 @@ const (
 	Continue       = "CONTINUE"        //  Оповещаем сервер о желании продолжить игру с тем же соперником
 	ChangeOpponent = "CHANGE_OPPONENT" //  Оповещаем сервер о желании продолжить игру с другим соперником
 
-	State          = "STATE"           //Запрос текущего состояния игры
-	ThemesResponse = "THEMES_RESPONSE" //Запрос  матрицы тем игрового поля
+	State = "STATE" //Запрос текущего состояния игры
+
+	ThemesResponse          = "THEMES_RESPONSE"          //Запрос  матрицы тем игрового поля
+	QuestionsThemesResponse = "QUESTION_THEMES_RESPONSE" //массив id тем для вопросов
+
 )
 
 type Message struct {
@@ -82,8 +86,8 @@ type ThemeArray struct {
 
 //Request TryMove to a cell
 type ThemePack struct {
-	Id    uint   `json:"pack"`
-	Theme string `json:"theme_name"`
+	Id    uint64 `json:"id"`
+	Theme string `json:"theme"`
 }
 
 //response from sever with question
@@ -127,7 +131,6 @@ func (m *Message) IsValid() bool {
 				return false
 			}
 			return true
-
 		}
 	case ClientAnswer:
 		{
@@ -164,6 +167,10 @@ func (m *Message) IsValid() bool {
 			return true
 		}
 	case ThemesRequest:
+		{
+			return true
+		}
+	case QuestionsThemesRequest:
 		{
 			return true
 		}

@@ -56,25 +56,25 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	//Здесь нам нужно под мьютексом проверить наличие свободных мест. Варианты:
 	//1. 2 места свободно -> занимаем первое место
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
-	logger.Infof("player %d entered Try Join", p.UID())
+	logger.Infof("player with UID %d entered Try Join", p.UID())
 	r.mu.Lock()
 	found := false
 
 	if r.p1 == nil {
 		r.p1 = p
 		r.p1Status = StatusJoined
-		logger.Infof("Player %d is now p1 in room", p.UID())
+		logger.Infof("Player with UID %d is now p1 in room", p.UID())
 		found = true
 	} else if r.p2 == nil {
 		r.p2 = p
 		r.p1Status = StatusJoined
-		logger.Infof("Player %d is now p2 in room", p.UID())
+		logger.Infof("Player UID %d is now p2 in room", p.UID())
 
 		found = true
 	}
 
 	if r.p1 != nil && r.p2 != nil {
-		logger.Infof("All players joined the game, p1: %d, p2: %d", r.p1.UID(), r.p2.UID())
+		logger.Infof("All players joined the game, p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 		//TODO Prepare Match
 		//TODO Then run buildEnv after PrepareMatch
 		// In build Env составление и доставание даннных для вопросов
@@ -145,6 +145,16 @@ func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 		return
 	}
 	if wm.msg.Title == messge.State {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == messge.QuestionsThemesRequest {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == messge.ThemesRequest {
 		isValid = true
 		r.mu.Unlock()
 		return
