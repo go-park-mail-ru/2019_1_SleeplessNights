@@ -334,6 +334,9 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 	(gf.field[gf.regY][gf.regX]).answerResult = -1
 	return false
 }
+func (gf *GameField) GetRegisterQuestion() models.Question {
+	return gf.regQuestion
+}
 
 func (gf *GameField) validateAnswerId(answerId int) bool {
 	//Убрать Валидацию поля в GameField

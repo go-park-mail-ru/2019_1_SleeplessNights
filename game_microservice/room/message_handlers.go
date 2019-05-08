@@ -148,13 +148,15 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	if !ok {
 		logger.Error(`ClientAnswerHandler, couldn't find value in map st with key "answer_id" `)
 	}
+	q := r.field.GetRegisterQuestion()
 
 	if !r.field.CheckAnswer(int(answerId)) {
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourAnswer, Payload: messge.AnswerResult{int(answerId), q.Correct}}}
 	} else {
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourAnswer, Payload: messge.AnswerResult{int(answerId), q.Correct}}}
 		r.field.Move(r.getPlayerIdx(r.active))
 	}
+	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.EnemyAnswer, Payload: messge.AnswerResult{int(answerId), q.Correct}}}
 
 	//Смена хода после ответа игрока
 	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.EnemyTurn, Payload: nil}}

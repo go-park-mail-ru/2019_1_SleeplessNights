@@ -17,15 +17,16 @@ const (
 	//поэтому значения приведены просто для примера и поменяются при реализации
 
 	//ИСХОДЯЩИЕ
-	StartGame        = "START_GAME"         //Оповещаем клиентов о том, что комната готова и они могут начать её отрисовывать
-	YourTurn         = "YOUR_TURN"          //Оповещаем клиента о начале его хода
-	EnemyTurn        = "ENEMY_TURN"         //Оповещаемк клиента о том, что ходит его оппонент
-	AvailableCells   = "AVAILABLE_CELLS"    //Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
-	YourQuestion     = "QUESTION"           //Даём клиенту вопрос, связанный с клеткой; payload = question
-	EnemyQuestion    = "ENEMY_QUESTION"     //Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
-	EnemyAnswer      = "ENEMY_ANSWER"       //Оповещаем клиента об ответе, который дал его оппонент; payload = int
-	Correct          = "CORRECT"            //Оповещаем обоих клиентов о том, что ответ на вопрос верен
-	Incorrect        = "INCORRECT"          //Оповещаем обоих клиентов о том, что ответ на вопрос неверен
+	StartGame      = "START_GAME"      //Оповещаем клиентов о том, что комната готова и они могут начать её отрисовывать
+	YourTurn       = "YOUR_TURN"       //Оповещаем клиента о начале его хода
+	EnemyTurn      = "ENEMY_TURN"      //Оповещаемк клиента о том, что ходит его оппонент
+	AvailableCells = "AVAILABLE_CELLS" //Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
+	YourQuestion   = "QUESTION"        //Даём клиенту вопрос, связанный с клеткой; payload = question
+	EnemyQuestion  = "ENEMY_QUESTION"  //Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
+	EnemyAnswer    = "ENEMY_ANSWER"    //Оповещаем клиента об ответе, который дал его оппонент; payload = int
+	YourAnswer     = "YOUR_ANSWER"
+	//Correct          = "CORRECT"            //Оповещаем обоих клиентов о том, что ответ на вопрос верен
+	//Incorrect        = "INCORRECT"          //Оповещаем обоих клиентов о том, что ответ на вопрос неверен
 	Loss             = "LOSS"               //Оповещаем клиента о его поражении
 	Win              = "WIN"                //Оповещаем клиента о его победе
 	OpponentProfile  = "OPPONENT_PROFILE"   // Данные оппонента
@@ -106,8 +107,8 @@ type Answer struct {
 
 //Response to players answer
 type AnswerResult struct {
-	AnswerResult  bool `json:"answer_id"`
-	CorrectAnswer int  `json:"correct_answer"`
+	AnswerResult  int `json:"your_answer"`
+	CorrectAnswer int `json:"correct_answer"`
 }
 
 func (m *Message) IsValid() bool {
