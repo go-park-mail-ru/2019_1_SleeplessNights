@@ -18,7 +18,7 @@ func init() {
 
 func main() {
 	defer closer.Close()
-	PORT := config.Get("dev.main_ms.port").(string)
+	PORT := config.Get("main_ms.port").(string)
 	logger.Info("Main microservice started listening on", PORT)
 	r := router.GetRouter()
 	wg := sync.WaitGroup{}

@@ -29,16 +29,13 @@ func init() {
 		logger.Fatal("Unable to connect to consul on", consulAddr)
 	}
 
-	/*viper.SetConfigType("json")
-	viper.WatchConfig()
-	viper.OnConfigChange(func(in fsnotify.Event) {
-		logger.Info("Config file changed:",in.Name)
-	})*/
+	viper.SetConfigType("json")
 
 	err = loadConfig()
 	if err != nil {
 		logger.Fatal(err)
 	}
+
 	go runConfigUpdater()
 }
 
@@ -79,11 +76,12 @@ func loadConfig()(err error) {
 		return err
 	}
 
-	viper.SetConfigType("json")
 	err = viper.ReadConfig(bytes.NewBuffer(jsonData))
 	if err != nil {
 		logger.Error("Viper failed to read jsonData", err)
 	}
 
+	consulLastIndex = qm.LastIndex
+	logger.Info("Config updated!")
 	return nil
 }

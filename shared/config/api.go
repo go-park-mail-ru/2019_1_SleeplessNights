@@ -4,6 +4,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var configuration = "dev"
+
 func Get(key string) interface{} {
-	return viper.Get(key)
+	return viper.Get(configuration + "." + key)
 }
