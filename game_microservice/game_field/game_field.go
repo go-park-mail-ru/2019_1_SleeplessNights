@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"math"
 	"math/rand"
@@ -49,7 +49,7 @@ type gfPlayer struct {
 }
 
 type GameField struct {
-	themes []messge.ThemePack
+	themes []message.ThemePack
 	field  [fieldSize][fieldSize]gameCell
 	p1     gfPlayer
 	p2     gfPlayer
@@ -77,7 +77,7 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
-func (gf *GameField) GetThemesSlice() (ThemeSlice *[]messge.ThemePack) {
+func (gf *GameField) GetThemesSlice() (ThemeSlice *[]message.ThemePack) {
 	return &gf.themes
 }
 
@@ -215,7 +215,7 @@ func (gf *GameField) Move(playerIdx int) {
 
 }
 
-func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err error) {
+func (gf *GameField) TryMovePlayer1(m message.Message) (e []event.Event, err error) {
 	st := m.Payload.(map[string]interface{})
 	nextX := int(st["x"].(float64))
 	nextY := int(st["y"].(float64))
@@ -231,7 +231,7 @@ func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err erro
 	return
 }
 
-func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err error) {
+func (gf *GameField) TryMovePlayer2(m message.Message) (e []event.Event, err error) {
 	st := m.Payload.(map[string]interface{})
 	nextX := int(st["x"].(float64))
 	nextY := int(st["y"].(float64))
@@ -278,7 +278,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		logger.Info("question unmarshal error")
 		return
 	}
-	ms := messge.Question{Question: string(question)}
+	ms := question
 
 	e = make([]event.Event, 0)
 	e = append(e, event.Event{Etype: event.Info, Edata: ms})

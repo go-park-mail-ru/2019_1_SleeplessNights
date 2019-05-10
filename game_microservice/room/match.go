@@ -3,7 +3,7 @@ package room
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
@@ -52,7 +52,7 @@ func (r *Room) buildEnv() {
 	for _, pack := range packs {
 		packIDs = append(packIDs, int(pack.ID))
 		fieldPacks := r.field.GetThemesSlice()
-		*fieldPacks = append(*fieldPacks, messge.ThemePack{pack.ID, pack.Theme})
+		*fieldPacks = append(*fieldPacks, message.ThemePack{pack.ID, pack.Theme})
 	}
 
 	questions, err := database.GetInstance().GetQuestions(packIDs)
@@ -77,7 +77,7 @@ func (r *Room) prepareMatch() {
 	p1Chan := r.p1.Subscribe()
 	p2Chan := r.p2.Subscribe()
 
-	err := r.notifyAll(messge.Message{Title: messge.StartGame, Payload: nil})
+	err := r.notifyAll(message.Message{Title: message.StartGame, Payload: nil})
 	if err != nil {
 		logger.Error("Failed to notify about StartGame ,to all players:", err)
 	}
@@ -86,7 +86,7 @@ func (r *Room) prepareMatch() {
 	if err != nil {
 		logger.Error("failed to get userprofile2 from grpc:", err)
 	}
-	err = r.notifyP1(messge.Message{Title: messge.OpponentProfile, Payload: user2})
+	err = r.notifyP1(message.Message{Title: message.OpponentProfile, Payload: user2})
 	if err != nil {
 		logger.Error("Failed to notify Player 1:", err)
 	}
@@ -94,24 +94,24 @@ func (r *Room) prepareMatch() {
 	if err != nil {
 		logger.Error("failed to get userprofile1 from grpc:", err)
 	}
-	err = r.notifyP2(messge.Message{Title: messge.OpponentProfile, Payload: user1})
+	err = r.notifyP2(message.Message{Title: message.OpponentProfile, Payload: user1})
 	if err != nil {
 		logger.Error("Failed to notify Player 2:", err)
 	}
 
 	logger.Info("Игрокам Отправлены StartGame")
 
-	err = r.notifyAll(messge.Message{Title: messge.ThemesResponse, Payload: r.field.GetThemesSlice()})
+	err = r.notifyAll(message.Message{Title: message.Themes, Payload: r.field.GetThemesSlice()})
 	if err != nil {
 		logger.Error("Failed to send ThemesResponse , to all players:", err)
 	}
 	packArray := r.field.GetQuestionsThemes()
-	err = r.notifyAll(messge.Message{Title: messge.QuestionsThemesResponse, Payload: packArray})
+	err = r.notifyAll(message.Message{Title: message.QuestionsThemes, Payload: packArray})
 
 	if err != nil {
 		logger.Error("Failed to send QuestionsThemesResponse , to all players:", err)
 	}
-	r.waitForSyncMsg = messge.Ready
+	r.waitForSyncMsg = message.Ready
 	//Read Messages from Players
 	//Moved message receive conditions to Requests handler
 

@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/gorilla/websocket"
@@ -33,7 +33,7 @@ func UpgradeWs(user *services.User, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = conn.WriteJSON(messge.Message{Title: "INFO", Payload: "you've been connected to server"})
+	err = conn.WriteJSON(message.Message{Title: "CONNECTED", Payload: "you've been connected to server"})
 	if err != nil {
 		fmt.Println(err)
 	}
