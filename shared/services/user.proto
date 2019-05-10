@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=services:. *.proto
+
+package services;
+
+message SessionToken {
+    string Token = 1;
+}
+
+message UserSignature {
+    string email    = 1;
+    string password = 2;
+}
+
+message User {
+    uint64 id         = 1;
+    string email      = 2;
+    string nickname   = 3;
+    string avatarPath = 4;
+}
+
+message NewUserData {
+    string email    = 1;
+    string password = 2;
+    string nickname = 3;
+}
+
+message PageData {
+    uint64 since = 1;
+    uint64 limit = 2;
+}
+
+message LeaderBoardPage {
+    repeated Profile leaders = 1;
+}
+
+message Profile {
+    User   user    = 1;
+    float  winRate = 2;
+    uint32 rating  = 3;
+    uint32 matches = 4;
+}
+
+message UserId {
+    uint64 id = 1;
+}
+
+service UserMS {
+    rpc CheckToken         (SessionToken)  returns (User)            {}
+    rpc MakeToken          (UserSignature) returns (SessionToken)    {}
+    rpc CreateUser         (NewUserData)   returns (User)            {}
+    rpc GetProfile         (User)          returns (Profile)         {}
+    rpc UpdateProfile      (User)          returns (User)            {}
+    rpc GetLeaderBoardPage (PageData)      returns (LeaderBoardPage) {}
+    rpc GetUserById        (UserId)        returns (User)            {}
+}
+
