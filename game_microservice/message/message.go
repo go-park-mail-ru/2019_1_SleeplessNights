@@ -86,7 +86,7 @@ type ThemeArray struct {
 //Request TryMove to a cell
 type ThemePack struct {
 	Id    uint64 `json:"id"`
-	Theme string `json:"theme"`
+	Theme string `json:"name"`
 }
 
 type GameState struct {
