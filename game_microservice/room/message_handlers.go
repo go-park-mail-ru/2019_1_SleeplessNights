@@ -77,8 +77,18 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 		// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
 		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
+		var secondPlayer *player.Player
+		if &r.p1 == r.active {
+			secondPlayer = &r.p2
+		}
+		if &r.p2 == r.active {
+			secondPlayer = &r.p1
+		}
+
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
 
 	}
 
