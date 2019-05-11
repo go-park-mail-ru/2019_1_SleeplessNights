@@ -77,8 +77,18 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 		// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
 		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
+		var secondPlayer *player.Player
+		if &r.p1 == r.active {
+			secondPlayer = &r.p2
+		}
+		if &r.p2 == r.active {
+			secondPlayer = &r.p1
+		}
+
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
 
 	}
 
@@ -90,10 +100,24 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	logger.Infof("player UID %d requested GoTo", (*m.player).UID())
 
 	r.mu.Lock()
-	var eventSlice []event.Event
-	var err error
 	var secondPlayer *player.Player
 
+	if &r.p1 == m.player {
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		secondPlayer = &r.p1
+	}
+
+	st := m.msg.Payload.(map[string]interface{})
+	nextX := int(st["x"].(float64))
+	nextY := int(st["y"].(float64))
+	logger.Info("Sending SelectedCell Index to players")
+
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
+
+	var eventSlice []event.Event
+	var err error
 	if &r.p1 == m.player {
 		eventSlice, err = r.field.TryMovePlayer1(m.msg)
 		secondPlayer = &r.p2
