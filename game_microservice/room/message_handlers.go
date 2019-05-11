@@ -100,10 +100,24 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	logger.Infof("player UID %d requested GoTo", (*m.player).UID())
 
 	r.mu.Lock()
-	var eventSlice []event.Event
-	var err error
 	var secondPlayer *player.Player
 
+	if &r.p1 == m.player {
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		secondPlayer = &r.p1
+	}
+
+	st := m.msg.Payload.(map[string]interface{})
+	nextX := int(st["x"].(float64))
+	nextY := int(st["y"].(float64))
+	logger.Info("Sending SelectedCell Index to players")
+
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
+
+	var eventSlice []event.Event
+	var err error
 	if &r.p1 == m.player {
 		eventSlice, err = r.field.TryMovePlayer1(m.msg)
 		secondPlayer = &r.p2
