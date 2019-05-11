@@ -247,6 +247,17 @@ func (gf *GameField) TryMovePlayer2(m message.Message) (e []event.Event, err err
 	return
 }
 
+func (gf *GameField) CheckIfMovesAvailable(playerId int) bool {
+
+	availableCells := gf.GetAvailableCells(playerId)
+	if len(availableCells) == 0 {
+		return false
+	} else {
+		return true
+	}
+
+}
+
 //Выполняет доставание вопроса из матрицы Игрового поля
 func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []event.Event, err error) {
 
@@ -256,14 +267,6 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	//Запись в регистр положения игрока, вопроса,
 	gf.regY = nextY
 	gf.regX = nextX
-
-	//Пока не трогать
-	/*if !gf.checkRouteAvailable(*gf.p1.pos) {
-		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
-
-		//TODO переместить в начало метода GetAvailableCells
-
-	}*/
 
 	//Здесь проверяем, если следущая клетка выигрышная
 

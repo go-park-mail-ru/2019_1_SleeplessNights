@@ -174,8 +174,14 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	}
 	q := r.field.GetRegisterQuestion()
 
+	playerHasNoMoves := false
+
 	if !r.field.CheckAnswer(int(answerId)) {
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourAnswer, Payload: message.AnswerResult{int(answerId), q.Correct}}}
+		playerIdx := r.getPlayerIdx(r.active)
+		if !r.field.CheckIfMovesAvailable(playerIdx) {
+			playerHasNoMoves = true
+		}
 	} else {
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourAnswer, Payload: message.AnswerResult{int(answerId), q.Correct}}}
 		r.field.Move(r.getPlayerIdx(r.active))
@@ -191,30 +197,36 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentAnswer, Payload: message.AnswerResult{int(answerId), q.Correct}}}
 
-	//Смена хода после ответа игрока
-	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.OpponentTurn, Payload: nil}}
-	r.changeTurn()
-	r.waitForSyncMsg = message.GoTo
-	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourTurn, Payload: nil}}
-	cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
-
-	if &r.p1 == r.active {
-		secondPlayer = &r.p2
-	}
-	if &r.p2 == r.active {
-		secondPlayer = &r.p1
-	}
-	if len(cellsSlice) != 0 {
-		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
-		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+	if playerHasNoMoves {
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Loss, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Win, Payload: nil}}
+		r.waitForSyncMsg = "Leave"
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
 
 	} else {
-		//if there are no cells available, then end match
-		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Loss, Payload: cellsSlice}}
-		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Win, Payload: cellsSlice}}
-	}
+		//Смена хода после ответа игрока
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.OpponentTurn, Payload: nil}}
+		r.changeTurn()
+		r.waitForSyncMsg = message.GoTo
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourTurn, Payload: nil}}
+		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
+		if &r.p1 == r.active {
+			secondPlayer = &r.p2
+		}
+		if &r.p2 == r.active {
+			secondPlayer = &r.p1
+		}
+		if len(cellsSlice) != 0 {
+			//Send Available cells to active player (Do it every time, after giving player a turn rights
+			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+
+		} else {
+			logger.Error("Unexpected condition")
+		}
+	}
 	r.mu.Unlock()
 	return true
 }
