@@ -204,11 +204,16 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	if &r.p2 == r.active {
 		secondPlayer = &r.p1
 	}
+	if len(cellsSlice) != 0 {
+		//Send Available cells to active player (Do it every time, after giving player a turn rights
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
 
-	//Send Available cells to active player (Do it every time, after giving player a turn rights
-	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
-
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+	} else {
+		//if there are no cells available, then end match
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Loss, Payload: cellsSlice}}
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Win, Payload: cellsSlice}}
+	}
 
 	r.mu.Unlock()
 	return true
