@@ -1,23 +1,22 @@
 package database
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/jackc/pgx"
 	"github.com/lib/pq"
 	"github.com/xlab/closer"
 	"os"
+	"time"
+
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 )
 
 const (
-	SQLNoRows       = "sql: no rows in result set"
-	NoUserFound     = "БД: Не был найден юзер"
-	UniqueViolation = "pq: duplicate key value violates unique constraint \"users_email_ui\""
+	maxConnections = 3
+	acquireTimeout = 3 * time.Second
 )
-
-var db *dbManager
 
 var logger *log.Logger
 
@@ -25,19 +24,15 @@ func init() {
 	logger = log.GetLogger("DB")
 }
 
-type dbManager struct {
-	dataBase *sql.DB
-}
-
 type dbConfig struct {
 	Host     string `json:"host"`
-	Port     int    `json:"port"`
+	Port     uint16 `json:"port"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 }
 
-func loadConfiguration(file string) (psqlInfo string) {
+func loadConfiguration(file string) (pgxConfig pgx.ConnConfig) {
 	configFile, err := os.Open(file)
 	if err != nil {
 		logger.Error(err.Error())
@@ -55,25 +50,32 @@ func loadConfiguration(file string) (psqlInfo string) {
 		logger.Error(err.Error())
 		return
 	}
-	psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		config.Host, config.Port, config.User, config.Password, config.DBName)
+
+	pgxConfig.Host = config.Host
+	pgxConfig.User = config.User
+	pgxConfig.Password = config.Password
+	pgxConfig.Database = config.DBName
+	pgxConfig.Port = config.Port
 
 	return
 }
 
+var db *dbManager
+
+type dbManager struct {
+	dataBase *pgx.ConnPool
+}
+
 func init() {
 	//TODO check config loading
-	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/game_microservice/database/config.json")
+	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/game_microservice/database/config.json")
+	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
 
-	dataBase, err := sql.Open("postgres", psqlInfo)
+	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 
-	err = dataBase.Ping()
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
 	fmt.Println("DB connection opened")
 
 	db = &dbManager{
@@ -85,10 +87,7 @@ func init() {
 }
 
 func closeConnection() {
-	err := db.dataBase.Close()
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
+	db.dataBase.Close()
 	fmt.Println("DB connection closed")
 }
 
