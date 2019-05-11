@@ -100,7 +100,7 @@ type Answer struct {
 
 //Response to players answer
 type AnswerResult struct {
-	GivenResult  int `json:"given_result"`
+	GivenAnswer   int `json:"given_answer"`
 	CorrectAnswer int `json:"correct_answer"`
 }
 
