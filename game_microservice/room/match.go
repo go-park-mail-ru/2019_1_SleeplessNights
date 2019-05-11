@@ -161,12 +161,12 @@ func (r *Room) startMatch() {
 			//Проверка структуры сообщения
 			logger.Info("Got Message from client")
 			if !msg.msg.IsValid() {
-				logger.Error("Message to send has invalid structure")
+				logger.Error("Got message with invalid structure")
 				continue
 			}
 
 			if !r.isSyncValid(msg) {
-				logger.Warningf("Got message of type %s from player UID %d, expected %s from player %d",
+				logger.Warningf("Got SyncInvalid message of type %s from player UID %d, expected %s from player %d",
 					msg.msg.Title, (*msg.player).UID(), r.waitForSyncMsg, r.active)
 				continue
 			}
