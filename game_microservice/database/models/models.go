@@ -5,9 +5,9 @@ import "fmt"
 type Question struct {
 	ID      uint64   `json:"-"`
 	Answers []string `json:"answers"`
-	Correct int      `json:"-"`
+	Correct int      `json:"correct"`
 	Text    string   `json:"text"`
-	PackID  uint     `json:"-"`
+	PackID  uint     `json:"pack_id"`
 }
 
 type Pack struct {
