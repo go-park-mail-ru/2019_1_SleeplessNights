@@ -278,7 +278,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		logger.Info("question unmarshal error")
 		return
 	}
-	ms := question
+	ms := string(question)
 
 	e = make([]event.Event, 0)
 	e = append(e, event.Event{Etype: event.Info, Edata: ms})
