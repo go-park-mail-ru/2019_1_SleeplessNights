@@ -210,6 +210,7 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 		r.changeTurn()
 		r.waitForSyncMsg = message.GoTo
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourTurn, Payload: nil}}
+
 		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
 		if &r.p1 == r.active {

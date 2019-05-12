@@ -152,7 +152,7 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	var rowIdx int
 	var secondPlayer *gfPlayer
 	var player *gfPlayer
-
+	cellsCoordinates = make([]pair, 0)
 	if playerIdx == 1 {
 		player = &gf.p1
 		rowIdx = 7
@@ -181,9 +181,16 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 		for colIdx := currCol; colIdx < currCol+3; colIdx++ {
 			if rowIdx >= 0 && rowIdx < fieldSize && colIdx >= 0 && colIdx < fieldSize {
 				if gf.field[rowIdx][colIdx].isAvailable {
-					if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
-						cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+					if secondPlayer.pos == nil {
+						if (pair{colIdx, rowIdx} != *player.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
+					} else {
+						if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
 					}
+
 				}
 			}
 		}
