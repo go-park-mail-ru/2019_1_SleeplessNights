@@ -50,7 +50,7 @@ func loadPacksJson(file string) (packs []models.Pack, ) {
 	return
 }
 
-func PopulateDatabase() {
+func (db *dbManager) PopulateDatabase() {
 	packs := loadPacksJson(os.Getenv("BASEPATH") + "/game_microservice/database/packs.json")
 	for _, pack := range packs {
 		err := db.AddQuestionPack(pack.Theme)

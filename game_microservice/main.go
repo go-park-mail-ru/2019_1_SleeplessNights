@@ -19,14 +19,13 @@ func init() {
 func main() {
 	defer closer.Close()
 
-	database.PopulateDatabase()
-
 	//In case of a lack of data, break parentheses
-	err := database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		logger.Errorf(err.Error())
-	}
+	//err := database.GetInstance().CleanerDBForTests()
+	//if err != nil {
+	//	logger.Errorf(err.Error())
+	//}
 
+	database.GetInstance().PopulateDatabase()
 	//faker.CreateFakePacks()
 
 	PORT := "8006"

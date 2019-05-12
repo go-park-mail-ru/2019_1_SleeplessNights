@@ -85,7 +85,6 @@ func init() {
 	}
 
 	closer.Bind(closeConnection)
-
 }
 
 func closeConnection() {

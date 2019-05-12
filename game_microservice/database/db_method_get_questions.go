@@ -4,7 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 )
 
-func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err error) {
+func (db *dbManager) GetQuestions(ids []uint64) (questions []models.Question, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {

@@ -29,7 +29,7 @@ ALTER TABLE ONLY public.question
   ADD CONSTRAINT question_pk PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.question
-ADD CONSTRAINT "question_pack_id_fk" FOREIGN KEY (pack_id) REFERENCES public.question_pack (id);
+  ADD CONSTRAINT "question_pack_id_fk" FOREIGN KEY (pack_id) REFERENCES public.question_pack (id);
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ BEGIN
   VALUES (arg_theme);
 EXCEPTION
   WHEN unique_violation THEN
-    RAISE unique_violation;
+    RAISE SQLSTATE '23505';
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -91,8 +91,10 @@ BEGIN
           arg_text,
           arg_pack_id);
 EXCEPTION
+  WHEN foreign_key_violation THEN
+    RAISE SQLSTATE '23503';
   WHEN unique_violation THEN
-    RAISE unique_violation;
+    RAISE SQLSTATE '23505';
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -133,7 +135,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 -- func get_questions
-CREATE OR REPLACE FUNCTION public.func_get_questions(arg_ids BIGINT)
+CREATE OR REPLACE FUNCTION public.func_get_questions(arg_ids BIGINT[])
   RETURNS SETOF public.question
 AS
 $BODY$
