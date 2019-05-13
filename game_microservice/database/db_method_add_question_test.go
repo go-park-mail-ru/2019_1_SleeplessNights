@@ -66,8 +66,8 @@ func TestAddQuestionUnsuccessful(t *testing.T) {
 			err.Error(), "ERROR: 23503 (SQLSTATE 23503)")
 	}
 
-	//err = database.GetInstance().CleanerDBForTests()
-	//if err != nil {
-	//	t.Errorf(err.Error())
-	//}
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
