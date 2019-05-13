@@ -2,7 +2,7 @@ package room
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"sync"
 )
@@ -31,7 +31,7 @@ const (
 
 type MessageWrapper struct {
 	player *player.Player
-	msg    messge.Message
+	msg    message.Message
 }
 
 type Room struct {
@@ -56,25 +56,25 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	//Здесь нам нужно под мьютексом проверить наличие свободных мест. Варианты:
 	//1. 2 места свободно -> занимаем первое место
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
-	logger.Infof("player %d entered Try Join", p.UID())
+	logger.Infof("player with UID %d entered Try Join", p.UID())
 	r.mu.Lock()
 	found := false
 
 	if r.p1 == nil {
 		r.p1 = p
 		r.p1Status = StatusJoined
-		logger.Infof("Player %d is now p1 in room", p.UID())
+		logger.Infof("Player with UID %d is now p1 in room", p.UID())
 		found = true
 	} else if r.p2 == nil {
 		r.p2 = p
 		r.p1Status = StatusJoined
-		logger.Infof("Player %d is now p2 in room", p.UID())
+		logger.Infof("Player UID %d is now p2 in room", p.UID())
 
 		found = true
 	}
 
 	if r.p1 != nil && r.p2 != nil {
-		logger.Infof("All players joined the game, p1: %d, p2: %d", r.p1.UID(), r.p2.UID())
+		logger.Infof("All players joined the game, p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 		//TODO Prepare Match
 		//TODO Then run buildEnv after PrepareMatch
 		// In build Env составление и доставание даннных для вопросов
@@ -89,7 +89,7 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	return found
 }
 
-func (r *Room) notifyP1(msg messge.Message) (err error) {
+func (r *Room) notifyP1(msg message.Message) (err error) {
 	err = r.p1.Send(msg)
 	if err != nil {
 		logger.Error("Failed to send Message to P1", err)
@@ -97,7 +97,7 @@ func (r *Room) notifyP1(msg messge.Message) (err error) {
 	return
 }
 
-func (r *Room) notifyP2(msg messge.Message) (err error) {
+func (r *Room) notifyP2(msg message.Message) (err error) {
 	err = r.p2.Send(msg)
 	if err != nil {
 		logger.Error("Failed to send Message to P2", err)
@@ -105,7 +105,7 @@ func (r *Room) notifyP2(msg messge.Message) (err error) {
 	return
 }
 
-func (r *Room) notifyAll(msg messge.Message) (err error) {
+func (r *Room) notifyAll(msg message.Message) (err error) {
 	err = r.notifyP1(msg)
 	if err != nil {
 		return
@@ -134,23 +134,33 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 //Проверка Уместности сообщения ( на уровне комнаты)
 func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	r.mu.Lock()
-	if wm.msg.Title == messge.Leave {
+	if wm.msg.Title == message.Leave {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
-	if wm.msg.Title == messge.ChangeOpponent || wm.msg.Title == messge.Quit || wm.msg.Title == messge.Continue {
+	if wm.msg.Title == message.ChangeOpponent || wm.msg.Title == message.Quit || wm.msg.Title == message.Continue {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
-	if wm.msg.Title == messge.State {
+	if wm.msg.Title == message.State {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == message.QuestionsThemesRequest {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == message.ThemesRequest {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
 
-	if wm.player != r.active && (wm.msg.Title != messge.Ready) {
+	if wm.player != r.active && (wm.msg.Title != message.Ready) {
 		logger.Error("isSync Player addr error")
 		isValid = false
 		r.mu.Unlock()

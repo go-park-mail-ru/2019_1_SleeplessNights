@@ -198,7 +198,6 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 		if err != nil {
 			return
 		}
-
 		questions = append(questions, question)
 	}
 	err = rows.Err()
@@ -220,7 +219,6 @@ func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err e
 }
 
 func (db *dbManager) AddQuestionPack(theme string) (err error) {
-
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		return

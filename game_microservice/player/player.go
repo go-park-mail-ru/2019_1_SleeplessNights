@@ -1,7 +1,7 @@
 package player
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 )
 
 type Player interface {
@@ -10,8 +10,9 @@ type Player interface {
 	//С помощью метода Subscribe, мы будем получать канал, в который будут приходить сообщения от игрока
 	//Метод ID даёт нам некоторый суррогатный ключ, по которому мы можем однозначно идентифицировать игрока
 	//ВАЖНО! о природе ключа мы ничего не знаем
-	Send(msg messge.Message) error
-	Subscribe() chan messge.Message
+	Send(msg message.Message) error
+	Subscribe() chan message.Message
 	ID() uint64
 	UID() uint64
+	Close()
 }

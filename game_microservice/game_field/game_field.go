@@ -1,25 +1,29 @@
 package game_field
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"math"
+	"math/rand"
+	"time"
 )
 
 var logger *log.Logger
 
 const (
-	fieldSize    = 8
+	fieldSize = 8
+
 	QuestionsNum = 60
 )
 
 var prizePos []pair
 
-//В начале иры й игроков не существует никаких позиций, они находятся как бы вне поля
+//В начале игры игроков не существует никаких позиций, они находятся как бы вне поля
 func init() {
 	logger = log.GetLogger("GameField")
 	prizePos = []pair{{3, 3}, {3, 4}, {4, 3}, {4, 4}}
@@ -45,9 +49,10 @@ type gfPlayer struct {
 }
 
 type GameField struct {
-	field [fieldSize][fieldSize]gameCell
-	p1    gfPlayer
-	p2    gfPlayer
+	themes []message.ThemePack
+	field  [fieldSize][fieldSize]gameCell
+	p1     gfPlayer
+	p2     gfPlayer
 	//Out   []event.Event
 	regX        int
 	regY        int
@@ -72,8 +77,33 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
+func (gf *GameField) GetThemesSlice() (ThemeSlice *[]message.ThemePack) {
+	return &gf.themes
+}
+
+func (gf *GameField) GetQuestionsThemes() (packArray []uint) {
+	for i := 0; i < fieldSize; i++ {
+		for j := 0; j < fieldSize; j++ {
+			if gf.field[i][j].question != nil {
+				fmt.Println((gf.field[i][j]).question)
+				packArray = append(packArray, ((gf.field[i][j]).question.PackID))
+			}
+		}
+	}
+	return
+}
+func Shuffle(questions *[]models.Question) {
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	for n := len(*questions); n > 0; n-- {
+		randIndex := r.Intn(n)
+		(*questions)[n-1], (*questions)[randIndex] = (*questions)[randIndex], (*questions)[n-1]
+	}
+
+}
 func (gf *GameField) Build(qArray []models.Question) {
+	Shuffle(&qArray)
 	qSlice := qArray
+
 	index := 0
 	for rowIdx, row := range gf.field {
 		for colIdx := range row {
@@ -122,7 +152,7 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	var rowIdx int
 	var secondPlayer *gfPlayer
 	var player *gfPlayer
-
+	cellsCoordinates = make([]pair, 0)
 	if playerIdx == 1 {
 		player = &gf.p1
 		rowIdx = 7
@@ -151,9 +181,16 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 		for colIdx := currCol; colIdx < currCol+3; colIdx++ {
 			if rowIdx >= 0 && rowIdx < fieldSize && colIdx >= 0 && colIdx < fieldSize {
 				if gf.field[rowIdx][colIdx].isAvailable {
-					if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
-						cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+					if secondPlayer.pos == nil {
+						if (pair{colIdx, rowIdx} != *player.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
+					} else {
+						if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
 					}
+
 				}
 			}
 		}
@@ -185,7 +222,7 @@ func (gf *GameField) Move(playerIdx int) {
 
 }
 
-func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err error) {
+func (gf *GameField) TryMovePlayer1(m message.Message) (e []event.Event, err error) {
 	st := m.Payload.(map[string]interface{})
 	nextX := int(st["x"].(float64))
 	nextY := int(st["y"].(float64))
@@ -201,7 +238,7 @@ func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err erro
 	return
 }
 
-func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err error) {
+func (gf *GameField) TryMovePlayer2(m message.Message) (e []event.Event, err error) {
 	st := m.Payload.(map[string]interface{})
 	nextX := int(st["x"].(float64))
 	nextY := int(st["y"].(float64))
@@ -217,6 +254,17 @@ func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err erro
 	return
 }
 
+func (gf *GameField) CheckIfMovesAvailable(playerId int) bool {
+
+	availableCells := gf.GetAvailableCells(playerId)
+	if len(availableCells) == 0 {
+		return false
+	} else {
+		return true
+	}
+
+}
+
 //Выполняет доставание вопроса из матрицы Игрового поля
 func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []event.Event, err error) {
 
@@ -227,13 +275,6 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	gf.regY = nextY
 	gf.regX = nextX
 
-	//Пока не трогать
-	/*if !gf.checkRouteAvailable(*gf.p1.pos) {
-		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
-
-		//TODO переместить в начало метода GetAvailableCells
-	}*/
-
 	//Здесь проверяем, если следущая клетка выигрышная
 
 	if gf.checkWinner(pair{nextX, nextY}) {
@@ -242,7 +283,12 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		return
 	}
 	gf.regQuestion = *(gf.GetQuestionByCell(nextX, nextY))
-	ms := messge.Question{Question: gf.GetQuestionByCell(nextX, nextY).ToJson()}
+	question, err := json.Marshal(gf.GetQuestionByCell(nextX, nextY))
+	if err != nil {
+		logger.Info("question unmarshal error")
+		return
+	}
+	ms := string(question)
 
 	e = make([]event.Event, 0)
 	e = append(e, event.Event{Etype: event.Info, Edata: ms})
@@ -298,6 +344,9 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 	(gf.field[gf.regY][gf.regX]).answerResult = -1
 	return false
 }
+func (gf *GameField) GetRegisterQuestion() models.Question {
+	return gf.regQuestion
+}
 
 func (gf *GameField) validateAnswerId(answerId int) bool {
 	//Убрать Валидацию поля в GameField
@@ -316,18 +365,6 @@ func (gf *GameField) ResetPlayersPositions() {
 
 }
 
-/*
- x0 x1 x2 x3 x4 x5 x6 x7
- __ __ __ __ __ __ __ __
-|__|__|__|__|P2|__|__|__|  y0
-|__|__|__|__|_X|_X|__|__|  y1
-|__|__|__|__|_X|_X|_X|_X|  y2
-|__|__|__|Pr|Pr|p1|__|__|  y3
-|__|__|__|Pr|Pr|__|__|__|  y4
-|__|__|__|__|_X|__|__|__|  y5
-|__|__|__|__|_X|__|__|__|  y6
-|__|__|__|P1|__|__|__|__|  y7
-*/
 func (gf *GameField) GetCurrentState() string {
 	fieldState := fmt.Sprintln("\n x0 x1 x2 x3 x4 x5 x6 x7\n __ __ __ __ __ __ __ __")
 	for i := 0; i < fieldSize; i++ {

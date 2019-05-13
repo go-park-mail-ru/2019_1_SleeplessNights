@@ -3,11 +3,11 @@ package models
 import "fmt"
 
 type Question struct {
-	ID      uint64
-	Answers []string
-	Correct int
-	Text    string
-	PackID  uint
+	ID      uint64   `json:"-"`
+	Answers []string `json:"answers"`
+	Correct int      `json:"-"`
+	Text    string   `json:"text"`
+	PackID  uint     `json:"-"`
 }
 
 type Pack struct {
@@ -18,8 +18,8 @@ type Pack struct {
 func (q *Question) ToJson() (json string) {
 	json = "{"
 
-	json += "text:" + q.Text + ","
-	json += "answers:["
+	json += `"text:"` + q.Text + ","
+	json += `"answers":[`
 	for _, answer := range q.Answers {
 		json += answer + ","
 	}

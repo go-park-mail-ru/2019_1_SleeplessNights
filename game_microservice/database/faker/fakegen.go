@@ -42,33 +42,34 @@ func CreateFakePacks() {
 	}
 
 	var packID uint = 1
-	for i := 0; i < NumberOfPacks; i++ {
-		for _, theme := range themes {
-			for i := 0; i < NumberOfQuestionsInOnePack; i++ {
-				var answers []string
-				for j := 0; j < NumberOfAnswersInOneQuestion; j++ {
-					answer := fake.CompanyName()
-					answers = append(answers, answer)
-				}
-				question := models.Question{
-					Answers: answers,
-					Correct: 1,
-					Text:    fake.Paragraph(1, true),
-					PackID:  packID,
-				}
-
-				err := database.GetInstance().AddQuestion(question)
-				if err != nil {
-					logger.Error(err.Error())
-					return
-				}
+	//for i := 0; i < NumberOfPacks; i++ {
+	for _, theme := range themes {
+		for i := 0; i < NumberOfQuestionsInOnePack; i++ {
+			var answers []string
+			for j := 0; j < NumberOfAnswersInOneQuestion; j++ {
+				answer := fake.CompanyName()
+				answers = append(answers, answer)
 			}
-			err := database.GetInstance().AddQuestionPack(theme)
+			question := models.Question{
+				Answers: answers,
+				Correct: 1,
+				Text:    fake.Paragraph(1, true),
+				PackID:  packID,
+			}
+
+			err := database.GetInstance().AddQuestion(question)
 			if err != nil {
 				logger.Error(err.Error())
 				return
 			}
-			packID++
 		}
+		err := database.GetInstance().AddQuestionPack(theme)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+		packID++
 	}
+	//}
+
 }

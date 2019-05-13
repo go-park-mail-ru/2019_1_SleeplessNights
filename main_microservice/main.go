@@ -5,7 +5,6 @@ import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/xlab/closer"
 	"net/http"
-	"os"
 	"sync"
 )
 
@@ -18,19 +17,14 @@ func init() {
 
 func main() {
 	defer closer.Close()
-	//faker.CreateFakeData(10)
-	//faker.CreateFakePacks()
-
-	PORT := os.Getenv("PORT")
-	if PORT == "" {
-		PORT = "8080"
-	}
+	PORT := "8080"
+	//PORT := config.Get("main_ms.port").(string)
 	logger.Info("Main microservice started listening on", PORT)
 	r := router.GetRouter()
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func(wg *sync.WaitGroup) {
-		logger.Fatal(http.ListenAndServe(":"+PORT, r))
+		logger.Fatal(http.ListenAndServe(":"+string(PORT), r))
 		wg.Done()
 	}(&wg)
 
