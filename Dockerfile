@@ -50,38 +50,3 @@ USER root
 
 CMD service postgresql start && go run main.go
 
-#FROM golang AS build
-#Устанавливаем PostgreSQl
-#ENV PGVER 11
-#RUN apt-get update
-#RUN apt-get install -y curl gnupg2
-#RUN apt-get install -y wget && \
-#    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-#RUN echo "deb http://apt.postgresql.org/pub/repos/apt bionic-pgdg main" > /etc/apt/sources.list.d/PostgreSQL.list
-#RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
-#RUN apt-get update
-#RUN apt-get install -y postgresql-$PGVER
-#RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
-#RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
-#Копируем данные в контейнер
-#RUN mkdir /server
-#WORKDIR /server
-#COPY . /server/
-#RUN cd /server
-#Поднимаеь ЬД из дампа
-#FROM postgres AS release
-#USER postgres
-#EXPOSE 5432
-#RUN service postgresql start
-#RUN pg_lsclusters
-#RUN psql
-#RUN cat database/sql.sql | psql -d postgres -c
-#RUN cat database/deploy_config.json > database/microservices.json
-#Запускаем сервер
-#USER root
-#RUN go get -u
-#ENV BASEPATH "/server"
-#ENV PORT 8080
-#EXPOSE $PORT
-
-

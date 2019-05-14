@@ -6,6 +6,7 @@ http_port=$(jq -r '.ports.http' ${config_file})      #Достаём из кон
 https_port=$(jq -r '.ports.https' ${config_file})
 grpc_port=$(jq -r '.ports.grpc' ${config_file})
 
+#TODO start consul server
 #bind_addr=$(jq -r '.bind_addr' ${config_file})
 #docker run \
 #    -d --net=host \

@@ -42,7 +42,6 @@ func CreateFakePacks() {
 	}
 
 	var packID uint = 1
-	//for i := 0; i < NumberOfPacks; i++ {
 	for _, theme := range themes {
 		for i := 0; i < NumberOfQuestionsInOnePack; i++ {
 			var answers []string
@@ -70,6 +69,4 @@ func CreateFakePacks() {
 		}
 		packID++
 	}
-	//}
-
 }
