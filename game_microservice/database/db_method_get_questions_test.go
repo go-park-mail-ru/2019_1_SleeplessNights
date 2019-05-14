@@ -47,4 +47,9 @@ func TestGetQuestions(t *testing.T) {
 		t.Errorf("DB returned wrong questions text:\ngot %v\nwant %v",
 			questions[0].Text, question.Text)
 	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
