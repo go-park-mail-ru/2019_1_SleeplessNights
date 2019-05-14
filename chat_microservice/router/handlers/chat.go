@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/chat_room"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/gorilla/websocket"
@@ -59,7 +59,7 @@ func StartSendingTestMessages(conn *websocket.Conn) {
 	for {
 		sample := int64(rand.ExpFloat64() / SendingRate)
 		time.Sleep(time.Duration(sample) * time.Second)
-		err := conn.WriteJSON(messge.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path":"/default_avatar.jpg", "text":"Hello, Grand Webmaster"}`})
+		err := conn.WriteJSON(message.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path":"/default_avatar.jpg", "text":"Hello, Grand Webmaster"}`})
 		if err != nil {
 			fmt.Println(err)
 			break

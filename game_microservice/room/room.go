@@ -2,7 +2,7 @@ package room
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"sync"
 )
@@ -31,7 +31,7 @@ const (
 
 type MessageWrapper struct {
 	player *player.Player
-	msg    messge.Message
+	msg    message.Message
 }
 
 type Room struct {
@@ -89,7 +89,7 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	return found
 }
 
-func (r *Room) notifyP1(msg messge.Message) (err error) {
+func (r *Room) notifyP1(msg message.Message) (err error) {
 	err = r.p1.Send(msg)
 	if err != nil {
 		logger.Error("Failed to send Message to P1", err)
@@ -97,7 +97,7 @@ func (r *Room) notifyP1(msg messge.Message) (err error) {
 	return
 }
 
-func (r *Room) notifyP2(msg messge.Message) (err error) {
+func (r *Room) notifyP2(msg message.Message) (err error) {
 	err = r.p2.Send(msg)
 	if err != nil {
 		logger.Error("Failed to send Message to P2", err)
@@ -105,7 +105,7 @@ func (r *Room) notifyP2(msg messge.Message) (err error) {
 	return
 }
 
-func (r *Room) notifyAll(msg messge.Message) (err error) {
+func (r *Room) notifyAll(msg message.Message) (err error) {
 	err = r.notifyP1(msg)
 	if err != nil {
 		return
@@ -134,33 +134,33 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 //Проверка Уместности сообщения ( на уровне комнаты)
 func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 	r.mu.Lock()
-	if wm.msg.Title == messge.Leave {
+	if wm.msg.Title == message.Leave {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
-	if wm.msg.Title == messge.ChangeOpponent || wm.msg.Title == messge.Quit || wm.msg.Title == messge.Continue {
+	if wm.msg.Title == message.ChangeOpponent || wm.msg.Title == message.Quit || wm.msg.Title == message.Continue {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
-	if wm.msg.Title == messge.State {
+	if wm.msg.Title == message.State {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
-	if wm.msg.Title == messge.QuestionsThemesRequest {
+	if wm.msg.Title == message.QuestionsThemesRequest {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
-	if wm.msg.Title == messge.ThemesRequest {
+	if wm.msg.Title == message.ThemesRequest {
 		isValid = true
 		r.mu.Unlock()
 		return
 	}
 
-	if wm.player != r.active && (wm.msg.Title != messge.Ready) {
+	if wm.player != r.active && (wm.msg.Title != message.Ready) {
 		logger.Error("isSync Player addr error")
 		isValid = false
 		r.mu.Unlock()

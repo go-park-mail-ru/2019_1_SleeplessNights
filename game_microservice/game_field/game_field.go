@@ -1,11 +1,12 @@
 package game_field
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"math"
 	"math/rand"
@@ -48,7 +49,7 @@ type gfPlayer struct {
 }
 
 type GameField struct {
-	themes []messge.ThemePack
+	themes []message.ThemePack
 	field  [fieldSize][fieldSize]gameCell
 	p1     gfPlayer
 	p2     gfPlayer
@@ -76,7 +77,7 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
-func (gf *GameField) GetThemesSlice() (ThemeSlice *[]messge.ThemePack) {
+func (gf *GameField) GetThemesSlice() (ThemeSlice *[]message.ThemePack) {
 	return &gf.themes
 }
 
@@ -151,7 +152,7 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	var rowIdx int
 	var secondPlayer *gfPlayer
 	var player *gfPlayer
-
+	cellsCoordinates = make([]pair, 0)
 	if playerIdx == 1 {
 		player = &gf.p1
 		rowIdx = 7
@@ -180,9 +181,16 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 		for colIdx := currCol; colIdx < currCol+3; colIdx++ {
 			if rowIdx >= 0 && rowIdx < fieldSize && colIdx >= 0 && colIdx < fieldSize {
 				if gf.field[rowIdx][colIdx].isAvailable {
-					if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
-						cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+					if secondPlayer.pos == nil {
+						if (pair{colIdx, rowIdx} != *player.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
+					} else {
+						if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
 					}
+
 				}
 			}
 		}
@@ -214,7 +222,7 @@ func (gf *GameField) Move(playerIdx int) {
 
 }
 
-func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err error) {
+func (gf *GameField) TryMovePlayer1(m message.Message) (e []event.Event, err error) {
 	st := m.Payload.(map[string]interface{})
 	nextX := int(st["x"].(float64))
 	nextY := int(st["y"].(float64))
@@ -230,7 +238,7 @@ func (gf *GameField) TryMovePlayer1(m messge.Message) (e []event.Event, err erro
 	return
 }
 
-func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err error) {
+func (gf *GameField) TryMovePlayer2(m message.Message) (e []event.Event, err error) {
 	st := m.Payload.(map[string]interface{})
 	nextX := int(st["x"].(float64))
 	nextY := int(st["y"].(float64))
@@ -246,6 +254,17 @@ func (gf *GameField) TryMovePlayer2(m messge.Message) (e []event.Event, err erro
 	return
 }
 
+func (gf *GameField) CheckIfMovesAvailable(playerId int) bool {
+
+	availableCells := gf.GetAvailableCells(playerId)
+	if len(availableCells) == 0 {
+		return false
+	} else {
+		return true
+	}
+
+}
+
 //Выполняет доставание вопроса из матрицы Игрового поля
 func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []event.Event, err error) {
 
@@ -256,14 +275,6 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	gf.regY = nextY
 	gf.regX = nextX
 
-	//Пока не трогать
-	/*if !gf.checkRouteAvailable(*gf.p1.pos) {
-		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
-
-		//TODO переместить в начало метода GetAvailableCells
-
-	}*/
-
 	//Здесь проверяем, если следущая клетка выигрышная
 
 	if gf.checkWinner(pair{nextX, nextY}) {
@@ -272,7 +283,12 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		return
 	}
 	gf.regQuestion = *(gf.GetQuestionByCell(nextX, nextY))
-	ms := messge.Question{Question: gf.GetQuestionByCell(nextX, nextY).ToJson()}
+	question, err := json.Marshal(gf.GetQuestionByCell(nextX, nextY))
+	if err != nil {
+		logger.Info("question unmarshal error")
+		return
+	}
+	ms := string(question)
 
 	e = make([]event.Event, 0)
 	e = append(e, event.Event{Etype: event.Info, Edata: ms})
@@ -327,6 +343,9 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 	(gf.field[gf.regY][gf.regX]).isAvailable = false
 	(gf.field[gf.regY][gf.regX]).answerResult = -1
 	return false
+}
+func (gf *GameField) GetRegisterQuestion() models.Question {
+	return gf.regQuestion
 }
 
 func (gf *GameField) validateAnswerId(answerId int) bool {

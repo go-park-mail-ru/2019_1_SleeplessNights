@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/router"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/xlab/closer"
 	"net/http"
@@ -18,7 +17,8 @@ func init() {
 
 func main() {
 	defer closer.Close()
-	PORT := config.Get("main_ms.port").(string)
+	PORT := "8080"
+	//PORT := config.Get("main_ms.port").(string)
 	logger.Info("Main microservice started listening on", PORT)
 	r := router.GetRouter()
 	wg := sync.WaitGroup{}

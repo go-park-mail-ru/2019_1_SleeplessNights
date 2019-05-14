@@ -2,51 +2,51 @@ package room
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 )
 
 func (r *Room) MessageHandlerMux(m MessageWrapper) {
 	switch m.msg.Title {
 
-	case messge.Ready:
+	case message.Ready:
 		{
 			r.ReadyHandler(m)
 		}
-	case messge.GoTo:
+	case message.GoTo:
 		{
 			r.GoToHandler(m)
 		}
-	case messge.ClientAnswer:
+	case message.ClientAnswer:
 		{
 			r.ClientAnswerHandler(m)
 		}
-	case messge.Leave:
+	case message.Leave:
 		{
 			r.LeaveHandler(m)
 		}
 
-	case messge.Continue:
+	case message.Continue:
 		{
 			r.ContinueHandler(m)
 		}
-	case messge.ChangeOpponent:
+	case message.ChangeOpponent:
 		{
 			r.ChangeOpponentHandler(m)
 		}
-	case messge.Quit:
+	case message.Quit:
 		{
 			r.QuitHandler(m)
 		}
-	case messge.State:
+	case message.State:
 		{
 			r.CurrentStateHandler(m)
 		}
-	case messge.ThemesRequest:
+	case message.ThemesRequest:
 		{
 			r.ThemesRequestHandler(m)
 		}
-	case messge.QuestionsThemesRequest:
+	case message.QuestionsThemesRequest:
 		{
 			r.QuestionsThemesHandler(m)
 		}
@@ -67,18 +67,28 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 
 	if r.p1Status == StatusReady && r.p2Status == StatusReady {
 		//After getting ready messages from both players set p1 as active and send messages
-		r.waitForSyncMsg = messge.GoTo
+		r.waitForSyncMsg = message.GoTo
 		r.active = &r.p1
 
 		logger.Info("Ход игрока 1, ожидание команды GoTo")
 
-		r.responsesQueue <- MessageWrapper{&r.p1, messge.Message{Title: messge.YourTurn, Payload: nil}}
-		r.responsesQueue <- MessageWrapper{&r.p2, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
 		// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
 		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
+		var secondPlayer *player.Player
+		if &r.p1 == r.active {
+			secondPlayer = &r.p2
+		}
+		if &r.p2 == r.active {
+			secondPlayer = &r.p1
+		}
+
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
 
 	}
 
@@ -90,10 +100,24 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	logger.Infof("player UID %d requested GoTo", (*m.player).UID())
 
 	r.mu.Lock()
-	var eventSlice []event.Event
-	var err error
 	var secondPlayer *player.Player
 
+	if &r.p1 == m.player {
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		secondPlayer = &r.p1
+	}
+
+	st := m.msg.Payload.(map[string]interface{})
+	nextX := int(st["x"].(float64))
+	nextY := int(st["y"].(float64))
+	logger.Info("Sending SelectedCell Index to players")
+
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
+
+	var eventSlice []event.Event
+	var err error
 	if &r.p1 == m.player {
 		eventSlice, err = r.field.TryMovePlayer1(m.msg)
 		secondPlayer = &r.p2
@@ -112,23 +136,23 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	for _, e := range eventSlice {
 		if e.Etype == event.Info {
 			logger.Info("player", (*r.active).ID(), "got question", e.Edata)
-			q, ok := e.Edata.(messge.Question)
+			q, ok := e.Edata.(string)
 			if !ok {
 				logger.Error("Go_To handler couldn't cast Edata interface with question to string")
 				return false
 			}
-			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourQuestion, Payload: q}}
-			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.EnemyQuestion, Payload: q}}
+			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourQuestion, Payload: q}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentQuestion, Payload: q}}
 			r.waitForSyncMsg = "ANSWER"
 		}
 		if e.Etype == event.WinPrize {
 			//Write to DB results of the match
 			logger.Info("player", (*r.active).ID(), "Has Won the prize")
-			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Win, Payload: nil}}
-			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.Loss, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Win, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Loss, Payload: nil}}
 			r.waitForSyncMsg = "Leave"
-			r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.WannaPlayAgain, Payload: nil}}
-			r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.WannaPlayAgain, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
 		}
 	}
 
@@ -148,24 +172,62 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	if !ok {
 		logger.Error(`ClientAnswerHandler, couldn't find value in map st with key "answer_id" `)
 	}
+	q := r.field.GetRegisterQuestion()
+
+	playerHasNoMoves := false
 
 	if !r.field.CheckAnswer(int(answerId)) {
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Incorrect, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourAnswer, Payload: message.AnswerResult{int(answerId), q.Correct}}}
+		playerIdx := r.getPlayerIdx(r.active)
+		if !r.field.CheckIfMovesAvailable(playerIdx) {
+			playerHasNoMoves = true
+		}
 	} else {
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.Correct, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourAnswer, Payload: message.AnswerResult{int(answerId), q.Correct}}}
 		r.field.Move(r.getPlayerIdx(r.active))
 	}
+	var secondPlayer *player.Player
 
-	//Смена хода после ответа игрока
-	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
-	r.changeTurn()
-	r.waitForSyncMsg = messge.GoTo
-	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.YourTurn, Payload: nil}}
-	cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
+	if &r.p1 == r.active {
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == r.active {
+		secondPlayer = &r.p1
+	}
 
-	//Send Available cells to active player (Do it every time, after giving player a turn rights
-	r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentAnswer, Payload: message.AnswerResult{int(answerId), q.Correct}}}
 
+	if playerHasNoMoves {
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Loss, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Win, Payload: nil}}
+		r.waitForSyncMsg = "Leave"
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
+
+	} else {
+		//Смена хода после ответа игрока
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.OpponentTurn, Payload: nil}}
+		r.changeTurn()
+		r.waitForSyncMsg = message.GoTo
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourTurn, Payload: nil}}
+
+		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
+
+		if &r.p1 == r.active {
+			secondPlayer = &r.p2
+		}
+		if &r.p2 == r.active {
+			secondPlayer = &r.p1
+		}
+		if len(cellsSlice) != 0 {
+			//Send Available cells to active player (Do it every time, after giving player a turn rights
+			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+
+		} else {
+			logger.Error("Unexpected condition")
+		}
+	}
 	r.mu.Unlock()
 	return true
 }
@@ -191,7 +253,7 @@ func (r *Room) ContinueHandler(m MessageWrapper) bool {
 		r.p2Status = StatusWannaContinue
 		secondPlayer = &r.p1
 	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentContines, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentContinues, Payload: nil}}
 	//Если оба игрока согласны продолжить игру, то при получении последнего
 	// "WannaContinue" собираем игровое поле заново с другими вопросами
 
@@ -205,15 +267,15 @@ func (r *Room) ContinueHandler(m MessageWrapper) bool {
 		r.p1Status = StatusReady
 		r.p2Status = StatusReady
 		//Здесь перезупускаем игровой процесс с теми же игроками
-		r.responsesQueue <- MessageWrapper{&r.p1, messge.Message{Title: messge.EnemyTurn, Payload: nil}}
-		r.responsesQueue <- MessageWrapper{&r.p2, messge.Message{Title: messge.YourTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.OpponentTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.YourTurn, Payload: nil}}
 		r.active = &r.p2
 		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		r.responsesQueue <- MessageWrapper{r.active, messge.Message{Title: messge.AvailableCells, Payload: cellsSlice}}
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
 
-		r.waitForSyncMsg = messge.GoTo
+		r.waitForSyncMsg = message.GoTo
 
 	}
 	r.mu.Unlock()
@@ -236,7 +298,7 @@ func (r *Room) ChangeOpponentHandler(m MessageWrapper) bool {
 		secondPlayer = &r.p1
 	}
 
-	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentLeaves, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
 
 	r.mu.Unlock()
 	return true
@@ -258,7 +320,7 @@ func (r *Room) QuitHandler(m MessageWrapper) bool {
 		///	thisPlayer = &r.p2
 		secondPlayer = &r.p1
 	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, messge.Message{Title: messge.OpponentLeaves, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
 
 	r.mu.Unlock()
 	return true
@@ -276,16 +338,16 @@ func (r *Room) getPlayerIdx(p *player.Player) int {
 }
 
 func (r *Room) CurrentStateHandler(m MessageWrapper) {
-	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.CurrentState, Payload: messge.GameState{r.field.GetCurrentState()}}}
+	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.CurrentState, Payload: message.GameState{r.field.GetCurrentState()}}}
 }
 
 func (r *Room) ThemesRequestHandler(m MessageWrapper) {
-	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.ThemesResponse, Payload: r.field.GetThemesSlice()}}
+	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.Themes, Payload: r.field.GetThemesSlice()}}
 
 }
 
 //Maybe send response to websocket connection without request
 func (r *Room) QuestionsThemesHandler(m MessageWrapper) {
 	packArray := r.field.GetQuestionsThemes()
-	r.responsesQueue <- MessageWrapper{m.player, messge.Message{Title: messge.QuestionsThemesResponse, Payload: packArray}}
+	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.QuestionsThemes, Payload: packArray}}
 }

@@ -1,7 +1,7 @@
 package factory
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/messge"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/gorilla/websocket"
 )
 
@@ -11,7 +11,7 @@ type websocketPlayer struct {
 	//Она уже реализует интерфейс Player, поэтому нам нужно будет просто сделатьинстанс этой структуры
 	id   uint64
 	uid  uint64
-	in   chan messge.Message
+	in   chan message.Message
 	conn *websocket.Conn
 }
 
@@ -19,7 +19,7 @@ func (wsPlayer *websocketPlayer) StartListen() {
 	//Метод, который заставляет структуру ждать сообщения
 	//Если его не вызвать, то игрок не сможет сообщить серверу о своих действиях
 	for {
-		var msg messge.Message
+		var msg message.Message
 		err := wsPlayer.conn.ReadJSON(&msg)
 		if err != nil {
 			//В случае получения ошибки нам нельзя прекращать слушать клиента, т.к. возможно, что
@@ -29,7 +29,7 @@ func (wsPlayer *websocketPlayer) StartListen() {
 
 			if websocket.IsUnexpectedCloseError(err) {
 				logger.Infof("Player %d closed the connection", wsPlayer.uid)
-				wsPlayer.in <- messge.Message{Title: messge.Leave}
+				wsPlayer.in <- message.Message{Title: message.Leave}
 
 				wsPlayer.Close()
 				return
@@ -40,7 +40,7 @@ func (wsPlayer *websocketPlayer) StartListen() {
 	}
 }
 
-func (wsPlayer *websocketPlayer) Send(msg messge.Message) (err error) {
+func (wsPlayer *websocketPlayer) Send(msg message.Message) (err error) {
 	//Получаем наш месседж, который хотим отправить, и отправляем его в формате JSON
 	err = wsPlayer.conn.WriteJSON(msg)
 	if err != nil {
@@ -49,7 +49,7 @@ func (wsPlayer *websocketPlayer) Send(msg messge.Message) (err error) {
 	return nil
 }
 
-func (wsPlayer *websocketPlayer) Subscribe() chan messge.Message {
+func (wsPlayer *websocketPlayer) Subscribe() chan message.Message {
 	return wsPlayer.in
 }
 
@@ -60,12 +60,13 @@ func (wsPlayer *websocketPlayer) ID() uint64 {
 func (wsPlayer *websocketPlayer) UID() uint64 {
 	return wsPlayer.uid
 }
+
 func (wsPlayer *websocketPlayer) Close() {
 	logger.Infof("Player UID  %d closed the connection", wsPlayer.uid)
 	err := wsPlayer.conn.Close()
 	if err != nil {
 		logger.Error(err)
 	}
-	wsPlayer.in <- messge.Message{Title: messge.Leave}
+	wsPlayer.in <- message.Message{Title: message.Leave}
 	close(wsPlayer.in)
 }

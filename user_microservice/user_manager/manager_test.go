@@ -1,4 +1,4 @@
-package handlers_test
+package user_manager_test
 
 import (
 	"github.com/xlab/closer"

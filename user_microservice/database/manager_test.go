@@ -1,4 +1,4 @@
-package handlers_test
+package database_test
 
 import (
 	"github.com/xlab/closer"

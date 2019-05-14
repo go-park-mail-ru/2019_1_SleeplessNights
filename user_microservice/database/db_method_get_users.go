@@ -17,10 +17,11 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 	defer rows.Close()
 
 	var profiles []*services.Profile
-	var profile services.Profile
-	var user services.User
-	profile.User = &user
+
 	for rows.Next() {
+		var profile services.Profile
+		var user services.User
+		profile.User = &user
 		err = rows.Scan(
 			&profile.User.Id,
 			&profile.User.Email,
