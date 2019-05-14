@@ -2,7 +2,7 @@ package database_test
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
+	"github.com/jackc/pgx"
 	"testing"
 )
 
@@ -13,16 +13,17 @@ func TestAddQuestionSuccessful(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	pack := models.Pack{
-		Theme: "алгебра",
+	pack := database.Pack{
+		Theme:    "алгебра",
+		IconPath: "math_icon.jpg",
 	}
 
-	err = database.GetInstance().AddQuestionPack(pack.Theme)
+	err = database.GetInstance().AddQuestionPack(pack)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
-	question := models.Question{
+	question := database.Question{
 		Answers: []string{"sdf", "sdf"},
 		Correct: 1,
 		PackID:  1,
@@ -36,7 +37,7 @@ func TestAddQuestionSuccessful(t *testing.T) {
 
 	ids := []uint64{1}
 
-	questions, err := database.GetInstance().GetQuestions(ids)
+	questions, _,  err := database.GetInstance().GetQuestions(ids)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -51,7 +52,7 @@ func TestAddQuestionSuccessful(t *testing.T) {
 
 func TestAddQuestionUnsuccessful(t *testing.T) {
 
-	question := models.Question{
+	question := database.Question{
 		Answers: []string{"sdf", "sdf"},
 		Correct: 1,
 		PackID:  2,
@@ -59,10 +60,13 @@ func TestAddQuestionUnsuccessful(t *testing.T) {
 	}
 
 	err := database.GetInstance().AddQuestion(question)
+	if err, ok := err.(pgx.PgError); ok {
+		t.Errorf(err.Code)
+	}
 	if err == nil {
 		t.Errorf("DB didn't return error!")
 	} else if err.Error() != "ERROR: 23503 (SQLSTATE 23503)" { //TODO переделать ошибку
-		t.Errorf("DB didn't return wrong error:\ngot %v\nwant %v",
+		t.Errorf("DB returned wrong error:\ngot %v\nwant %v",
 			err.Error(), "ERROR: 23503 (SQLSTATE 23503)")
 	}
 

@@ -1,10 +1,6 @@
 package database
 
-import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
-)
-
-func (db *dbManager) AddQuestion(question models.Question) (err error) {
+func (db *dbManager) AddQuestion(question Question) (err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {

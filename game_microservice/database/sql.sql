@@ -8,8 +8,9 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 -- table Question'sPack
 CREATE TABLE public.question_pack
 (
-  id    BIGSERIAL    NOT NULL,
-  theme VARCHAR(100) NOT NULL
+  id          BIGSERIAL    NOT NULL,
+  icon_path VARCHAR(100) NOT NULL,
+  theme       VARCHAR(100) NOT NULL
 );
 
 ALTER TABLE ONLY public.question_pack
@@ -40,6 +41,7 @@ ALTER TABLE ONLY public.question
 CREATE TYPE public.type_question_pack AS
   (
   id BIGSERIAL,
+  icon_path VARCHAR(100),
   theme VARCHAR(100)
   );
 
@@ -59,13 +61,15 @@ CREATE TYPE public.type_question AS
 ------------------------------------------------------------------------------------------------------------------------
 
 -- func add_pack
-CREATE OR REPLACE FUNCTION public.func_add_pack(arg_theme CITEXT)
+CREATE OR REPLACE FUNCTION public.func_add_pack(arg_theme CITEXT,
+                                                arg_icon_path CITEXT)
   RETURNS VOID
 AS
 $BODY$
 BEGIN
-  INSERT INTO public.question_pack (theme)
-  VALUES (arg_theme);
+  INSERT INTO public.question_pack (theme, avatar_path)
+  VALUES (arg_theme,
+          arg_icon_path);
 EXCEPTION
   WHEN unique_violation THEN
     RAISE SQLSTATE '23505';
@@ -90,11 +94,11 @@ BEGIN
           arg_correct,
           arg_text,
           arg_pack_id);
-EXCEPTION
-  WHEN foreign_key_violation THEN
-    RAISE SQLSTATE '23503';
-  WHEN unique_violation THEN
-    RAISE SQLSTATE '23505';
+-- EXCEPTION
+--   WHEN foreign_key_violation THEN
+--     RAISE SQLSTATE '23503';
+--   WHEN unique_violation THEN
+--     RAISE SQLSTATE '23505';
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -127,6 +131,7 @@ BEGIN
              LIMIT arg_number
     LOOP
       result.id := rec.id;
+      result.icon_path := rec.icon_path;
       result.theme := rec.theme;
       RETURN next result;
     END LOOP;

@@ -2,7 +2,6 @@ package database_test
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
 	"testing"
 )
 
@@ -13,11 +12,12 @@ func TestAddQuestionPack(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	pack := models.Pack{
-		Theme: "алгебра",
+	pack := database.Pack{
+		Theme:    "алгебра",
+		IconPath: "math",
 	}
 
-	err = database.GetInstance().AddQuestionPack(pack.Theme)
+	err = database.GetInstance().AddQuestionPack(pack)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

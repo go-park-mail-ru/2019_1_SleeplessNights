@@ -1,6 +1,6 @@
 package database
 
-func (db *dbManager) AddQuestionPack(theme string) (err error) {
+func (db *dbManager) AddQuestionPack(pack Pack) (err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -8,7 +8,7 @@ func (db *dbManager) AddQuestionPack(theme string) (err error) {
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec(`SELECT * FROM func_add_pack($1)`, theme)
+	_, err = tx.Exec(`SELECT * FROM func_add_pack($1, $2)`, pack.Theme, pack.IconPath)
 	if err != nil {
 		return
 	}

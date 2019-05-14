@@ -1,8 +1,6 @@
 package database
 
-import "github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
-
-func (db *dbManager) GetPacksOfQuestions(number int) (packs []models.Pack, err error) {
+func (db *dbManager) GetPacksOfQuestions(number int) (packs []Pack, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -16,11 +14,12 @@ func (db *dbManager) GetPacksOfQuestions(number int) (packs []models.Pack, err e
 		return
 	}
 
-	var pack models.Pack
+	var pack Pack
 	for rows.Next() {
 		err = rows.Scan(
 			&pack.ID,
-			&pack.Theme)
+			&pack.Theme,
+			&pack.IconPath)
 		if err != nil {
 			return
 		}
