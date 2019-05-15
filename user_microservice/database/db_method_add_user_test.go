@@ -1,9 +1,9 @@
 package database_test
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
+	"github.com/jackc/pgx"
 	"testing"
 )
 
@@ -41,15 +41,15 @@ func TestAddUserUnsuccessful(t *testing.T) {
 		AvatarPath: "default_avatar.jpg",
 	}
 
-	expected := errors.DataBaseUniqueViolationShort
+	expected := "23505"
 
 	user, err := database.GetInstance().AddUser(user.Email, user.Nickname, user.AvatarPath, []byte{}, []byte{})
 	if err == nil {
 		t.Errorf("DB didn't return any error")
 		return
-	} else if err.Error() != expected.Error() {
+	} else if err, ok := err.(pgx.PgError); ok && err.Code != expected {
 		t.Errorf("DB returned wrong error:\ngot %v\nwant %v\n",
-			err.Error(), expected)
+			err.Code, expected)
 	}
 
 	err = database.GetInstance().CleanerDBForTests()

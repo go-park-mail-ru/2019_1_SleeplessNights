@@ -1,9 +1,9 @@
 package database_test
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
+	"github.com/jackc/pgx"
 	"testing"
 )
 
@@ -51,14 +51,14 @@ func TestGetUserByIdSuccessful(t *testing.T) {
 
 func TestGetUserViaIdUnsuccessful(t *testing.T) {
 
-	expected := errors.DataBaseNoDataFound
+	expected := "P0002"
 
 	_, err := database.GetInstance().GetUserByID(100)
 	if err == nil {
 		t.Errorf("DB didn't return error")
-	} else if err.Error() != expected.Error() {
+	} else if err, ok := err.(pgx.PgError); ok && err.Code != expected {
 		t.Errorf("DB returned wrong error:\ngot %v\nwant %v\n",
-			err.Error(), expected)
+			err.Code, expected)
 	}
 
 	err = database.GetInstance().CleanerDBForTests()

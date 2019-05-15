@@ -1,10 +1,10 @@
 package user_manager_test
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/user_manager"
+	"github.com/jackc/pgx"
 	"golang.org/x/net/context"
 	"testing"
 )
@@ -55,17 +55,21 @@ func TestGetProfileUnsuccessful(t *testing.T) {
 		Nickname: "test",
 	}
 
-	expected := errors.DataBaseNoDataFound
+	expected := "P0002"
 
 	_, err := user_manager.GetInstance().GetProfile(ctx, &user)
 	if err == nil {
 		t.Errorf("DB didn't return any error")
 		return
-	} else if err.Error() != expected.Error() {
+	} else if err, ok := err.(pgx.PgError); ok && err.Code != expected {
 		t.Errorf("DB returned wrong error:\ngot %v\nwant %v\n",
-			err.Error(), expected)
+			err.Code, expected)
 	}
 
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestUpdateProfileSuccessful(t *testing.T) {
@@ -106,5 +110,9 @@ func TestUpdateProfileSuccessful(t *testing.T) {
 		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
 			user.AvatarPath, user.Nickname, newUser.AvatarPath, newUser.Nickname)
 	}
-}
 
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}

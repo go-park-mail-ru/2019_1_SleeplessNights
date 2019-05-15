@@ -40,7 +40,7 @@ func (us *userManager) CheckToken(ctx context.Context, in *services.SessionToken
 	var user services.User
 	user, err = database.GetInstance().GetUserByID(userID)
 	if _err, ok := err.(pgx.PgError); ok {
-		err.Error() = handlerError(_err)
+		err = handlerError(_err)
 		return nil, err
 	}
 

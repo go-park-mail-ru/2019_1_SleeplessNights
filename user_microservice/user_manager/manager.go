@@ -12,7 +12,6 @@ import (
 
 const (
 	sessionLifeLen = 4 * time.Hour
-	NoTokenOwner   = "error: There are no token's owner in database"
 	nodataFound = "P0002"
 	uniqueViolation = "23505"
 )
