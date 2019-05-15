@@ -3,7 +3,7 @@ package errors
 import "errors"
 
 var (
-	DataBaseUniqueViolation = errors.New("ERROR: the non-unique data")
-	DataBaseNoDataFound     = errors.New("ERROR: no data found")
-	AuthWrongPassword       = errors.New("rpc error: code = Unknown desc = authentication failed because of wong password")
+	DataBaseUniqueViolation = errors.New("ERROR: unique violation exception in database")
+	DataBaseNoDataFound     = errors.New("ERROR: no data found exception in database")
+	AuthWrongPassword       = errors.New("ERROR: authentication failed, because of wong password")
 )
