@@ -3,6 +3,7 @@ package user_manager
 import (
 	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 	"os"
 	"time"
@@ -51,4 +52,16 @@ func init() {
 
 func GetInstance() *userManager {
 	return user
+}
+
+func handlerError(pgError pgx.PgError) (error string) {
+	switch pgError.Code {
+	case "23505":
+		error = ""
+	case "P0002":
+		error = ""
+	default:
+		error = ""
+	}
+	return
 }
