@@ -10,7 +10,7 @@ import (
 func (us *userManager) GetLeaderBoardPage(ctx context.Context, in *services.PageData) (*services.LeaderBoardPage, error) {
 	page, err := database.GetInstance().GetUsers(in)
 	if _err, ok := err.(pgx.PgError); ok {
-		err.Error() = handlerError(_err)
+		err = handlerError(_err)
 		return nil, err
 	}
 	return page, nil

@@ -11,6 +11,6 @@ func (us *userManager)ClearDB(ctx context.Context, in *services.Nothing)(*servic
 	//TODO RAISE ERROR UNLESS IT IS TEST CONFIGURATION
 	err := database.GetInstance().CleanerDBForTests()
 	_err, _ := err.(pgx.PgError)
-	err.Error() = handlerError(_err)
+	err = handlerError(_err)
 	return in, err
 }

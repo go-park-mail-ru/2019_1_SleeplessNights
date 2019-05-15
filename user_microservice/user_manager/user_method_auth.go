@@ -50,7 +50,7 @@ func (us *userManager) CheckToken(ctx context.Context, in *services.SessionToken
 func (us *userManager) MakeToken(ctx context.Context, in *services.UserSignature) (*services.SessionToken, error) {
 	id, password, salt, err := database.GetInstance().GetUserSignature(in.Email)
 	if _err, ok := err.(pgx.PgError); ok {
-		err.Error() = handlerError(_err)
+		err = handlerError(_err)
 		return nil, err
 	}
 

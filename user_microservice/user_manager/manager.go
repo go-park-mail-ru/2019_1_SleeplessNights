@@ -2,6 +2,7 @@ package user_manager
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
@@ -12,6 +13,8 @@ import (
 const (
 	sessionLifeLen = 4 * time.Hour
 	NoTokenOwner   = "error: There are no token's owner in database"
+	nodataFound = "P0002"
+	uniqueViolation = "23505"
 )
 
 var logger *log.Logger
@@ -54,14 +57,14 @@ func GetInstance() *userManager {
 	return user
 }
 
-func handlerError(pgError pgx.PgError) (error string) {
+func handlerError(pgError pgx.PgError) (error error) {
 	switch pgError.Code {
-	case "23505":
-		error = ""
-	case "P0002":
-		error = ""
+	case uniqueViolation:
+		error = errors.DataBaseUniqueViolation
+	case nodataFound:
+		error = errors.DataBaseNoDataFound
 	default:
-		error = ""
+		error = pgError
 	}
 	return
 }

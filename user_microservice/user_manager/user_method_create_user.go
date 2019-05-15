@@ -20,7 +20,7 @@ func (us *userManager) CreateUser(ctx context.Context, in *services.NewUserData)
 
 	user, err := database.GetInstance().AddUser(in.Email, in.Nickname, defaultAvatar, password, salt)
 	if _err, ok := err.(pgx.PgError); ok {
-		err.Error() = handlerError(_err)
+		err = handlerError(_err)
 		return nil, err
 	}
 
