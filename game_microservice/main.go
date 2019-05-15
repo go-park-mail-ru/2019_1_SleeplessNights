@@ -20,13 +20,12 @@ func main() {
 	defer closer.Close()
 
 	//In case of a lack of data, break parentheses
-	//err := database.GetInstance().CleanerDBForTests()
-	//if err != nil {
-	//	logger.Errorf(err.Error())
-	//}
+	err := database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		logger.Errorf(err.Error())
+	}
 
 	database.GetInstance().PopulateDatabase()
-	//faker.CreateFakePacks()
 
 	PORT := "8006"
 	logger.Info("Game microservice started listening on", PORT)
