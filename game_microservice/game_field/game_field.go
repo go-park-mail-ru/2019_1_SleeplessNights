@@ -152,7 +152,7 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	var rowIdx int
 	var secondPlayer *gfPlayer
 	var player *gfPlayer
-
+	cellsCoordinates = make([]pair, 0)
 	if playerIdx == 1 {
 		player = &gf.p1
 		rowIdx = 7
@@ -181,9 +181,16 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 		for colIdx := currCol; colIdx < currCol+3; colIdx++ {
 			if rowIdx >= 0 && rowIdx < fieldSize && colIdx >= 0 && colIdx < fieldSize {
 				if gf.field[rowIdx][colIdx].isAvailable {
-					if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
-						cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+					if secondPlayer.pos == nil {
+						if (pair{colIdx, rowIdx} != *player.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
+					} else {
+						if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
+							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						}
 					}
+
 				}
 			}
 		}
@@ -247,6 +254,17 @@ func (gf *GameField) TryMovePlayer2(m message.Message) (e []event.Event, err err
 	return
 }
 
+func (gf *GameField) CheckIfMovesAvailable(playerId int) bool {
+
+	availableCells := gf.GetAvailableCells(playerId)
+	if len(availableCells) == 0 {
+		return false
+	} else {
+		return true
+	}
+
+}
+
 //Выполняет доставание вопроса из матрицы Игрового поля
 func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []event.Event, err error) {
 
@@ -256,14 +274,6 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	//Запись в регистр положения игрока, вопроса,
 	gf.regY = nextY
 	gf.regX = nextX
-
-	//Пока не трогать
-	/*if !gf.checkRouteAvailable(*gf.p1.pos) {
-		//TODO отправить Event Loose для текущего игрока и Event Win для второго игрока
-
-		//TODO переместить в начало метода GetAvailableCells
-
-	}*/
 
 	//Здесь проверяем, если следущая клетка выигрышная
 
@@ -278,7 +288,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		logger.Info("question unmarshal error")
 		return
 	}
-	ms := question
+	ms := string(question)
 
 	e = make([]event.Event, 0)
 	e = append(e, event.Event{Etype: event.Info, Edata: ms})
