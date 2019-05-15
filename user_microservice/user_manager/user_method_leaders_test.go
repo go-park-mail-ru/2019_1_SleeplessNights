@@ -84,4 +84,9 @@ func TestGetLeaderBoardPageSuccessful(t *testing.T) {
 		t.Errorf("DB returned wrong user:\ngot %v\nwant %v\n",
 			users.Leaders[1].User.AvatarPath, secondUser.AvatarPath)
 	}
+
+	err = database.GetInstance().CleanerDBForTests()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }

@@ -12,7 +12,7 @@ type Question struct {
 
 type Pack struct {
 	ID       uint64 `json:"id"`
-	IconPath string `json:"icon_path"`
+	IconPath string `json:"iconPath"`
 	Theme    string `json:"theme"`
 }
 

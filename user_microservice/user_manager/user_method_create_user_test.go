@@ -42,15 +42,15 @@ func TestCreateUserUnsuccessful(t *testing.T) {
 	}
 
 	var ctx context.Context
-	expected := errors.DataBaseUniqueViolationShort
+	expected := errors.DataBaseUniqueViolation
 
 	_, err := user_manager.GetInstance().CreateUser(ctx, &oldUser)
 	if err == nil {
 		t.Errorf("DB didn't return any error")
 		return
-	} else if err.Error() != expected.Error() {
-		t.Errorf("DB returned wrong error:\ngot %v\nwant %v\n",
-			err.Error(), expected)
+	} else if err != expected {
+		t.Errorf("DB returned wrong error code:\ngot %v\nwant %v\n",
+			err.Error(), expected.Error())
 	}
 
 	err = database.GetInstance().CleanerDBForTests()

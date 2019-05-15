@@ -1,26 +1,26 @@
 [
   {
     "theme": "История",
-    "avatar_path": "history_icon.jpg"
+    "iconPath": "history_icon.jpg"
   },
   {
     "theme": "Математика",
-    "avatar_path": "math_icon.jpg"
+    "iconPath": "math_icon.jpg"
   },
   {
     "theme": "География",
-    "avatar_path": "geography_icon.jpg"
+    "iconPath": "geography_icon.jpg"
   },
   {
     "theme": "Спорт",
-    "avatar_path": "sport_icon.jpg"
+    "iconPath": "sport_icon.jpg"
   },
   {
     "theme": "Английский язык",
-    "avatar_path": "english_icon.jpg"
+    "iconPath": "english_icon.jpg"
   },
   {
     "theme": "Информатика",
-    "avatar_path": "informatics_icon.jpg"
+    "iconPath": "informatics_icon.jpg"
   }
 ]

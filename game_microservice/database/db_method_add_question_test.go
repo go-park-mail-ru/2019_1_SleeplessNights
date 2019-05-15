@@ -59,15 +59,14 @@ func TestAddQuestionUnsuccessful(t *testing.T) {
 		Text:    "sdfsdf",
 	}
 
+	expected := "23505"
+
 	err := database.GetInstance().AddQuestion(question)
-	if err, ok := err.(pgx.PgError); ok {
-		t.Errorf(err.Code)
-	}
 	if err == nil {
 		t.Errorf("DB didn't return error!")
-	} else if err.Error() != "ERROR: 23503 (SQLSTATE 23503)" { //TODO переделать ошибку
+	} else if err, ok := err.(pgx.PgError); ok && err.Code == expected {
 		t.Errorf("DB returned wrong error:\ngot %v\nwant %v",
-			err.Error(), "ERROR: 23503 (SQLSTATE 23503)")
+			err.Code, expected)
 	}
 
 	err = database.GetInstance().CleanerDBForTests()

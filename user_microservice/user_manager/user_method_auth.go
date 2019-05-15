@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
+	"github.com/jackc/pgx"
 	"golang.org/x/net/context"
 	"strconv"
 	"time"
@@ -38,7 +39,8 @@ func (us *userManager) CheckToken(ctx context.Context, in *services.SessionToken
 
 	var user services.User
 	user, err = database.GetInstance().GetUserByID(userID)
-	if err != nil {
+	if _err, ok := err.(pgx.PgError); ok {
+		err = handlerError(_err)
 		return nil, err
 	}
 
@@ -47,7 +49,8 @@ func (us *userManager) CheckToken(ctx context.Context, in *services.SessionToken
 
 func (us *userManager) MakeToken(ctx context.Context, in *services.UserSignature) (*services.SessionToken, error) {
 	id, password, salt, err := database.GetInstance().GetUserSignature(in.Email)
-	if err != nil {
+	if _err, ok := err.(pgx.PgError); ok {
+		err = handlerError(_err)
 		return nil, err
 	}
 
