@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/router"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
@@ -26,7 +25,7 @@ func main() {
 		logger.Errorf(err.Error())
 	}
 
-	faker.CreateFakePacks()
+	database.GetInstance().PopulateDatabase()
 
 	PORT := "8006"
 	logger.Info("Game microservice started listening on", PORT)

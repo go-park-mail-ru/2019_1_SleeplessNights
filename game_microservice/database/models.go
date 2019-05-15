@@ -1,18 +1,25 @@
-package models
+package database
 
 import "fmt"
 
 type Question struct {
 	ID      uint64   `json:"-"`
 	Answers []string `json:"answers"`
-	Correct int      `json:"-"`
+	Correct int      `json:"correct"`
 	Text    string   `json:"text"`
-	PackID  uint     `json:"-"`
+	PackID  uint     `json:"pack_id"`
 }
 
 type Pack struct {
-	ID    uint64 `json:"id"`
-	Theme string `json:"theme"`
+	ID       uint64 `json:"id"`
+	IconPath string `json:"icon_path"`
+	Theme    string `json:"theme"`
+}
+
+type QuestionForFrontend struct {
+	Text    string   `json:"text"`
+	Answers []string `json:"answers"`
+	PackID  uint     `json:"pack_id"`
 }
 
 func (q *Question) ToJson() (json string) {
