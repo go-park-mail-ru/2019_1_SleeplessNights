@@ -28,7 +28,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err.Error() {
 		case errors.DataBaseNoDataFound.Error():
-			helpers.Return400(&w, helpers.ErrorSet{helpers.InvalidEmailErrorMsg})
+			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
 			return
 		case errors.AuthWrongPassword.Error():
 			helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
