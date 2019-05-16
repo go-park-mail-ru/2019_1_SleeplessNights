@@ -32,11 +32,11 @@
     "iconPath": "ecology_icon.jpg"
   },
   {
-    "theme": "Химия",
-    "iconPath": "chemistry_icon.jpg"
+    "theme": "Литература",
+    "iconPath": "literature_icon.jpg"
   },
   {
-    "theme": "Флора и фауна",
-    "iconPath": "nature_icon.jpg"
+    "theme": "Биология",
+    "iconPath": "biology_icon.jpg"
   }
 ]
