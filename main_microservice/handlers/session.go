@@ -20,12 +20,6 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, err := helpers.ValidateAuthRequest(r)
-	if requestErrors != nil {
-		helpers.Return400(&w, requestErrors)
-		return
-	}
-
 	sessionToken, err := userManager.MakeToken(context.Background(),
 		&services.UserSignature{
 			Email:    r.Form.Get("email"),
@@ -34,7 +28,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err.Error() {
 		case errors.DataBaseNoDataFound.Error():
-			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
+			helpers.Return400(&w, helpers.ErrorSet{helpers.InvalidEmailErrorMsg})
 			return
 		case errors.AuthWrongPassword.Error():
 			helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})

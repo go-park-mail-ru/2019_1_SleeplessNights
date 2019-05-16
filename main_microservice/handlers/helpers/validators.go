@@ -75,22 +75,6 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	return requestErrors, nil
 }
 
-func ValidateAuthRequest(r *http.Request) (requestErrors ErrorSet, err error) {
-	email := strings.ToLower(r.Form.Get("email"))
-	r.Form.Set("email", email)
-	err = validateEmail(email, &requestErrors)
-	if err != nil {
-		return
-	}
-
-	password := r.Form.Get("password")
-	err = validatePassword(password, &requestErrors)
-	if err != nil {
-		return
-	}
-	return requestErrors,nil
-}
-
 func validateEmail(email string, requestErrors *ErrorSet) (err error) {
 	isValid, err := regexp.Match("^[a-z0-9._%+-]+@[a-z0-9-]+.+.[a-z]{2,4}$", []byte(email))
 	if !isValid {
@@ -100,7 +84,7 @@ func validateEmail(email string, requestErrors *ErrorSet) (err error) {
 }
 
 func validatePassword(password string, requestErrors *ErrorSet) (err error) {
-	isValid := len(password) >= 8
+	isValid := len(password) >= 6
 	if !isValid {
 		*requestErrors = append(*requestErrors, PasswordIsTooSmallErrorMsg)
 	}
@@ -115,10 +99,10 @@ func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
 	if !isValid {
 		*requestErrors = append(*requestErrors, InvalidNicknameErrorMsg)
 	}
-	if len(nickname) < 3 {
+	if len(nickname) <= 4 {
 		*requestErrors = append(*requestErrors, NicknameIsTooSmallErrorMsg)
 	}
-	if len(nickname) > 16 {
+	if len(nickname) >= 16 {
 		*requestErrors = append(*requestErrors, NicknameIsTooLongErrorMsg)
 	}
 	return

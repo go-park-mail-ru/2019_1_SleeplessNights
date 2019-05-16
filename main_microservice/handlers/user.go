@@ -36,10 +36,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 			Nickname: r.Form.Get("nickname"),
 		})
-
-
 	if err != nil {
-
 		switch err.Error() {
 		case errors.DataBaseUniqueViolation.Error():
 			helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
