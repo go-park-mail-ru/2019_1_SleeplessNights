@@ -186,7 +186,7 @@ func TestValidateRegisterRequestSuccessful(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
 	req.PostForm = form
 	err := req.ParseForm()
-	if err != nil{
+	if err != nil {
 		t.Errorf("Parsing form returned error: %s\n", err.Error())
 		return
 	}
@@ -218,7 +218,7 @@ func TestValidateRegisterRequestUnsuccessful(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
 	req.PostForm = form
 	err := req.ParseForm()
-	if err != nil{
+	if err != nil {
 		t.Errorf("Parsing form returned error: %s\n", err.Error())
 		return
 	}
