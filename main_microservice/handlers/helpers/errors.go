@@ -15,11 +15,11 @@ const (
 	PasswordsDoNotMatchErrorMsg = "Пароли не совпадают"
 	PasswordIsTooSmallErrorMsg  = "Пароль слишком короткий"
 	InvalidNicknameErrorMsg     = "Никнейм может состоять только из букв латинского алфавита и символов '-' и '_'"
-	NicknameIsTooSmallErrorMsg  = "Никнейм не может быть короче 3 символов"
+	NicknameIsTooSmallErrorMsg  = "Никнейм не может быть короче 4 символов"
 	NicknameIsTooLongErrorMsg   = "Никнейм не может быть длиннее 16 символов"
 	AvatarExtensionError        = "Файл имеет неподдерживаемый формат"
 	AvatarIsMissingError        = "Файл аватара не содержит данных"
-	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 10МБайт)"
+	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 2МБайт)"
 )
 
 type ErrorSet []string

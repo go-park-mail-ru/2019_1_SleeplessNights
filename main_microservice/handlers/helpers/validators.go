@@ -99,10 +99,10 @@ func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
 	if !isValid {
 		*requestErrors = append(*requestErrors, InvalidNicknameErrorMsg)
 	}
-	if len(nickname) <= 4 {
+	if len(nickname) <= 3 {
 		*requestErrors = append(*requestErrors, NicknameIsTooSmallErrorMsg)
 	}
-	if len(nickname) >= 16 {
+	if len(nickname) >= 17 {
 		*requestErrors = append(*requestErrors, NicknameIsTooLongErrorMsg)
 	}
 	return
