@@ -8,6 +8,7 @@ type Question struct {
 	Correct int      `json:"correct"`
 	Text    string   `json:"text"`
 	PackID  uint     `json:"pack_id"`
+	JSON    []byte   `json:"-"`
 }
 
 type Pack struct {
