@@ -30,5 +30,14 @@
   {
     "theme": "Экология",
     "iconPath": "ecology_icon.jpg"
+  },
+  {
+    "theme": "Литература",
+    "iconPath": "literature_icon.jpg"
+  },
+  {
+    "theme": "Биология",
+    "iconPath": "biology_icon.jpg"
+
   }
 ]

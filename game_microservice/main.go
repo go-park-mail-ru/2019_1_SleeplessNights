@@ -13,7 +13,6 @@ var logger = log.GetLogger("GameMS")
 func init() {
 	logger.SetLogLevel(logrus.TraceLevel)
 }
-
 func main() {
 	defer closer.Close()
 
