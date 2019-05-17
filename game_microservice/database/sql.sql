@@ -20,7 +20,7 @@ ALTER TABLE ONLY public.question_pack
 CREATE TABLE public.question
 (
   id      BIGSERIAL     NOT NULL,
-  answers VARCHAR(60)[] NOT NULL,
+  answers VARCHAR(200)[] NOT NULL,
   correct INTEGER       NOT NULL,
   text    TEXT          NOT NULL,
   pack_id BIGINT        NOT NULL
@@ -49,7 +49,7 @@ CREATE TYPE public.type_question_pack AS
 CREATE TYPE public.type_question AS
   (
   id BIGSERIAL,
-  answers VARCHAR(60)[],
+  answers VARCHAR(200)[],
   correct INTEGER,
   text TEXT,
   pack_id BIGINT
@@ -67,7 +67,7 @@ CREATE OR REPLACE FUNCTION public.func_add_pack(arg_theme CITEXT,
 AS
 $BODY$
 BEGIN
-  INSERT INTO public.question_pack (theme, avatar_path)
+  INSERT INTO public.question_pack (theme, icon_path)
   VALUES (arg_theme,
           arg_icon_path);
 EXCEPTION

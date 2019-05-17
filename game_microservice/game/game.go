@@ -7,6 +7,7 @@ package game
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player/factory"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/room"
@@ -92,9 +93,15 @@ func (g *gameFacade) startBalance() {
 	logger.Trace("StartBalance started")
 
 	for p := range in {
+
 		fmt.Println("Got value from channel")
 		logger.Info("Got new Player from channel g.in")
 		go func() {
+			err := p.Send(message.Message{Title: message.RoomSearching})
+			if err != nil {
+				logger.Warning("Failed to notify player with UID", p.UID())
+			}
+
 			logger.Info("goroutine Started:", "player UID", p.UID(), " looking for space room")
 			roomFound := false
 			for !roomFound {

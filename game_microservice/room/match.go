@@ -16,6 +16,7 @@ import (
 var logger *log.Logger
 
 func init() {
+
 	logger = log.GetLogger("ChatMS")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
@@ -43,19 +44,22 @@ func init() {
 //Build Environment After getting desiredPacks
 func (r *Room) buildEnv() {
 	logger.Info("Entered BuildEnv in Room")
+
 	packs, err := database.GetInstance().GetPacksOfQuestions(6)
+
 	if err != nil {
 		logger.Error("Error occurred while fetching question packs from DB:", err)
 		//TODO deal with error, maybe kill the room
 	}
-	packIDs := make([]int, len(packs))
+	logger.Info("Got packs from database")
+	packIDs := make([]uint64, 0)
 	for _, pack := range packs {
-		packIDs = append(packIDs, int(pack.ID))
+		packIDs = append(packIDs, uint64(pack.ID))
 		fieldPacks := r.field.GetThemesSlice()
 		*fieldPacks = append(*fieldPacks, message.ThemePack{pack.ID, pack.Theme})
 	}
 
-	questions, err := database.GetInstance().GetQuestions(packIDs)
+	questions, _, err := database.GetInstance().GetQuestions(packIDs)
 	if err != nil || len(questions) < game_field.QuestionsNum {
 		logger.Error("Error occurred while fetching question from DB:", err)
 		//TODO deal with error, maybe kill the room
@@ -69,8 +73,10 @@ func (r *Room) buildEnv() {
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
 
 func (r *Room) prepareMatch() {
+
 	logger.Info("Entered Prepare Match Room")
 	r.buildEnv()
+
 	r.requestsQueue = make(chan MessageWrapper, channelCapacity)
 	r.responsesQueue = make(chan MessageWrapper, channelCapacity)
 
@@ -132,9 +138,10 @@ func (r *Room) prepareMatch() {
 	r.startMatch()
 }
 
+//Вызов после отправления READY игрокам
 func (r *Room) startMatch() {
 	//   Эта процедура запускает игровой процесс
-	//   Здесь мы будем слушать все сообщения пользователей асинхронно и складывать их в очередь для обработки
+	//   Здесь мы будем слушать все сообщения пользлователей асинхронно и складывать их в очередь для обработки
 	//   В цикле мы будем обрабатывать все входные сообщения, выполнять нашу бизнес логику (менять значение таймера,
 	//   давать пользователям вопросы и т.д.)
 	//   Все сообщения мы будем складывать в очередь на отправку и отправлять всю очередь каждые 0.5 сек

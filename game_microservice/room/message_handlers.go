@@ -144,6 +144,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourQuestion, Payload: q}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentQuestion, Payload: q}}
 			r.waitForSyncMsg = "ANSWER"
+			//TODO start Timer, if
 		}
 		if e.Etype == event.WinPrize {
 			//Write to DB results of the match
