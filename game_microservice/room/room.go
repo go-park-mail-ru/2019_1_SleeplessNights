@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"sync"
+	"time"
 )
 
 //Комната - тот объект, который инкапсулирует в себе всю рботу с игровыми механиками
@@ -44,9 +45,10 @@ type Room struct {
 	p1Status       int
 	p2Status       int
 	active         *player.Player
+	mu             sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
 	field          game_field.GameField
 	waitForSyncMsg string
-	mu             sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
+	timer          *time.Timer
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно
@@ -64,10 +66,18 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 		r.p1 = p
 		r.p1Status = StatusJoined
 		logger.Infof("Player with UID %d is now p1 in room", p.UID())
+		err := r.notifyP1(message.Message{Title: "CONNECTED", Payload: "you've been added to room"})
+		if err != nil {
+			logger.Error("Failed to notify player ", p.UID())
+		}
 		found = true
 	} else if r.p2 == nil {
 		r.p2 = p
 		r.p1Status = StatusJoined
+		err := r.notifyP2(message.Message{Title: "CONNECTED", Payload: "you've been added to room"})
+		if err != nil {
+			logger.Error("Failed to notify player ", p.UID())
+		}
 		logger.Infof("Player UID %d is now p2 in room", p.UID())
 
 		found = true
@@ -79,6 +89,7 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 		//TODO Then run buildEnv after PrepareMatch
 		// In build Env составление и доставание даннных для вопросов
 		go func() {
+
 			//TODO handle possible panic
 			r.prepareMatch()
 		}()
@@ -150,6 +161,11 @@ func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 		return
 	}
 	if wm.msg.Title == message.QuestionsThemesRequest {
+		isValid = true
+		r.mu.Unlock()
+		return
+	}
+	if wm.msg.Title == message.NotDesiredPacks {
 		isValid = true
 		r.mu.Unlock()
 		return

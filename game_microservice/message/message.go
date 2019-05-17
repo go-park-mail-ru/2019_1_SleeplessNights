@@ -38,6 +38,10 @@ const (
 	ThemesRequest          = "THEMES_REQUEST"          // Массив тем игрового поля
 	QuestionsThemesRequest = "QUESTION_THEMES_REQUEST" // Массив id тем для вопросов
 
+	AvailablePacks = "AVAILABLE_PACKS" // массив все возможных паков
+
+	RoomSearching = "ROOM_SEARCHING" // Уведомление о начале поиска комната
+
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
 	//Асинхронные команды всегда принимаются и добавляются в очередь входных сообщений комнаты
@@ -62,6 +66,7 @@ const (
 	Themes          = "THEMES"          // Запрос  матрицы тем игрового поля
 	QuestionsThemes = "QUESTION_THEMES" // Массив id тем для вопросов
 
+	NotDesiredPacks = "NOT_DESIRED_PACKS" // массив нежелательных паки
 )
 
 type Message struct {
@@ -168,6 +173,10 @@ func (m *Message) IsValid() bool {
 			return true
 		}
 	case QuestionsThemesRequest:
+		{
+			return true
+		}
+	case NotDesiredPacks:
 		{
 			return true
 		}

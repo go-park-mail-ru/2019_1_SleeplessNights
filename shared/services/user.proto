@@ -46,6 +46,10 @@ message Nothing {
 
 }
 
+message UserId {
+    uint64 id = 1;
+}
+
 service UserMS {
     rpc CheckToken         (SessionToken)  returns (User)            {}
     rpc MakeToken          (UserSignature) returns (SessionToken)    {}
@@ -54,5 +58,6 @@ service UserMS {
     rpc UpdateProfile      (User)          returns (User)            {}
     rpc GetLeaderBoardPage (PageData)      returns (LeaderBoardPage) {}
     rpc ClearDB            (Nothing)       returns (Nothing)         {}
+    rpc GetUserById        (UserId)        returns (User)            {}
 }
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
@@ -16,8 +16,8 @@ import (
 var logger *log.Logger
 
 const (
-	fieldSize = 8
-
+	fieldSize    = 8
+	TurnDuration = 15 * time.Second
 	QuestionsNum = 60
 )
 
@@ -32,7 +32,7 @@ func init() {
 type gameCell struct {
 	isAvailable  bool
 	answerResult int
-	question     *models.Question
+	question     *database.Question
 }
 
 type pair struct {
@@ -56,7 +56,7 @@ type GameField struct {
 	//Out   []event.Event
 	regX        int
 	regY        int
-	regQuestion models.Question
+	regQuestion database.Question
 
 	//Тут уровень абстракции уже достаточно постой для понимания, поэтому оставляю реализацию на ваше усмотрение
 	//По ответственности, если навскидку, игровое поле должно:
@@ -92,7 +92,7 @@ func (gf *GameField) GetQuestionsThemes() (packArray []uint) {
 	}
 	return
 }
-func Shuffle(questions *[]models.Question) {
+func Shuffle(questions *[]database.Question) {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	for n := len(*questions); n > 0; n-- {
 		randIndex := r.Intn(n)
@@ -100,7 +100,7 @@ func Shuffle(questions *[]models.Question) {
 	}
 
 }
-func (gf *GameField) Build(qArray []models.Question) {
+func (gf *GameField) Build(qArray []database.Question) {
 	Shuffle(&qArray)
 	qSlice := qArray
 
@@ -283,7 +283,14 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		return
 	}
 	gf.regQuestion = *(gf.GetQuestionByCell(nextX, nextY))
-	question, err := json.Marshal(gf.GetQuestionByCell(nextX, nextY))
+	payload := struct {
+		Question database.Question
+		Time     time.Duration
+	}{
+		Question: gf.regQuestion,
+		Time:     TurnDuration,
+	}
+	question, err := json.Marshal(payload)
 	if err != nil {
 		logger.Info("question unmarshal error")
 		return
@@ -295,9 +302,9 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	return
 }
 
-func (gf *GameField) GetQuestionByCell(x, y int) (question *models.Question) {
+func (gf *GameField) GetQuestionByCell(x, y int) (question *database.Question) {
 	logger.Infof("GetQuestionByCell x:%d,y:%d ", x, y)
-	question = (gf.field[x][y].question)
+	question = gf.field[x][y].question
 	return
 }
 
@@ -344,7 +351,7 @@ func (gf *GameField) CheckAnswer(answerIdx int) bool {
 	(gf.field[gf.regY][gf.regX]).answerResult = -1
 	return false
 }
-func (gf *GameField) GetRegisterQuestion() models.Question {
+func (gf *GameField) GetRegisterQuestion() database.Question {
 	return gf.regQuestion
 }
 
