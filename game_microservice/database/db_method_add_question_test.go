@@ -37,7 +37,7 @@ func TestAddQuestionSuccessful(t *testing.T) {
 
 	ids := []uint64{1}
 
-	questions, _,  err := database.GetInstance().GetQuestions(ids)
+	questions, err := database.GetInstance().GetQuestions(ids)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
