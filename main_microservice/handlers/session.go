@@ -3,10 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"net/http"
+	"regexp"
 )
 
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,14 +28,27 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	if err != nil {
 		logger.Errorf("Failed to make token: %v", err.Error())
-		switch err.Error() {
-		case errors.DataBaseNoDataFound.Error():
+		patternUV := `unique violation`
+		matchedUV, _err := regexp.Match(patternUV, []byte(err.Error()))
+		if _err != nil {
+			logger.Errorf("Failed to match: %v", _err.Error())
+			helpers.Return500(&w, _err)
+			return
+		}
+		patternNDF := `no data found`
+		matchedNDF, _err := regexp.Match(patternNDF, []byte(err.Error()))
+		if _err != nil {
+			logger.Errorf("Failed to match: %v", _err.Error())
+			helpers.Return500(&w, _err)
+			return
+		}
+		if matchedUV {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
 			return
-		case errors.AuthWrongPassword.Error():
+		} else if matchedNDF {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
 			return
-		default:
+		} else {
 			helpers.Return500(&w, err)
 			return
 		}
