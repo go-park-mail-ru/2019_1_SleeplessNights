@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
@@ -67,7 +68,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AuthDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_token")
+	cookie, err := r.Cookie(config.GetString("main_ms.pkg.helpers.cookie.name"))
 	if err != nil {
 		r.Header.Add("Referer", r.URL.String())
 		w.WriteHeader(http.StatusBadRequest)

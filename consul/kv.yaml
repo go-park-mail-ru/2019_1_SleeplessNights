@@ -1,3 +1,15 @@
 dev:
   main_ms: #Конфигурация main microservice
+    log_level: 4 #logrus.InfoLevel
     port: 8080
+    pkg:
+      handlers:
+        log_level: 4 #logrus.InfoLevel
+        avatar_prefix: "/main_microservice/static/img/"
+        leaderborad_page_len: 10
+      helpers:
+        cookie:
+          name: "session_token"
+          life_len: "10h"
+          http_only: true
+          secure: false
