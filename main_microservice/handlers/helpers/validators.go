@@ -16,7 +16,7 @@ const (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("MM_Validator")
+	logger = log.GetLogger("Validator")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 

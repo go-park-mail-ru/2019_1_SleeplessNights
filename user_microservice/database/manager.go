@@ -19,7 +19,7 @@ const (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("UM_DB")
+	logger = log.GetLogger("DataBase")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 

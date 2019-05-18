@@ -11,7 +11,7 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("MM_Handlers")
+	logger = log.GetLogger("Handlers")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 

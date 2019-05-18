@@ -19,7 +19,7 @@ const (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("UM_Auth")
+	logger = log.GetLogger("User")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
