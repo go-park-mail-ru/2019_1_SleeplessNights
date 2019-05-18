@@ -3,9 +3,9 @@ package database
 import (
 	"encoding/json"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/sirupsen/logrus"
 
 	"github.com/jackc/pgx"
-	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
 	"os"
 	"time"
@@ -20,7 +20,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("UM_DB")
-	logger.SetLogLevel(logrus.ErrorLevel)
+	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 type dbConfig struct {

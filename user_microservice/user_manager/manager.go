@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	sessionLifeLen = 4 * time.Hour
-	nodataFound = "P0002"
+	sessionLifeLen  = 4 * time.Hour
+	nodataFound     = "P0002"
 	uniqueViolation = "23505"
 )
 
@@ -20,7 +20,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("UM_Auth")
-	logger.SetLogLevel(logrus.ErrorLevel)
+	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 var user *userManager
@@ -56,14 +56,14 @@ func GetInstance() *userManager {
 	return user
 }
 
-func handlerError(pgError pgx.PgError) (error error) {
+func handlerError(pgError pgx.PgError) (err error) {
 	switch pgError.Code {
 	case uniqueViolation:
-		error = errors.DataBaseUniqueViolation
+		err = errors.DataBaseUniqueViolation
 	case nodataFound:
-		error = errors.DataBaseNoDataFound
+		err = errors.DataBaseNoDataFound
 	default:
-		error = pgError
+		err = pgError
 	}
 	return
 }

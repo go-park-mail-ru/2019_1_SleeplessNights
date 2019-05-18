@@ -12,7 +12,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("MM_Handlers")
-	logger.SetLogLevel(logrus.ErrorLevel)
+	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 var userManager services.UserMSClient

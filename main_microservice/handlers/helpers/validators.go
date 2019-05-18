@@ -17,7 +17,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("MM_Validator")
-	logger.SetLogLevel(logrus.ErrorLevel)
+	logger.SetLogLevel(logrus.TraceLevel)
 }
 
 var avatarTypeWhiteList map[string]struct{}
