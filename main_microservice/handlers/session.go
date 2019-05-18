@@ -16,6 +16,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 			helpers.FormParsingErrorMsg,
 			err.Error(),
 		}
+		logger.Errorf("Failed to parse form: %v", err.Error())
 		helpers.Return400(&w, formErrorMessages)
 		return
 	}
@@ -26,6 +27,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 		})
 	if err != nil {
+		logger.Errorf("Failed to make token: %v", err.Error())
 		switch err.Error() {
 		case errors.DataBaseNoDataFound.Error():
 			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
@@ -44,17 +46,20 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := userManager.CheckToken(context.Background(), sessionToken)
 	if err != nil {
+		logger.Errorf("Failed to check token: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 
 	data, err := json.Marshal(user)
 	if err != nil {
+		logger.Errorf("Failed to marshal user: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 	_, err = w.Write(data)
 	if err != nil {
+		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
@@ -63,6 +68,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 func AuthDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
+		logger.Errorf("Failed to get cookie: %v", err.Error())
 		r.Header.Add("Referer", r.URL.String())
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -73,6 +79,7 @@ func AuthDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 	_, err = w.Write([]byte("{}"))
 	if err != nil {
+		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}

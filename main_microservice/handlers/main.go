@@ -11,7 +11,8 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("Handlers")
+	logger = log.GetLogger("MM_Handlers")
+	logger.SetLogLevel(logrus.ErrorLevel)
 }
 
 var userManager services.UserMSClient

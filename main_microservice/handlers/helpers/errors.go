@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -74,11 +73,11 @@ func Return500(w *http.ResponseWriter, err error) {
 	data := ErrorSet{err.Error()}
 	jsonData, err := MarshalToJSON(data)
 	if err != nil {
-		log.Println("Error while marshaling json for 500 response")
+		logger.Errorf("Error while marshaling json for 500 response")
 	}
 	_, err = (*w).Write(jsonData)
 	if err != nil {
-		log.Println("Error while writing request body for 500 response")
+		logger.Errorf("Error while writing request body for 500 response")
 	}
 }
 
@@ -87,12 +86,12 @@ func Return400(w *http.ResponseWriter, requestErrorMessages ErrorSet) {
 	data := requestErrorMessages
 	jsonData, err := MarshalToJSON(data)
 	if err != nil {
-		log.Println("Error while marshaling json for 400 response")
+		logger.Errorf("Error while marshaling json for 400 response")
 		Return500(w, err)
 	}
 	_, err = (*w).Write(jsonData)
 	if err != nil {
-		log.Println("Error while writing request body for 400 response")
+		logger.Errorf("Error while writing request body for 400 response")
 		Return500(w, err)
 	}
 }

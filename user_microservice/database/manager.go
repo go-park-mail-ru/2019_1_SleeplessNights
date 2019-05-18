@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 
 	"github.com/jackc/pgx"
@@ -17,16 +16,11 @@ const (
 	acquireTimeout = 3 * time.Second
 )
 
-const (
-	SQLNoRows   = "sql: no rows in result set"
-	NoUserFound = "БД: Не был найден юзер"
-)
-
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("DB")
-	logger.SetLogLevel(logrus.DebugLevel)
+	logger = log.GetLogger("UM_DB")
+	logger.SetLogLevel(logrus.ErrorLevel)
 }
 
 type dbConfig struct {
@@ -40,19 +34,19 @@ type dbConfig struct {
 func loadConfiguration(file string) (pgxConfig pgx.ConnConfig) {
 	configFile, err := os.Open(file)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Errorf("Failed to open file: %v", err.Error())
 		return
 	}
 	var config dbConfig
 	jsonParser := json.NewDecoder(configFile)
 	err = jsonParser.Decode(&config)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Errorf("Failed to decode config: %v", err.Error())
 		return
 	}
 	err = configFile.Close()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Errorf("Failed to close file: %v", err.Error())
 		return
 	}
 
@@ -78,10 +72,10 @@ func init() {
 
 	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Fatalf("Failed to get conn pool: %v", err.Error())
 	}
 
-	fmt.Println("DB connection opened")
+	logger.Info("DB connection opened")
 
 	db = &dbManager{
 		dataBase: dataBase,
@@ -91,7 +85,7 @@ func init() {
 }
 func closeConnection() {
 	db.dataBase.Close()
-	fmt.Println("DB connection closed")
+	logger.Info("DB connection closed")
 }
 
 func GetInstance() *dbManager {
