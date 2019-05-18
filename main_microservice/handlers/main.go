@@ -21,7 +21,7 @@ var userManager services.UserMSClient
 func init() {
 	logger.SetLogLevel(logrus.DebugLevel)
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {

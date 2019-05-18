@@ -17,3 +17,8 @@ dev:
     log_level: 4 #logrus.InfoLevel
     address: "127.0.0.1:8081"
     pkg:
+      user_manager:
+        session_life_len: "10h"
+      database:
+        max_connections: 100
+        acquire_timeout: "3s"

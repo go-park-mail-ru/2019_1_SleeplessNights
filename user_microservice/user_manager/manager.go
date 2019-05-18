@@ -2,16 +2,15 @@ package user_manager
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 	"os"
-	"time"
 )
 
 const (
-	sessionLifeLen  = 4 * time.Hour
 	nodataFound     = "P0002"
 	uniqueViolation = "23505"
 )
@@ -20,7 +19,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("User")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("user_ms.log_level")))
 }
 
 var user *userManager

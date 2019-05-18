@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -26,7 +27,7 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -115,7 +116,7 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -218,7 +219,7 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -267,7 +268,7 @@ func TestAuthDeleteHandlerSuccessful(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {

@@ -3,6 +3,7 @@ package user_manager
 import (
 	"bytes"
 	"github.com/gbrlsnchs/jwt/v3"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
@@ -11,6 +12,8 @@ import (
 	"strconv"
 	"time"
 )
+
+const defaultSessionLifeLen  = 4 * time.Hour
 
 func (us *userManager) CheckToken(ctx context.Context, in *services.SessionToken) (*services.User, error) {
 	rawToken, err := jwt.Parse([]byte(in.Token))
@@ -68,6 +71,10 @@ func (us *userManager) MakeToken(ctx context.Context, in *services.UserSignature
 
 	signer := jwt.NewHMAC(jwt.SHA512, us.secret)
 	header := jwt.Header{}
+	sessionLifeLen, err := time.ParseDuration(config.GetString("user_ms.pkg.user_manager.session_life_len"))
+	if err != nil {
+		sessionLifeLen = defaultSessionLifeLen
+	}
 	expiresAt := time.Now().Add(sessionLifeLen)
 	payload := jwt.Payload{
 		ExpirationTime: expiresAt.Unix(),

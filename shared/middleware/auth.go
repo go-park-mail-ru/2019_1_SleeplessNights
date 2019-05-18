@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/xlab/closer"
@@ -20,7 +21,7 @@ var userManager services.UserMSClient
 func init() {
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {

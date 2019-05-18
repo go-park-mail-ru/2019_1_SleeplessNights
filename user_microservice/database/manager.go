@@ -2,25 +2,26 @@ package database
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
+	"time"
 
 	"github.com/jackc/pgx"
 	"github.com/xlab/closer"
 	"os"
-	"time"
 )
 
-const (
-	maxConnections = 3
-	acquireTimeout = 3 * time.Second
+var (
+	maxConnections = config.GetInt("user_ms.pkg.database.max_connections")
+	acquireTimeout time.Duration
 )
 
 var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("DataBase")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("user_ms.log_level")))
 }
 
 type dbConfig struct {
