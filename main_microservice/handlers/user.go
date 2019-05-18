@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"net/http"
@@ -41,8 +42,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	if err != nil {
 		logger.Errorf("Failed to create user: %v", err.Error())
-		patternUV := `unique violation`
-		matchedUV, _err := regexp.Match(patternUV, []byte(err.Error()))
+		matchedUV, _err := regexp.Match(errors.DataBaseUniqueViolation.Error(), []byte(err.Error()))
 		if _err != nil {
 			logger.Errorf("Failed to match: %v", _err.Error())
 			helpers.Return500(&w, _err)
