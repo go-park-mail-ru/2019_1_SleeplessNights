@@ -13,3 +13,7 @@ dev:
           life_len: "10h"
           http_only: true
           secure: false
+  user_ms: #Конфигурация user microservice
+    log_level: 4 #logrus.InfoLevel
+    address: "127.0.0.1:8081"
+    pkg:

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/user_manager"
@@ -14,14 +15,14 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("AuthMS")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("user_ms.log_level")))
 }
 
 func main() {
 	logger.SetLogLevel(logrus.DebugLevel)
 	defer closer.Close()
 
-	lis, err := net.Listen("tcp", ":8081")
+	lis, err := net.Listen("tcp", config.GetString("user_ms.address"))
 	if err != nil {
 		logger.Fatal("Auth microservice can't listen port", err)
 	}
