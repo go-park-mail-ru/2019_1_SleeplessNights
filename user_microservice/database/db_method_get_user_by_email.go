@@ -8,6 +8,7 @@ func (db *dbManager) GetUserByEmail(email string) (user services.User, err error
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
+		logger.Errorf("Failed to begin tx: %v", err.Error())
 		return
 	}
 	defer tx.Rollback()
@@ -20,9 +21,14 @@ func (db *dbManager) GetUserByEmail(email string) (user services.User, err error
 		&user.Nickname,
 		&user.AvatarPath)
 	if err != nil {
+		logger.Errorf("Failed to get row: %v", err.Error())
 		return
 	}
 
 	err = tx.Commit()
+	if err !=  nil {
+		logger.Errorf("Failed to commit tx: %v", err.Error())
+		return
+	}
 	return
 }
