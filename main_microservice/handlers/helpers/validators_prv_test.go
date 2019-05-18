@@ -215,15 +215,15 @@ func TestValidateNicknameUnsuccessful(t *testing.T) {
 		},
 		{
 			number:   5,
-			nickname: "?asd",
+			nickname: "f?asd",
 		},
 		{
 			number:   6,
-			nickname: "!asd",
+			nickname: "sdfsdf!asd",
 		},
 		{
 			number:   7,
-			nickname: "\asd",
+			nickname: "\a/sd",
 		},
 	}
 

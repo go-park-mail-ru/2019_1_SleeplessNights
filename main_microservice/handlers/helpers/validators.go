@@ -92,7 +92,7 @@ func validatePassword(password string, requestErrors *ErrorSet) (err error) {
 }
 
 func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
-	isValid, err := regexp.Match("^[A-Za-z0-9_-]", []byte(nickname))
+	isValid, err := regexp.Match("^[a-zA-Z0-9-_]*$", []byte(nickname))
 	if err != nil {
 		return
 	}
