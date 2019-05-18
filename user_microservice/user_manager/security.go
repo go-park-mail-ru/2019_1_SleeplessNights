@@ -13,6 +13,10 @@ const (
 func MakeSalt() (salt []byte, err error) {
 	salt = make([]byte, saltLen)
 	_, err = rand.Read(salt) //Заполняем слайс случайными значениями по всей его длине
+	if err != nil {
+		logger.Errorf("Failed to read salt: %v", err.Error())
+		return
+	}
 	return
 }
 

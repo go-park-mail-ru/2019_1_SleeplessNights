@@ -13,6 +13,7 @@ func (us *userManager) CreateUser(ctx context.Context, in *services.NewUserData)
 
 	salt, err := MakeSalt()
 	if err != nil {
+		logger.Errorf("Failed to make salt: %v", err.Error())
 		return nil, err
 	}
 
@@ -20,6 +21,7 @@ func (us *userManager) CreateUser(ctx context.Context, in *services.NewUserData)
 
 	user, err := database.GetInstance().AddUser(in.Email, in.Nickname, defaultAvatar, password, salt)
 	if _err, ok := err.(pgx.PgError); ok {
+		logger.Errorf("Failed to add user: %v", err.Error())
 		err = handlerError(_err)
 		return nil, err
 	}

@@ -13,7 +13,7 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("AuthMS")
+	logger = log.GetLogger("UM_AuthMS")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
