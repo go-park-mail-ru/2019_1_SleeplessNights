@@ -135,3 +135,11 @@ func (r *Room) startGameProcess() {
 
 	logger.Infof("StartMatch : Game process has started p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 }
+
+func (r *Room) changeTurn() {
+	if (*r.active).ID() == r.p1.ID() {
+		r.active = &r.p2
+	} else {
+		r.active = &r.p1
+	}
+}

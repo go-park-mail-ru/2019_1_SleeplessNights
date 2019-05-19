@@ -32,7 +32,8 @@ func (r *Room) StartRequestsListening() {
 				logger.Error("Got message with invalid structure")
 				continue
 			}
-
+			logger.Info("Message Passed Sync Valid")
+			logger.Info("Message Entered Sync Valid")
 			if !r.isSyncValid(msg) {
 				logger.Warningf("Got SyncInvalid message of type %s from player UID %d, expected %s from player %d",
 					msg.msg.Title, (*msg.player).UID(), r.waitForSyncMsg, r.active)

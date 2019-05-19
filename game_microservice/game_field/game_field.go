@@ -11,16 +11,16 @@ var logger *log.Logger
 
 const (
 	fieldSize    = 8
-	TurnDuration = 15 * time.Second
+	TurnDuration = 20 * time.Second
 	QuestionsNum = 60
 )
 
-var prizePos []pair
+var prizePos []Pair
 
 //В начале игры игроков не существует никаких позиций, они находятся как бы вне поля
 func init() {
 	logger = log.GetLogger("GameMS")
-	prizePos = []pair{{3, 3}, {3, 4}, {4, 3}, {4, 4}}
+	prizePos = []Pair{{3, 3}, {3, 4}, {4, 3}, {4, 4}}
 }
 
 type GameField struct {
@@ -55,13 +55,13 @@ func (gf *GameField) GetCurrentState() string {
 	for i := 0; i < fieldSize; i++ {
 		for j := 0; j < fieldSize; j++ {
 			if gf.p1.pos != nil {
-				if (*gf.p1.pos) == (pair{j, i}) {
+				if (*gf.p1.pos) == (Pair{j, i}) {
 					fieldState = fieldState + "|P1"
 					continue
 				}
 			}
 			if gf.p2.pos != nil {
-				if (*gf.p2.pos) == (pair{j, i}) {
+				if (*gf.p2.pos) == (Pair{j, i}) {
 					fieldState = fieldState + "|P2"
 					continue
 				}

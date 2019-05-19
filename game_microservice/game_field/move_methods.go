@@ -19,18 +19,18 @@ func isPrizePosition(x, y int) bool {
 	return false
 }
 
-func (gf *GameField) checkWinner(player pair) (hasWon bool) {
+func (gf *GameField) checkWinner(player Pair) (hasWon bool) {
 	if isPrizePosition(player.X, player.Y) {
 		return true
 	}
 	return false
 }
 
-func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) {
+func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []Pair) {
 	var rowIdx int
 	var secondPlayer *gfPlayer
 	var player *gfPlayer
-	cellsCoordinates = make([]pair, 0)
+	cellsCoordinates = make([]Pair, 0)
 	if playerIdx == 1 {
 		player = &gf.p1
 		rowIdx = 7
@@ -46,7 +46,7 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 	if player.pos == nil {
 		for x := 0; x < fieldSize; x++ {
 			if gf.field[rowIdx][x].isAvailable {
-				cellsCoordinates = append(cellsCoordinates, pair{x, rowIdx})
+				cellsCoordinates = append(cellsCoordinates, Pair{x, rowIdx})
 			}
 		}
 		return
@@ -60,12 +60,12 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []pair) 
 			if rowIdx >= 0 && rowIdx < fieldSize && colIdx >= 0 && colIdx < fieldSize {
 				if gf.field[rowIdx][colIdx].isAvailable {
 					if secondPlayer.pos == nil {
-						if (pair{colIdx, rowIdx} != *player.pos) {
-							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						if (Pair{colIdx, rowIdx} != *player.pos) {
+							cellsCoordinates = append(cellsCoordinates, Pair{colIdx, rowIdx})
 						}
 					} else {
-						if (pair{colIdx, rowIdx} != *player.pos) && (pair{colIdx, rowIdx} != *secondPlayer.pos) {
-							cellsCoordinates = append(cellsCoordinates, pair{colIdx, rowIdx})
+						if (Pair{colIdx, rowIdx} != *player.pos) && (Pair{colIdx, rowIdx} != *secondPlayer.pos) {
+							cellsCoordinates = append(cellsCoordinates, Pair{colIdx, rowIdx})
 						}
 					}
 
@@ -89,7 +89,7 @@ func (gf *GameField) Move(playerIdx int) {
 
 	//TODO этот метод должен получать ответ на regQuestion и проверять правильноть этого ответа
 	if player.pos == nil {
-		player.pos = &pair{gf.regX, gf.regY}
+		player.pos = &Pair{gf.regX, gf.regY}
 	} else {
 		player.pos.X = gf.regX
 		player.pos.Y = gf.regY
@@ -146,7 +146,7 @@ func (gf *GameField) CheckIfMovesAvailable(playerId int) bool {
 //Выполняет доставание вопроса из матрицы Игрового поля
 func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []event.Event, err error) {
 
-	//destination := pair{nextX, nextY}
+	//destination := Pair{nextX, nextY}
 	//TODO проверить, что destination isAvailable
 
 	//Запись в регистр положения игрока, вопроса,
@@ -155,7 +155,7 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 
 	//Здесь проверяем, если следущая клетка выигрышная
 
-	if gf.checkWinner(pair{nextX, nextY}) {
+	if gf.checkWinner(Pair{nextX, nextY}) {
 		e = make([]event.Event, 0)
 		e = append(e, event.Event{Etype: event.WinPrize, Edata: nil})
 		return

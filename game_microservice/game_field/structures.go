@@ -8,13 +8,13 @@ type gameCell struct {
 	question     *database.Question
 }
 
-type pair struct {
+type Pair struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 }
 
 type gfPlayer struct {
-	pos          *pair //Поставил указатель на pair, чтобы pos поддерживала значение nil (начальные условия)
+	pos          *Pair //Поставил указатель на Pair, чтобы pos поддерживала значение nil (начальные условия)
 	rightAnswers int
 	falseAnswers int
 	partyCounter int

@@ -21,6 +21,8 @@ const (
 	channelCapacity  = 50
 	packTotal        = 10
 	packsPerPlayer   = 2
+	timeToAnswer     = 20
+	timeToMove       = 20
 )
 
 const (
@@ -51,7 +53,8 @@ type Room struct {
 	mu             sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
 	field          game_field.GameField
 	waitForSyncMsg string
-	timer          *time.Timer
+	timerToAnswer  *time.Timer
+	timerToMove    *time.Timer
 	syncChan       chan bool
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
@@ -63,13 +66,13 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	//1. 2 места свободно -> занимаем первое место
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
 	logger.Infof("player with UID %d entered Try Join", p.UID())
-	r.mu.Lock()
+
 	found := false
 
 	if r.p1 == nil {
 		r.p1 = p
 		r.p1Status = StatusJoined
-		logger.Infof("Player with UID %d is now p1 in room", p.UID())
+		logger.Infof("Player  with UID %d is now p1 in room", p.UID())
 		err := r.notifyP1(message.Message{Title: "CONNECTED", Payload: "you've been added to room"})
 		if err != nil {
 			logger.Error("Failed to notify player ", p.UID())
@@ -95,7 +98,6 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 		r.StartResponsesSender()
 		go r.startGameProcess()
 	}
-	r.mu.Unlock()
 	return found
 }
 

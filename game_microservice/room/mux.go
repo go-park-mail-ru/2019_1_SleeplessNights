@@ -3,6 +3,7 @@ package room
 import "github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 
 func (r *Room) MessageHandlerMux(m MessageWrapper) {
+
 	switch m.msg.Title {
 
 	case message.Ready:
@@ -43,6 +44,10 @@ func (r *Room) MessageHandlerMux(m MessageWrapper) {
 	case message.NotDesiredPack:
 		{
 			r.PackSelectorHandler(m)
+		}
+	default:
+		{
+			logger.Error("MessageHandlerMux, unknown title")
 		}
 	}
 }

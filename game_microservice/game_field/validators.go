@@ -3,7 +3,7 @@ package game_field
 import "math"
 
 func (gf *GameField) validateMoveCoordinates(player *gfPlayer, nextX int, nextY int) bool {
-	nextPos := pair{nextX, nextY}
+	nextPos := Pair{nextX, nextY}
 	//Убрать Валидацию поля в GameField
 
 	if nextX > fieldSize || nextY > fieldSize || nextX < 0 || nextY < 0 {
