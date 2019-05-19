@@ -6,53 +6,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 )
 
-func (r *Room) MessageHandlerMux(m MessageWrapper) {
-	switch m.msg.Title {
-
-	case message.Ready:
-		{
-			r.ReadyHandler(m)
-		}
-	case message.GoTo:
-		{
-			r.GoToHandler(m)
-		}
-	case message.ClientAnswer:
-		{
-			r.ClientAnswerHandler(m)
-		}
-	case message.Leave:
-		{
-			r.LeaveHandler(m)
-		}
-
-	case message.Continue:
-		{
-			r.ContinueHandler(m)
-		}
-	case message.ChangeOpponent:
-		{
-			r.ChangeOpponentHandler(m)
-		}
-	case message.Quit:
-		{
-			r.QuitHandler(m)
-		}
-	case message.State:
-		{
-			r.CurrentStateHandler(m)
-		}
-	case message.ThemesRequest:
-		{
-			r.ThemesRequestHandler(m)
-		}
-	case message.QuestionsThemesRequest:
-		{
-			r.QuestionsThemesHandler(m)
-		}
-	}
-}
-
 func (r *Room) ReadyHandler(m MessageWrapper) bool {
 	r.mu.Lock()
 
@@ -147,7 +100,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			//TODO start Timer, if
 		}
 		if e.Etype == event.WinPrize {
-			//Write to DB results of the match
+			//Write to DB results of the
 			logger.Info("player", (*r.active).ID(), "Has Won the prize")
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Win, Payload: nil}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Loss, Payload: nil}}
@@ -298,9 +251,7 @@ func (r *Room) ChangeOpponentHandler(m MessageWrapper) bool {
 		//thisPlayer = &r.p2
 		secondPlayer = &r.p1
 	}
-
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
-
 	r.mu.Unlock()
 	return true
 
@@ -314,11 +265,9 @@ func (r *Room) QuitHandler(m MessageWrapper) bool {
 	//var thisPlayer *player.Player
 
 	if &r.p1 == m.player {
-		///	thisPlayer=&r.p1
 		secondPlayer = &r.p2
 	}
 	if &r.p2 == m.player {
-		///	thisPlayer = &r.p2
 		secondPlayer = &r.p1
 	}
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
@@ -342,13 +291,55 @@ func (r *Room) CurrentStateHandler(m MessageWrapper) {
 	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.CurrentState, Payload: message.GameState{r.field.GetCurrentState()}}}
 }
 
-func (r *Room) ThemesRequestHandler(m MessageWrapper) {
-	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.Themes, Payload: r.field.GetThemesSlice()}}
+func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
+	r.mu.Lock()
 
-}
+	st, ok := m.msg.Payload.(map[string]interface{})
+	if !ok {
+		logger.Error("PackSelectorHandler, couldn't cast payload with pack_id to map[string]interface{}")
+	}
+	pack_id, ok := st["pack_id"].(float64)
+	if !ok {
+		logger.Error(`PackSelectorHandler, couldn't find value in map st with key "pack_id" `)
+	}
 
-//Maybe send response to websocket connection without request
-func (r *Room) QuestionsThemesHandler(m MessageWrapper) {
-	packArray := r.field.GetQuestionsThemes()
-	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.QuestionsThemes, Payload: packArray}}
+	packs := r.field.GetPacksSlice()
+
+	var secondPlayer *player.Player
+	var thisPlayer *player.Player
+
+	if &r.p1 == m.player {
+		thisPlayer = &r.p1
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		thisPlayer = &r.p2
+		secondPlayer = &r.p1
+	}
+
+	for i, pack := range *packs {
+		if pack.ID == uint64(pack_id) {
+			(*packs)[i] = (*packs)[len(*packs)-1] // Replace it with the last one. CAREFUL only works if you have enough elements.
+			*packs = (*packs)[:len(*packs)-1]     // Chop off the last one.
+			break
+		}
+		if i+1 == len(*packs) {
+			logger.Error("pack with id", pack_id, "wasn't found in packs slice")
+		}
+	}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{uint64(pack_id)}}}
+
+	if len(*packs) == packTotal-2*packsPerPlayer {
+		r.waitForSyncMsg = "READY"
+		go r.prepareMatch()
+
+		r.mu.Unlock()
+		return true
+	}
+
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
+	r.changeTurn()
+	r.mu.Unlock()
+	return true
 }
