@@ -1,10 +1,11 @@
-package chat_room
+package room
 
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -13,58 +14,59 @@ const (
 	limit          uint64 = 20
 )
 
-var chat *chatRoom
+var chat *room
 
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("DB")
+	logger = log.GetLogger("Room")
+	logger.SetLogLevel(logrus.TraceLevel)
 }
 
-type chatRoom struct {
+type room struct {
 	maxConnections int64
 	Id             uint64
-	authorPool     map[uint64]*Author
+	usersPool      map[uint64]*User
 	mx             sync.Mutex
 }
 
 func init() {
-	id, err := database.GetInstance().CreateRoom(nil)
+	id, err := database.GetInstance().AddRoom(nil)
 	if err != nil {
 		logger.Error("Chat_room init", err)
 	}
-	chat = &chatRoom{
+	chat = &room{
 		Id:             id,
 		maxConnections: maxConnections,
-		authorPool:     make(map[uint64]*Author),
+		usersPool:      make(map[uint64]*User),
 	}
 }
 
-func GetInstance() *chatRoom {
+func GetInstance() *room {
 	return chat
 }
 
-func (chat *chatRoom) Join(author Author) {
-	logger.Info("User ", author.Nickname, "Joined room")
+func (chat *room) Join(user User) {
+	logger.Info("User ", user.Nickname, "Joined room")
 
 	chat.mx.Lock()
-	chat.authorPool[author.Id] = &author
+	chat.usersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	logger.Info("Started Listening from User", author.Nickname)
+	logger.Info("Started Listening from User", user.Nickname)
 	go func() {
-		author.StartListen(chat.Id)
+		user.StartListen(chat.Id)
 		wg.Done()
 	}()
 	chat.mx.Unlock()
 	wg.Wait()
 	chat.mx.Lock()
-	logger.Info(" User", author.Nickname, "is Leaving Chat Room")
-	delete(chat.authorPool, author.Id)
+	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
+	delete(chat.usersPool, user.Id)
 	chat.mx.Unlock()
 }
 
-type Author struct {
+type User struct {
 	Conn       *websocket.Conn
 	Nickname   string
 	AvatarPath string
@@ -91,19 +93,19 @@ type ScrollPayload struct {
 
 type ResponseMessage struct {
 	Nickname   string `json:"nickname"`
-	AvatarPath string `json:"avatar_path"`
+	AvatarPath string `json:"avatarPath"`
 	Id         uint64 `json:"id"`
 	Text       string `json:"text"`
 }
 
-func (author *Author) StartListen(roomId uint64) {
+func (us *User) StartListen(roomId uint64) {
 
 	var msg Message
 	for {
-		err := author.Conn.ReadJSON(&msg)
+		err := us.Conn.ReadJSON(&msg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err) {
-				logger.Infof("Player %d closed the connection", author.Id)
+				logger.Infof("Player %d closed the connection", us.Id)
 				return
 			}
 		}
@@ -126,9 +128,9 @@ func (author *Author) StartListen(roomId uint64) {
 			//TODO switch for payload types
 
 			respMsg := ResponseMessage{
-				Nickname:   author.Nickname,
-				AvatarPath: author.AvatarPath,
-				Id:         author.Id,
+				Nickname:   us.Nickname,
+				AvatarPath: us.AvatarPath,
+				Id:         us.Id,
 				Text:       text,
 			}
 
@@ -137,13 +139,13 @@ func (author *Author) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			err = database.GetInstance().PostMessage(respMsg.Id, roomId, bytes)
+			err = database.GetInstance().AddMessage(respMsg.Id, roomId, bytes)
 			if err != nil {
 				logger.Error(err.Error())
 			}
 
-			for _, u := range chat.authorPool {
-				err = u.Conn.WriteJSON(respMsg)
+			for _, user := range chat.usersPool {
+				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())
 				}
@@ -166,7 +168,7 @@ func (author *Author) StartListen(roomId uint64) {
 					logger.Error(err.Error())
 				}
 				logger.Info(messages)
-				err = author.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
+				err = us.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
 				if err != nil {
 					logger.Error(err.Error())
 				}

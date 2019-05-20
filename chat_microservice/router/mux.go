@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/router/handlers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/handlers"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/middleware"
 	"github.com/gorilla/mux"
@@ -11,7 +11,7 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("ChatMS")
+	logger = log.GetLogger("Router")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 

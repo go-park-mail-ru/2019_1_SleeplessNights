@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/chat_room"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/room"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
@@ -21,11 +21,11 @@ const (
 )
 
 func init() {
-	logger = log.GetLogger("ChatMS")
+	logger = log.GetLogger("Handlers")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
-func EnterChat(user services.User, w http.ResponseWriter, r *http.Request) {
+func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -33,9 +33,8 @@ func EnterChat(user services.User, w http.ResponseWriter, r *http.Request) {
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	logger.Info("Someone's connected to websocket chat, Id:%d", user.Id)
-
 	if err != nil {
-		logger.Error(`micro service error in "EnterChat" during connection"`, err)
+		logger.Error(`Micro service error in "EnterChat" during connection"`, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -44,13 +43,20 @@ func EnterChat(user services.User, w http.ResponseWriter, r *http.Request) {
 	if user.Id != 0 {
 		isAuthorized = true
 	}
+
 	logger.Info("Users authStatus=%d ID=%d", isAuthorized, user.Id)
+
 	//TODO GET chatroom pointer, try to add user_manager to chat as a new chat member
+
 	userId, err := database.GetInstance().UpdateUser(user.Id, user.Nickname, user.AvatarPath)
 	if err != nil {
 		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateUser ")
 	}
-	chat_room.GetInstance().Join(chat_room.Author{Conn: conn, Nickname: user.Nickname, AvatarPath: user.AvatarPath, Id: userId})
+	room.GetInstance().Join(room.User{
+		Conn:       conn,
+		Nickname:   user.Nickname,
+		AvatarPath: user.AvatarPath,
+		Id:         userId})
 	//go MessageMux(user_manager)
 	//go StartSendingTestMessages(conn)
 }

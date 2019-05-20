@@ -1,338 +1,151 @@
---
--- PostgreSQL database dump
---
+------------------------------------------------------------------------------------------------------------------------
+-- TABLES --------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 
--- Dumped from database version 10.7 (Ubuntu 10.7-0ubuntu0.18.04.1)
--- Dumped by pg_dump version 10.7 (Ubuntu 10.7-0ubuntu0.18.04.1)
-
-CREATE SCHEMA public;
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
---
--- Name: Authors; Type: TABLE; Schema: public; Owner: maxim
---
-
-CREATE TABLE public."Authors"
+-- table users
+CREATE TABLE public.users
 (
-  id          bigint                  NOT NULL,
-  uid         bigint                  NOT NULL,
-  nickname    character varying(2044) NOT NULL,
-  avatar_path character varying(2044) NOT NULL
+  id          BIGSERIAL NOT NULL,
+  uid         BIGINT    NOT NULL,
+  nickname    TEXT      NOT NULL,
+  avatar_path TEXT      NOT NULL
 );
 
+ALTER TABLE ONLY public.users
+  ADD CONSTRAINT users_pk PRIMARY KEY (id);
 
---
--- Name: Authors_id_seq; Type: SEQUENCE; Schema: public; Owner: maxim
---
-
-CREATE SEQUENCE public."Authors_id_seq"
-  START WITH 1
-  INCREMENT BY 1
-  NO MINVALUE
-  NO MAXVALUE
-  CACHE 1;
-
-
-
---
--- Name: Authors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: maxim
---
-
-ALTER SEQUENCE public."Authors_id_seq" OWNED BY public."Authors".id;
-
-
---
--- Name: Messages; Type: TABLE; Schema: public; Owner: maxim
---
-
-CREATE TABLE public."Messages"
+-- table rooms
+CREATE TABLE public.rooms
 (
-  id        bigint NOT NULL,
-  payload   json   NOT NULL,
-  author_id bigint NOT NULL,
-  room_id   bigint NOT NULL
+  id    BIGSERIAL NOT NULL,
+  users BIGINT[]
 );
 
+ALTER TABLE ONLY public.rooms
+  ADD CONSTRAINT rooms_pk PRIMARY KEY (id);
 
-
---
--- Name: Message_id_seq; Type: SEQUENCE; Schema: public; Owner: maxim
---
-
-CREATE SEQUENCE public."Message_id_seq"
-  START WITH 1
-  INCREMENT BY 1
-  NO MINVALUE
-  NO MAXVALUE
-  CACHE 1;
-
-
-
---
--- Name: Message_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: maxim
---
-
-ALTER SEQUENCE public."Message_id_seq" OWNED BY public."Messages".id;
-
-
---
--- Name: Rooms; Type: TABLE; Schema: public; Owner: maxim
---
-
-CREATE TABLE public."Rooms"
+-- table messages
+CREATE TABLE public.messages
 (
-  id      bigint NOT NULL,
-  authors bigint[]
+  id      BIGSERIAL NOT NULL,
+  payload JSON      NOT NULL,
+  user_id BIGINT    NOT NULL,
+  room_id BIGINT    NOT NULL
 );
 
+ALTER TABLE ONLY public.messages
+  ADD CONSTRAINT messages_pk PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.messages
+  ADD CONSTRAINT "message_user_id_fk" FOREIGN KEY (user_id) REFERENCES public.users (id);
+
+ALTER TABLE ONLY public.messages
+  ADD CONSTRAINT "message_room_id_fk" FOREIGN KEY (room_id) REFERENCES public.rooms (id);
 
 
---
--- Name: Rooms_id_seq; Type: SEQUENCE; Schema: public; Owner: maxim
---
+------------------------------------------------------------------------------------------------------------------------
+-- INDEXES -------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 
-CREATE SEQUENCE public."Rooms_id_seq"
-  START WITH 1
-  INCREMENT BY 1
-  NO MINVALUE
-  NO MAXVALUE
-  CACHE 1;
+-- index user_id_idx
+CREATE INDEX user_id_idx ON public.messages USING btree (user_id);
 
+-- index users_idx
+CREATE INDEX users_idx ON public.rooms USING btree (users);
 
---
--- Name: Rooms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: maxim
---
-
-ALTER SEQUENCE public."Rooms_id_seq" OWNED BY public."Rooms".id;
+-- index room_id_idx
+CREATE INDEX room_id_idx ON public.messages USING btree (room_id);
 
 
---
--- Name: Authors id; Type: DEFAULT; Schema: public; Owner: maxim
---
+------------------------------------------------------------------------------------------------------------------------
+-- FUNCTIONS -----------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 
-ALTER TABLE ONLY public."Authors"
-  ALTER COLUMN id SET DEFAULT nextval('public."Authors_id_seq"'::regclass);
-
-
---
--- Name: Messages id; Type: DEFAULT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Messages"
-  ALTER COLUMN id SET DEFAULT nextval('public."Message_id_seq"'::regclass);
-
-
---
--- Name: Rooms id; Type: DEFAULT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Rooms"
-  ALTER COLUMN id SET DEFAULT nextval('public."Rooms_id_seq"'::regclass);
-
---
--- Name: Authors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: maxim
---
-
-SELECT pg_catalog.setval('public."Authors_id_seq"', 1, false);
-
-
---
--- Name: Message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: maxim
---
-
-SELECT pg_catalog.setval('public."Message_id_seq"', 1, false);
-
-
---
--- Name: Rooms_id_seq; Type: SEQUENCE SET; Schema: public; Owner: maxim
---
-
-SELECT pg_catalog.setval('public."Rooms_id_seq"', 1, false);
-
-
---
--- Name: Authors Authors_pkey; Type: CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Authors"
-  ADD CONSTRAINT "Authors_pkey" PRIMARY KEY (id);
-
-
---
--- Name: Messages Message_pkey; Type: CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Messages"
-  ADD CONSTRAINT "Message_pkey" PRIMARY KEY (id);
-
-
---
--- Name: Authors unique_Authors_id; Type: CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Authors"
-  ADD CONSTRAINT "unique_Authors_id" UNIQUE (id);
-
-
---
--- Name: Authors unique_Authors_uid; Type: CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Authors"
-  ADD CONSTRAINT "unique_Authors_uid" UNIQUE (uid);
-
-
---
--- Name: Messages unique_Message_id; Type: CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Messages"
-  ADD CONSTRAINT "unique_Message_id" UNIQUE (id);
-
-
---
--- Name: Rooms unique_Rooms_id; Type: CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Rooms"
-  ADD CONSTRAINT "unique_Rooms_id" PRIMARY KEY (id);
-
-
---
--- Name: index_author_id; Type: INDEX; Schema: public; Owner: maxim
---
-
-CREATE INDEX index_author_id ON public."Messages" USING btree (author_id);
-
-
---
--- Name: index_authors; Type: INDEX; Schema: public; Owner: maxim
---
-
-CREATE INDEX index_authors ON public."Rooms" USING btree (authors);
-
-
---
--- Name: index_room_id; Type: INDEX; Schema: public; Owner: maxim
---
-
-CREATE INDEX index_room_id ON public."Messages" USING btree (room_id);
-
-
---
--- Name: Messages lnk_Authors_Messages; Type: FK CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Messages"
-  ADD CONSTRAINT "lnk_Authors_Messages" FOREIGN KEY (author_id) REFERENCES public."Authors" (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: Messages lnk_Rooms_Messages; Type: FK CONSTRAINT; Schema: public; Owner: maxim
---
-
-ALTER TABLE ONLY public."Messages"
-  ADD CONSTRAINT "lnk_Rooms_Messages" FOREIGN KEY (room_id) REFERENCES public."Rooms" (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- PostgreSQL database dump complete
---
-
-CREATE OR REPLACE FUNCTION public.func_update_user(arg_uid bigint, arg_nickname character varying,
-                                                   arg_avatar_path character varying)
-  RETURNS bigint
-  LANGUAGE plpgsql
+-- func update_user
+CREATE OR REPLACE FUNCTION public.func_update_user(arg_uid BIGINT,
+                                                   arg_nickname TEXT,
+                                                   arg_avatar_path TEXT)
+  RETURNS BIGINT
 AS
-$function$
+$BODY$
 DECLARE
   result BIGINT;
 BEGIN
-  UPDATE "Authors"
+  UPDATE public.users
   SET avatar_path = arg_avatar_path,
       nickname    = arg_nickname
   WHERE uid = arg_uid RETURNING id into result;
-  IF not FOUND THEN
-    INSERT INTO "Authors" (uid, nickname, avatar_path)
+  IF NOT FOUND THEN
+    INSERT INTO public.users (uid, nickname, avatar_path)
     VALUES (arg_uid, arg_nickname, arg_avatar_path) RETURNING id INTO result;
   END IF;
   RETURN result;
 END;
-$function$;
+$BODY$
+  LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION public.func_post_message(arg_post_message bigint, arg_payload json, arg_room_id bigint)
-  RETURNS void
-  LANGUAGE plpgsql
+-- func add_message
+CREATE OR REPLACE FUNCTION public.func_add_message(arg_user_id BIGINT,
+                                                   arg_room_id BIGINT,
+                                                   arg_payload JSON)
+  RETURNS VOID
 AS
-$function$
-DECLARE
+$BODY$
 BEGIN
-  INSERT INTO "Messages" (author_id, payload, room_id)
-  VALUES (arg_post_message, arg_payload, arg_room_id);
-EXCEPTION
-  WHEN integrity_constraint_violation THEN
-    RAISE integrity_constraint_violation;
+  INSERT INTO public.messages (user_id, payload, room_id)
+  VALUES (arg_user_id,
+          arg_payload,
+          arg_room_id);
 END;
-$function$;
+$BODY$
+  LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION public.func_create_room(arg_authors bigint[])
-  RETURNS bigint
-  LANGUAGE plpgsql
+-- func add_room
+CREATE OR REPLACE FUNCTION public.func_add_room(arg_authors BIGINT[])
+  RETURNS BIGINT
 AS
-$function$
+$BODY$
 DECLARE
   result BIGINT;
 BEGIN
-  INSERT INTO "Rooms" (authors)
+  INSERT INTO public.rooms (users)
   VALUES (arg_authors) RETURNING id INTO result;
   RETURN result;
 END;
-$function$;
+$BODY$
+  LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION public.func_get_messages(arg_room_id bigint, arg_since bigint, arg_limit bigint)
-  RETURNS SETOF json
-  LANGUAGE plpgsql
+-- func get_messages
+CREATE OR REPLACE FUNCTION public.func_get_messages(arg_room_id BIGINT,
+                                                    arg_since BIGINT,
+                                                    arg_limit BIGINT)
+  RETURNS SETOF JSON
 AS
-$function$
+$BODY$
 DECLARE
-  result json;
+  result JSON;
   rec    RECORD;
 BEGIN
   FOR rec in SELECT payload
-             FROM "Messages"
+             FROM public.messages
              WHERE id < arg_since
                AND room_id = arg_room_id
              LIMIT arg_limit
-  LOOP
-    result := rec.payload;
-    RETURN NEXT result;
-  END LOOP;
+    LOOP
+      result := rec.payload;
+      RETURN NEXT result;
+    END LOOP;
 END;
-$function$
+$BODY$
+  LANGUAGE plpgsql;
+
+-- func clean_db
+CREATE OR REPLACE FUNCTION public.func_clean_db()
+  RETURNS VOID
+AS
+$BODY$
+BEGIN
+  TRUNCATE TABLE public.rooms, public.messages, public.users RESTART IDENTITY;
+END;
+$BODY$
+  LANGUAGE plpgsql;
