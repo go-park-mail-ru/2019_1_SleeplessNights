@@ -71,13 +71,18 @@ $BODY$
 DECLARE
   result BIGINT;
 BEGIN
-  UPDATE public.users
-  SET avatar_path = arg_avatar_path,
-      nickname    = arg_nickname
-  WHERE uid = arg_uid RETURNING id into result;
-  IF NOT FOUND THEN
+  IF arg_uid = 0::BIGINT THEN
     INSERT INTO public.users (uid, nickname, avatar_path)
     VALUES (arg_uid, arg_nickname, arg_avatar_path) RETURNING id INTO result;
+  ELSE
+    UPDATE public.users
+    SET avatar_path = arg_avatar_path,
+        nickname    = arg_nickname
+    WHERE uid = arg_uid RETURNING id into result;
+    IF NOT FOUND THEN
+      INSERT INTO public.users (uid, nickname, avatar_path)
+      VALUES (arg_uid, arg_nickname, arg_avatar_path) RETURNING id INTO result;
+    END IF;
   END IF;
   RETURN result;
 END;

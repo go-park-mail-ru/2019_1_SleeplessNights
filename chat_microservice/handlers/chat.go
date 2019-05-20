@@ -16,14 +16,14 @@ import (
 
 var logger *log.Logger
 
-const (
-	SendingRate = 0.1 // 1 /  SendingRate== Expected Value in seconds
-)
-
 func init() {
 	logger = log.GetLogger("Handlers")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
+
+const (
+	SendingRate = 0.1 // 1 /  SendingRate== Expected Value in seconds
+)
 
 func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
@@ -32,7 +32,7 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
-	logger.Info("Someone's connected to websocket chat, Id:%d", user.Id)
+	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
 	if err != nil {
 		logger.Error(`Micro service error in "EnterChat" during connection"`, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -44,7 +44,7 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		isAuthorized = true
 	}
 
-	logger.Info("Users authStatus=%d ID=%d", isAuthorized, user.Id)
+	logger.Infof("Users authStatus - %v ID: %d", isAuthorized, user.Id)
 
 	//TODO GET chatroom pointer, try to add user_manager to chat as a new chat member
 
