@@ -32,7 +32,12 @@ func ImgHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return500(&w, err)
 		return
 	}
-	w.Header().Set("Content-type", http.DetectContentType(avatar))
+	if http.DetectContentType(avatar) == "text/plain" {
+		w.Header().Set("Content-type", "image/svg+xml")
+	} else {
+		w.Header().Set("Content-type", http.DetectContentType(avatar))
+	}
+
 	_, err = w.Write(avatar)
 	if err != nil {
 		helpers.Return500(&w, err)
