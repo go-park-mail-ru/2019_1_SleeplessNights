@@ -309,7 +309,7 @@ func (r *Room) ContinueHandler(m MessageWrapper) bool {
 			Time       time.Duration
 		}{
 			CellsSlice: cells,
-			Time:       timeToMove,
+			Time:       timeToMove * time.Second,
 		}
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
@@ -377,7 +377,7 @@ func (r *Room) CurrentStateHandler(m MessageWrapper) {
 
 func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	logger.Info("entered PackSelectorHandler")
-	if r.timerToAnswer.Stop() {
+	if r.timerToChoosePack.Stop() {
 		logger.Info("PackSelectorHandler, Timer is disabled manually")
 	} else {
 		logger.Info("PackSelectorHandler, Timer is disabled by timeout")
@@ -410,7 +410,10 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 
 		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
 		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
+
 		r.changeTurn()
+		r.timerToChoosePack = time.AfterFunc(timeToMove*time.Second, r.ChoosePackTimerFunc)
+		r.waitForSyncMsg = message.NotDesiredPack
 		return true
 	}
 
@@ -425,7 +428,8 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 			logger.Error("pack with id", packId, "wasn't found in packs slice")
 		}
 	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{int64(packId)}}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
+	r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
 
 	if len(*packs) == packTotal-2*packsPerPlayer {
 		r.waitForSyncMsg = "READY"
@@ -437,6 +441,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
 	r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
 	r.changeTurn()
-
+	r.timerToChoosePack = time.AfterFunc(timeToMove*time.Second, r.ChoosePackTimerFunc)
+	r.waitForSyncMsg = message.NotDesiredPack
 	return true
 }

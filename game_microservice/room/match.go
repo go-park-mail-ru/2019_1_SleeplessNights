@@ -127,8 +127,16 @@ func (r *Room) startGameProcess() {
 	*fieldPacks = make([]database.Pack, packTotal)
 	copy(*fieldPacks, packs)
 	logger.Info(&r.p1, "  ", &r.p2)
-	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.AvailablePacks, Payload: packs}}
-	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.AvailablePacks, Payload: packs}}
+
+	payload := struct {
+		packs []database.Pack
+		Time  time.Duration
+	}{
+		packs: packs,
+		Time:  timeToChoosePack * time.Second,
+	}
+	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.AvailablePacks, Payload: payload}}
+	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.AvailablePacks, Payload: payload}}
 
 	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
 	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
