@@ -6,8 +6,7 @@ import (
 )
 
 func (r *Room) AnswerTimerFunc() {
-
-	logger.Info("Timer Has Expired before answer was given")
+	logger.Info("AnswerTimerFunc Timer Has Expired before answer was given")
 
 	result, err := json.Marshal(message.Message{message.ClientAnswer, message.Answer{-1}})
 	if err != nil {
@@ -23,7 +22,7 @@ func (r *Room) AnswerTimerFunc() {
 
 func (r *Room) GoToTimerFunc() {
 
-	logger.Info("Timer Has Expired before answer was given")
+	logger.Info("GoToTimerFunc Timer Has Expired before answer was given")
 
 	result, err := json.Marshal(message.Message{message.GoTo, message.Coordinates{-1, -1}})
 	if err != nil {
@@ -35,4 +34,20 @@ func (r *Room) GoToTimerFunc() {
 		logger.Error("startGoToTimeChecker Error trying to UnMarshal GoTo response")
 	}
 	r.requestsQueue <- MessageWrapper{r.active, GoToMessage}
+}
+
+func (r *Room) ChoosePackTimerFunc() {
+
+	logger.Info("ChoosePackTimerFunc Timer Has Expired before answer was given")
+
+	result, err := json.Marshal(message.Message{Title: message.NotDesiredPack, Payload: message.PackID{PackId: -1}})
+	if err != nil {
+		logger.Error("ChoosePackTimerFunc Error trying to marshall NotDesiredPack response")
+	}
+	var PackIdMessage message.Message
+	err = json.Unmarshal(result, &PackIdMessage)
+	if err != nil {
+		logger.Error("ChoosePackTimerFunc Error trying to UnMarshal NotDesiredPack response")
+	}
+	r.requestsQueue <- MessageWrapper{r.active, PackIdMessage}
 }

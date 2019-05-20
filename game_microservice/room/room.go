@@ -23,6 +23,7 @@ const (
 	packsPerPlayer   = 2
 	timeToAnswer     = 20
 	timeToMove       = 20
+	timeToChoosePack = 20
 )
 
 const (
@@ -43,19 +44,20 @@ type MessageWrapper struct {
 type Room struct {
 	//TODO develop Close() method
 	//Channel to exchange event messages between Room and GameField
-	requestsQueue  chan MessageWrapper
-	responsesQueue chan MessageWrapper
-	p1             player.Player
-	p2             player.Player
-	p1Status       int
-	p2Status       int
-	active         *player.Player
-	mu             sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
-	field          game_field.GameField
-	waitForSyncMsg string
-	timerToAnswer  *time.Timer
-	timerToMove    *time.Timer
-	syncChan       chan bool
+	requestsQueue     chan MessageWrapper
+	responsesQueue    chan MessageWrapper
+	p1                player.Player
+	p2                player.Player
+	p1Status          int
+	p2Status          int
+	active            *player.Player
+	mu                sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
+	field             game_field.GameField
+	waitForSyncMsg    string
+	timerToAnswer     *time.Timer
+	timerToMove       *time.Timer
+	timerToChoosePack *time.Timer
+	syncChan          chan bool
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно

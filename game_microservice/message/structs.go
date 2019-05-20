@@ -34,5 +34,5 @@ type AnswerResult struct {
 }
 
 type PackID struct {
-	PackId uint64 `json:"pack_id"`
+	PackId int64 `json:"pack_id"`
 }

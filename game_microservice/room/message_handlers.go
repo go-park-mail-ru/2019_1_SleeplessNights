@@ -376,6 +376,12 @@ func (r *Room) CurrentStateHandler(m MessageWrapper) {
 }
 
 func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
+	logger.Info("entered PackSelectorHandler")
+	if r.timerToAnswer.Stop() {
+		logger.Info("PackSelectorHandler, Timer is disabled manually")
+	} else {
+		logger.Info("PackSelectorHandler, Timer is disabled by timeout")
+	}
 
 	st, ok := m.msg.Payload.(map[string]interface{})
 	if !ok {
@@ -385,8 +391,6 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	if !ok {
 		logger.Error(`PackSelectorHandler, couldn't find value in map st with key "pack_id" `)
 	}
-
-	packs := r.field.GetPacksSlice()
 
 	var secondPlayer *player.Player
 	var thisPlayer *player.Player
@@ -399,7 +403,18 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 		thisPlayer = &r.p2
 		secondPlayer = &r.p1
 	}
+	//Check if player hasn't answered in time
+	if packId == -1 {
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
+		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
 
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
+		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
+		r.changeTurn()
+		return true
+	}
+
+	packs := r.field.GetPacksSlice()
 	for i, pack := range *packs {
 		if pack.ID == uint64(packId) {
 			(*packs)[i] = (*packs)[len(*packs)-1] // Replace it with the last one. CAREFUL only works if you have enough elements.
@@ -410,7 +425,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 			logger.Error("pack with id", packId, "wasn't found in packs slice")
 		}
 	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{uint64(packId)}}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{int64(packId)}}}
 
 	if len(*packs) == packTotal-2*packsPerPlayer {
 		r.waitForSyncMsg = "READY"

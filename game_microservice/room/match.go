@@ -10,6 +10,7 @@ import (
 	"github.com/xlab/closer"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"time"
 )
 
 var logger *log.Logger
@@ -132,7 +133,7 @@ func (r *Room) startGameProcess() {
 	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
 	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
 	r.waitForSyncMsg = message.NotDesiredPack
-
+	r.timerToChoosePack = time.AfterFunc(timeToChoosePack*time.Second, r.ChoosePackTimerFunc)
 	logger.Infof("StartMatch : Game process has started p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 }
 
