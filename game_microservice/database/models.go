@@ -10,9 +10,10 @@ type Question struct {
 }
 
 type Pack struct {
-	ID       uint64 `json:"id"`
-	IconPath string `json:"iconPath"`
+	ID uint64 `json:"id"`
+
 	Theme    string `json:"name"`
+	IconPath string `json:"iconPath"`
 }
 
 type QuestionForFrontend struct {

@@ -51,7 +51,7 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 			Time       time.Duration
 		}{
 			CellsSlice: cells,
-			Time:       timeToMove * time.Second,
+			Time:       timeToMove,
 		}
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
@@ -114,7 +114,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 				Time       time.Duration
 			}{
 				CellsSlice: cells,
-				Time:       timeToMove * time.Second,
+				Time:       timeToMove,
 			}
 			//Send Available cells to active player (Do it every time, after giving player a turn rights
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
@@ -248,7 +248,7 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 				Time       time.Duration
 			}{
 				CellsSlice: cells,
-				Time:       timeToMove * time.Second,
+				Time:       timeToMove,
 			}
 			//Send Available cells to active player (Do it every time, after giving player a turn rights
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
@@ -309,7 +309,7 @@ func (r *Room) ContinueHandler(m MessageWrapper) bool {
 			Time       time.Duration
 		}{
 			CellsSlice: cells,
-			Time:       timeToMove * time.Second,
+			Time:       timeToMove,
 		}
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
@@ -408,9 +408,9 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
 		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
 
-		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
 		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
 
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
 		r.changeTurn()
 		r.timerToChoosePack = time.AfterFunc(timeToMove*time.Second, r.ChoosePackTimerFunc)
 		r.waitForSyncMsg = message.NotDesiredPack

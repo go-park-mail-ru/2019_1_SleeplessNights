@@ -120,6 +120,7 @@ func (r *Room) startGameProcess() {
 
 	//Send available pack to players
 	packs, err := database.GetInstance().GetPacksOfQuestions(packTotal)
+	logger.Info("packs", packs)
 	if err != nil {
 		logger.Error("Failed to get available packs from database")
 	}
@@ -127,13 +128,13 @@ func (r *Room) startGameProcess() {
 	*fieldPacks = make([]database.Pack, packTotal)
 	copy(*fieldPacks, packs)
 	logger.Info(&r.p1, "  ", &r.p2)
-
+	logger.Info("Packs", packs)
 	payload := struct {
-		packs []database.Pack
+		Packs []database.Pack
 		Time  time.Duration
 	}{
-		packs: packs,
-		Time:  timeToChoosePack * time.Second,
+		Packs: packs,
+		Time:  timeToChoosePack,
 	}
 	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.AvailablePacks, Payload: payload}}
 	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.AvailablePacks, Payload: payload}}
