@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
@@ -103,10 +104,36 @@ func (r *Room) prepareMatch() {
 	if err != nil {
 		logger.Error("Failed to send QuestionsThemesResponse , to all players:", err)
 	}
-	r.waitForSyncMsg = message.Ready
 	//Read Messages from Players
 	//Moved message receive conditions to Requests handler
+	r.waitForSyncMsg = message.GoTo
+	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
+	// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
+	cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
+	var secondPlayer *player.Player
+	if &r.p1 == r.active {
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == r.active {
+		secondPlayer = &r.p1
+	}
+	cells := make([]Pair, 0)
+	for _, cell := range cellsSlice {
+		cells = append(cells, Pair{cell.X, cell.Y})
+	}
+	payload := struct {
+		CellsSlice []Pair
+		Time       time.Duration
+	}{
+		CellsSlice: cells,
+		Time:       timeToMove,
+	}
+	//Send Available cells to active player (Do it every time, after giving player a turn rights
+	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
+	r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
 }
 
 //Точка входа в игровой процесс

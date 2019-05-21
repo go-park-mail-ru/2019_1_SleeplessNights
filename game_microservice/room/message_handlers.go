@@ -25,38 +25,9 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 
 	if r.p1Status == StatusReady && r.p2Status == StatusReady {
 		//After getting ready messages from both players set p1 as active and send messages
-		r.waitForSyncMsg = message.GoTo
 		r.active = &r.p1
+		go r.startGameProcess()
 
-		logger.Info("Ход игрока 1, ожидание команды GoTo")
-
-		r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
-		r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
-		// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
-		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
-
-		var secondPlayer *player.Player
-		if &r.p1 == r.active {
-			secondPlayer = &r.p2
-		}
-		if &r.p2 == r.active {
-			secondPlayer = &r.p1
-		}
-		cells := make([]Pair, 0)
-		for _, cell := range cellsSlice {
-			cells = append(cells, Pair{cell.X, cell.Y})
-		}
-		payload := struct {
-			CellsSlice []Pair
-			Time       time.Duration
-		}{
-			CellsSlice: cells,
-			Time:       timeToMove,
-		}
-		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
-		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-		r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
 	}
 
 	return true
@@ -430,9 +401,8 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: int64(packId)}}}
 
 	if len(*packs) == packTotal-2*packsPerPlayer {
-		r.waitForSyncMsg = "READY"
+		r.active = &r.p1
 		go r.prepareMatch()
-
 		return true
 	}
 

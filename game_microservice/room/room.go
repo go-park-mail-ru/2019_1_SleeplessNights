@@ -98,7 +98,7 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 		r.active = &r.p1
 		r.StartRequestsListening()
 		r.StartResponsesSender()
-		go r.startGameProcess()
+		r.waitForSyncMsg = "READY"
 	}
 	return found
 }
