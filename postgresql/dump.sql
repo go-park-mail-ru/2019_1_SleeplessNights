@@ -184,8 +184,6 @@ CREATE TABLE public.users
   rating      INT              DEFAULT 0 NOT NULL
 );
 
-
---TODO create index by rating
 --TODO create index by win_rate
 --TODO create index by matches
 

@@ -8,9 +8,9 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 -- table Question'sPack
 CREATE TABLE public.question_pack
 (
-  id          BIGSERIAL    NOT NULL,
+  id        BIGSERIAL    NOT NULL,
   icon_path VARCHAR(100) NOT NULL,
-  theme       VARCHAR(100) NOT NULL
+  theme     VARCHAR(100) NOT NULL
 );
 
 ALTER TABLE ONLY public.question_pack
@@ -19,11 +19,11 @@ ALTER TABLE ONLY public.question_pack
 -- table question
 CREATE TABLE public.question
 (
-  id      BIGSERIAL     NOT NULL,
+  id      BIGSERIAL      NOT NULL,
   answers VARCHAR(200)[] NOT NULL,
-  correct INTEGER       NOT NULL,
-  text    TEXT          NOT NULL,
-  pack_id BIGINT        NOT NULL
+  correct INTEGER        NOT NULL,
+  text    TEXT           NOT NULL,
+  pack_id BIGINT         NOT NULL
 );
 
 ALTER TABLE ONLY public.question
@@ -40,7 +40,7 @@ ALTER TABLE ONLY public.question
 -- type question_pack
 CREATE TYPE public.type_question_pack AS
   (
-  id BIGSERIAL,
+  id BIGINT,
   icon_path VARCHAR(100),
   theme VARCHAR(100)
   );
@@ -48,7 +48,7 @@ CREATE TYPE public.type_question_pack AS
 -- type question
 CREATE TYPE public.type_question AS
   (
-  id BIGSERIAL,
+  id BIGINT,
   answers VARCHAR(200)[],
   correct INTEGER,
   text TEXT,
@@ -70,9 +70,6 @@ BEGIN
   INSERT INTO public.question_pack (theme, icon_path)
   VALUES (arg_theme,
           arg_icon_path);
-EXCEPTION
-  WHEN unique_violation THEN
-    RAISE SQLSTATE '23505';
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -94,11 +91,6 @@ BEGIN
           arg_correct,
           arg_text,
           arg_pack_id);
--- EXCEPTION
---   WHEN foreign_key_violation THEN
---     RAISE SQLSTATE '23503';
---   WHEN unique_violation THEN
---     RAISE SQLSTATE '23505';
 END;
 $BODY$
   LANGUAGE plpgsql;

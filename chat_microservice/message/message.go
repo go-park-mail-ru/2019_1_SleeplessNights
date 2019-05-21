@@ -8,7 +8,7 @@ type Message struct {
 // Messages got from frontend
 type PostMessage struct {
 	Text       string `json:"text"`
-	AvatarPath string `json:"avatar_path"`
+	AvatarPath string `json:"avatarPath"`
 }
 
 type ScrollMessage struct {
