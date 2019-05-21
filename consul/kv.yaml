@@ -29,6 +29,9 @@ dev:
       room:
         max_connections: 100
         msg_limit: 20
+      database:
+        max_connections: 100
+        acquire_timeout: "3s"
   postgres:
     port: 5000
     host: "0.0.0.0"

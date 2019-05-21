@@ -15,6 +15,14 @@ var (
 	acquireTimeout time.Duration
 )
 
+func init() {
+	var err error
+	acquireTimeout, err = time.ParseDuration(config.GetString("user_ms.pkg.database.acquire_timeout"))
+	if err != nil {
+		acquireTimeout = 3 * time.Second
+	}
+}
+
 var logger *log.Logger
 
 func init() {
@@ -40,7 +48,11 @@ type dbManager struct {
 func init() {
 
 	pgxConfig := loadConfiguration()
-	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
+	pgxConnPoolConfig := pgx.ConnPoolConfig{
+		ConnConfig: pgxConfig,
+		MaxConnections: maxConnections,
+		AcquireTimeout: acquireTimeout,
+	}
 
 	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {
