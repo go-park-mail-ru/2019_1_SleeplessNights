@@ -1,21 +1,21 @@
 package middleware
 
-import "net/http"
-
-const (
-	DomainsCORS     = "http://localhost:8000"
-	MethodsCORS     = "GET, POST, PATCH, DELETE, OPTIONS"
-	CredentialsCORS = "true"
-	//TODO FIX CORS HEADERS
-	HeadersCORS = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"
+import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
+	"net/http"
+	"strings"
 )
 
 func MiddlewareCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", DomainsCORS)
-		w.Header().Set("Access-Control-Allow-Credentials", CredentialsCORS)
-		w.Header().Set("Access-Control-Allow-Methods", MethodsCORS)
-		w.Header().Set("Access-Control-Allow-Headers", HeadersCORS)
+		w.Header().Set("Access-Control-Allow-Origin",
+			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.domains"), ","))
+		w.Header().Set("Access-Control-Allow-Credentials",
+			config.GetString("shared.pkg.middleware.CORS.credentials"))
+		w.Header().Set("Access-Control-Allow-Methods",
+			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.methods"), ","))
+		w.Header().Set("Access-Control-Allow-Headers",
+			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.headers"), ","))
 		next.ServeHTTP(w, r)
 
 	})

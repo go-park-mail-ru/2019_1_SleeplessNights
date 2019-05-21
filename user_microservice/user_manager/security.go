@@ -6,9 +6,7 @@ import (
 	"math/rand"
 )
 
-const (
-	saltLen = 16
-)
+const saltLen = 16
 
 func MakeSalt() (salt []byte, err error) {
 	salt = make([]byte, saltLen)

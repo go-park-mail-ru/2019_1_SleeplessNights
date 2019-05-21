@@ -1,19 +1,26 @@
 package database
 
 import (
-	"encoding/json"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
-	"os"
 	"time"
 )
 
-const (
-	maxConnections = 3
-	acquireTimeout = 3 * time.Second
+var (
+	maxConnections = config.GetInt("user_ms.pkg.database.max_connections")
+	acquireTimeout time.Duration
 )
+
+func init() {
+	var err error
+	acquireTimeout, err = time.ParseDuration(config.GetString("user_ms.pkg.database.acquire_timeout"))
+	if err != nil {
+		acquireTimeout = 3 * time.Second
+	}
+}
 
 var db *dbManager
 
@@ -28,45 +35,23 @@ type dbManager struct {
 	dataBase *pgx.ConnPool
 }
 
-type dbConfig struct {
-	Host     string `json:"host"`
-	Port     uint16 `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	DBName   string `json:"dbname"`
-}
-
-func loadConfiguration(file string) (pgxConfig pgx.ConnConfig) {
-	configFile, err := os.Open(file)
-	if err != nil {
-		logger.Errorf("Failed to open file: %v", err.Error())
-		return
-	}
-	var config dbConfig
-	jsonParser := json.NewDecoder(configFile)
-	err = jsonParser.Decode(&config)
-	if err != nil {
-		logger.Errorf("Failed to decode config: %v", err.Error())
-		return
-	}
-	err = configFile.Close()
-	if err != nil {
-		logger.Errorf("Failed to close file: %v", err.Error())
-		return
-	}
-
-	pgxConfig.Host = config.Host
-	pgxConfig.User = config.User
-	pgxConfig.Password = config.Password
-	pgxConfig.Database = config.DBName
-	pgxConfig.Port = config.Port
+func loadConfiguration() (pgxConfig pgx.ConnConfig) {
+	pgxConfig.Port = uint16(config.GetInt("postgres.port"))
+	pgxConfig.Host = config.GetString("postgres.host")
+	pgxConfig.Database = config.GetString("postgres.db_name")
+	pgxConfig.User = config.GetString("postgres.user")
+	pgxConfig.Password = config.GetString("postgres.password")
 	return
 }
 
 func init() {
 
-	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/chat_microservice/database/config.json")
-	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
+	pgxConfig := loadConfiguration()
+	pgxConnPoolConfig := pgx.ConnPoolConfig{
+		ConnConfig: pgxConfig,
+		MaxConnections: maxConnections,
+		AcquireTimeout: acquireTimeout,
+	}
 
 	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {

@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/room"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/gorilla/websocket"
@@ -14,7 +15,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Handlers")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("chat_ms.log_level")))
 }
 
 func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {

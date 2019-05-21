@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -25,7 +26,7 @@ func TestRegisterHandlerSuccessful(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -145,7 +146,7 @@ func TestRegisterHandlerUnsuccessfulWrongForms(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {

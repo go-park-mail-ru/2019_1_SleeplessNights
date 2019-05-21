@@ -8,10 +8,11 @@ import (
 	"github.com/opencopilot/consulkvjson"
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
+	"os"
 	"time"
 )
 
-const consulAddr = "0.0.0.0:8500"
+var consulAddr = os.Getenv("CONSUL_ADDR")
 
 var (
 	logger                            = log.GetLogger("ViperConfig")
@@ -41,7 +42,7 @@ func init() {
 
 func runConfigUpdater() {
 	ticker := time.Tick(10 * time.Second)
-	for _ = range ticker {
+	for range ticker {
 		err := loadConfig()
 		if err != nil {
 			logger.Error("Failed to update configuration:", err)
