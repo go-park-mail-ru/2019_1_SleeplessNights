@@ -22,3 +22,9 @@ dev:
       database:
         max_connections: 100
         acquire_timeout: "3s"
+  postgres:
+    port: 5000
+    host: "0.0.0.0"
+    db_name: "sleepless_nights"
+    user: "database"
+    password: "database"

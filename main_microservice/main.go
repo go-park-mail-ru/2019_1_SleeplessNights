@@ -19,8 +19,7 @@ func init() {
 
 func main() {
 	defer closer.Close()
-	PORT := config.GetInt("main_ms.port")
-	logger.Info("Main microservice started listening on", PORT)
+	PORT := config.GetString("main_ms.port")
 	r := router.GetRouter()
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -28,6 +27,7 @@ func main() {
 		logger.Fatal(http.ListenAndServe(":"+string(PORT), r))
 		wg.Done()
 	}(&wg)
+	logger.Info("Main microservice started listening on", PORT)
 	//Здесь можно вызвать скрипты
 	wg.Wait()
 }

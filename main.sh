@@ -12,5 +12,9 @@ export CONSUL_ADDR=${client_addr}:${http_port}
 
 #Запускаем клиент consul
 ${BASEPATH}/consul/run.sh
-#Запускаем user microservice
-
+#Запускаем postgres
+${BASEPATH}/postgresql/run.sh
+#Запускаем user_microservice
+go run ${BASEPATH}/user_microservice/main.go
+#Запускаем main_microservice
+#go run ${BASEPATH}/main_microservice/main.go
