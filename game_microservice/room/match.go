@@ -52,7 +52,7 @@ func (r *Room) buildEnv() {
 		packIDs = append(packIDs, uint64(pack.ID))
 	}
 
-	questions, _, err := database.GetInstance().GetQuestions(packIDs)
+	questions, err := database.GetInstance().GetQuestions(packIDs)
 	if err != nil || len(questions) < game_field.QuestionsNum {
 		logger.Error("Error occurred while fetching question from DB:", err)
 		//TODO deal with error, maybe kill the room
