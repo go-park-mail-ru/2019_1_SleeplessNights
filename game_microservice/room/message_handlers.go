@@ -406,7 +406,6 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	//Check if player hasn't answered in time
 	if packId == -1 {
 		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
-		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
 
 		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
 
@@ -429,7 +428,6 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 		}
 	}
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
-	r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
 
 	if len(*packs) == packTotal-2*packsPerPlayer {
 		r.waitForSyncMsg = "READY"
