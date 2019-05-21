@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -14,6 +15,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Middleware")
+	logger.SetLogLevel(logrus.Level(config.GetInt("shared.log_level")))
 }
 
 var userManager services.UserMSClient

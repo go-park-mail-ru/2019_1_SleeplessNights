@@ -28,3 +28,33 @@ dev:
     db_name: "sleepless_nights"
     user: "database"
     password: "database"
+  shared:
+    log_level: 4 #logrus.InfoLevel
+    pkg:
+      middleware:
+        CORS:
+          domains:
+            - "http://localhost:8000"
+          methods:
+            - "GET"
+            - "POST"
+            - "PATCH"
+            - "DELETE"
+            - "OPTIONS"
+          cresentials: true
+          headers:
+            - "X-Requested-With"
+            - "Content-type"
+            - "User-Agent"
+            - "Cache-Control"
+            - "Cookie"
+            - "Origin"
+            - "Accept-Encoding"
+            - "Connection"
+            - "Host"
+            - "Upgrade-Insecure-Requests"
+            - "User-Agent"
+            - "Referer"
+            - "Access-Control-Request-Method"
+            - "Access-Control-Request-Headers"
+

@@ -18,6 +18,10 @@ func GetString(key string) string {
 	return viper.GetString(configuration + "." + key)
 }
 
+func GetStringSlice(key string) []string {
+	return viper.GetStringSlice(configuration + "." + key)
+}
+
 func GetBool(key string) bool {
 	return viper.GetBool(configuration + "." + key)
 }
