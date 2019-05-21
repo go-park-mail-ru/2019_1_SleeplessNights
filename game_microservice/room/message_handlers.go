@@ -55,9 +55,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	nextY := int(st["y"].(float64))
 	logger.Info("Sending SelectedCell Index to players")
 
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
-	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
-
+	
 	//Признак таймаута хода игрока
 	if nextY == -1 && nextX == -1 {
 		//Смена хода
@@ -97,6 +95,8 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			logger.Error("Unexpected condition")
 		}
 	}
+        r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
+	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
 
 	var eventSlice []event.Event
 	var err error
