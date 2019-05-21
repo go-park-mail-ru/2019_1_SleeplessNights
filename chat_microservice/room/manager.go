@@ -2,6 +2,7 @@ package room
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -11,7 +12,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Room")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("chat_ms.log_level")))
 }
 
 const (
@@ -19,9 +20,9 @@ const (
 	scrollTitle = "SCROLL"
 )
 
-const (
-	maxConnections        = 100
-	limit          uint64 = 20
+var (
+	maxConnections = int64(config.GetInt("chat_ms.pkg.room.max_connections"))
+	limit          = uint64(config.GetInt("chat_ms.pkg.room.msg_limit"))
 )
 
 type room struct {

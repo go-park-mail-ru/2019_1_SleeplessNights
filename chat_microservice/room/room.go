@@ -34,7 +34,7 @@ func (us *User) StartListen(roomId uint64) {
 		err := us.Conn.ReadJSON(&msg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err) {
-				logger.Infof("Player %d closed the connection", us.Id)
+				logger.Infof("Talker %d closed the connection", us.Id)
 				return
 			}
 		}
