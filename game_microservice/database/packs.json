@@ -1,42 +1,42 @@
 [
   {
-    "theme": "История",
+    "name": "История",
     "iconPath": "history_icon.jpg"
   },
   {
-    "theme": "Математика",
+    "name": "Математика",
     "iconPath": "math_icon.jpg"
   },
   {
-    "theme": "География",
+    "name": "География",
     "iconPath": "geography_icon.jpg"
   },
   {
-    "theme": "Спорт",
+    "name": "Спорт",
     "iconPath": "sport_icon.jpg"
   },
   {
-    "theme": "Английский язык",
+    "name": "Английский язык",
     "iconPath": "english_icon.jpg"
   },
   {
-    "theme": "Информатика",
+    "name": "Информатика",
     "iconPath": "informatics_icon.jpg"
   },
   {
-    "theme": "Живопись",
+    "name": "Живопись",
     "iconPath": "art_icon.jpg"
   },
   {
-    "theme": "Экология",
+    "name": "Экология",
     "iconPath": "ecology_icon.jpg"
   },
   {
-    "theme": "Литература",
+    "name": "Литература",
     "iconPath": "literature_icon.jpg"
   },
   {
-    "theme": "Биология",
+    "name": "Биология",
     "iconPath": "biology_icon.jpg"
 
   }

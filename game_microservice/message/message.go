@@ -1,7 +1,6 @@
 package message
 
 import (
-	"fmt"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 )
 
@@ -41,6 +40,7 @@ const (
 	AvailablePacks = "AVAILABLE_PACKS" // массив все возможных паков
 
 	RoomSearching = "ROOM_SEARCHING" // Уведомление о начале поиска комната
+	SelectedPack  = "SELECTED_PACK"
 
 	//ВХОДЯЩИЕ
 	//Входящие команды разделяются на синхронные (SYNC) и асинхронные (ASYNC)
@@ -66,121 +66,5 @@ const (
 	Themes          = "THEMES"          // Запрос  матрицы тем игрового поля
 	QuestionsThemes = "QUESTION_THEMES" // Массив id тем для вопросов
 
-	NotDesiredPacks = "NOT_DESIRED_PACKS" // массив нежелательных паки
+	NotDesiredPack = "NOT_DESIRED_PACK" //  нежелательны pack
 )
-
-type Message struct {
-	//Формат пакета, средствами которых реализуется общение между клиентом и сервером
-	//Самый простой вариант - JSON, и у нас нет причин от него отказываться
-	//Можно было сделать с помощью интерфейса чтобы абстрагироваться от формата передаваемых данных,
-	//но практического применения этому я не вижу
-
-	//CommandName лишний, CommandName = Title
-
-	Title   string      `json:"title"`
-	Payload interface{} `json:"payload,omitempty"`
-}
-
-type Coordinates struct {
-	//Achtung!!!!
-	X int `json:"x"`
-	Y int `json:"y"`
-}
-type ThemeArray struct {
-	ThemesArray []string `json:"theme_array"`
-}
-
-//Request TryMove to a cell
-type ThemePack struct {
-	Id    uint64 `json:"id"`
-	Theme string `json:"name"`
-}
-
-type GameState struct {
-	State string `json:"state"`
-}
-
-//response from client with answer_id
-type Answer struct {
-	AnswerId int `json:"answer_id"`
-}
-
-//Response to players answer
-type AnswerResult struct {
-	GivenAnswer   int `json:"given_answer"`
-	CorrectAnswer int `json:"correct_answer"`
-}
-
-func (m *Message) IsValid() bool {
-	fmt.Println(m.Payload)
-	switch m.Title {
-	case Ready:
-		{
-			return true
-		}
-	case GoTo:
-		{
-
-			st, ok := m.Payload.(map[string]interface{})
-			if !ok {
-				logger.Error("Message validator, Title=GO_TO, error:interface->Answer casting error")
-				return false
-			}
-			if _, ok := st["x"]; !ok {
-				return false
-			}
-			if _, ok := st["y"]; !ok {
-				return false
-			}
-			return true
-		}
-	case ClientAnswer:
-		{
-			st, ok := m.Payload.(map[string]interface{})
-			if !ok {
-				logger.Error("Message validator, Title=ClientAnswer, error:interface->Answer casting error")
-				return false
-			}
-			if _, ok := st["answer_id"]; !ok {
-				return false
-			}
-
-			return true
-		}
-	case Leave:
-		{
-			return true
-		}
-
-	case Continue:
-		{
-			return true
-		}
-	case ChangeOpponent:
-		{
-			return true
-		}
-	case Quit:
-		{
-			return true
-		}
-	case State:
-		{
-			return true
-		}
-	case ThemesRequest:
-		{
-			return true
-		}
-	case QuestionsThemesRequest:
-		{
-			return true
-		}
-	case NotDesiredPacks:
-		{
-			return true
-		}
-	default:
-		return false
-	}
-}
