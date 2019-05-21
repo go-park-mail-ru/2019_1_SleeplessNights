@@ -23,7 +23,9 @@ func init() {
 }
 
 var userManager services.UserMSClient
-
+const (
+	StartGameDelay = 1100
+)
 func init() {
 	var err error
 	grpcConn, err := grpc.Dial(
@@ -67,10 +69,12 @@ func (r *Room) buildEnv() {
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
 
 func (r *Room) prepareMatch() {
-
+	
 	//Где-то здесь добавить выбор паков игроками
 
 	logger.Info("Entered Prepare Match Room")
+	logger.Info("Delay")
+	time.Sleep(StartGameDelay*time.Microsecond)
 	//BuildEnv достает только выбранные паки и строит игровое поле по ним
 	r.buildEnv()
 
