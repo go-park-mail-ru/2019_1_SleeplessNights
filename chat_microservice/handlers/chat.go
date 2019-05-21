@@ -1,17 +1,13 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/room"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-	"math/rand"
 	"net/http"
-	"time"
 )
 
 var logger *log.Logger
@@ -20,10 +16,6 @@ func init() {
 	logger = log.GetLogger("Handlers")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
-
-const (
-	SendingRate = 0.1 // 1 /  SendingRate== Expected Value in seconds
-)
 
 func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
@@ -57,19 +49,4 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		Nickname:   user.Nickname,
 		AvatarPath: user.AvatarPath,
 		Id:         userId})
-	//go MessageMux(user_manager)
-	//go StartSendingTestMessages(conn)
-}
-
-func StartSendingTestMessages(conn *websocket.Conn) {
-	for {
-		sample := int64(rand.ExpFloat64() / SendingRate)
-		time.Sleep(time.Duration(sample) * time.Second)
-		err := conn.WriteJSON(message.Message{Title: "INFO", Payload: `{"nickname":"IvanPetrov", "avatar_path":"/default_avatar.jpg", "text":"Hello, Grand Webmaster"}`})
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-	}
-
 }
