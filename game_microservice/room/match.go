@@ -24,7 +24,7 @@ func init() {
 
 var userManager services.UserMSClient
 const (
-	StartGameDelay = 1.1
+	StartGameDelay = 1100
 )
 func init() {
 	var err error
@@ -74,7 +74,7 @@ func (r *Room) prepareMatch() {
 
 	logger.Info("Entered Prepare Match Room")
 	logger.Info("Delay")
-	time.Sleep(StartGameDelay*time.Second)
+	time.Sleep(StartGameDelay*time.Millisecond)
 	//BuildEnv достает только выбранные паки и строит игровое поле по ним
 	r.buildEnv()
 
