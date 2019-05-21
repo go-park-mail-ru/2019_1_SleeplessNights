@@ -3,7 +3,7 @@
 ------------------------------------------------------------------------------------------------------------------------
 
 -- table users
-CREATE TABLE public.users
+CREATE TABLE public.talkers
 (
   id          BIGSERIAL NOT NULL,
   uid         BIGINT    NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE public.users
   avatar_path TEXT      NOT NULL
 );
 
-ALTER TABLE ONLY public.users
+ALTER TABLE ONLY public.talkers
   ADD CONSTRAINT users_pk PRIMARY KEY (id);
 
 -- table rooms
@@ -37,7 +37,7 @@ ALTER TABLE ONLY public.messages
   ADD CONSTRAINT messages_pk PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.messages
-  ADD CONSTRAINT "message_user_id_fk" FOREIGN KEY (user_id) REFERENCES public.users (id);
+  ADD CONSTRAINT "message_user_id_fk" FOREIGN KEY (user_id) REFERENCES public.talkers (id);
 
 ALTER TABLE ONLY public.messages
   ADD CONSTRAINT "message_room_id_fk" FOREIGN KEY (room_id) REFERENCES public.rooms (id);
@@ -72,15 +72,15 @@ DECLARE
   result BIGINT;
 BEGIN
   IF arg_uid = 0::BIGINT THEN
-    INSERT INTO public.users (uid, nickname, avatar_path)
+    INSERT INTO public.talkers (uid, nickname, avatar_path)
     VALUES (arg_uid, arg_nickname, arg_avatar_path) RETURNING id INTO result;
   ELSE
-    UPDATE public.users
+    UPDATE public.talkers
     SET avatar_path = arg_avatar_path,
         nickname    = arg_nickname
     WHERE uid = arg_uid RETURNING id into result;
     IF NOT FOUND THEN
-      INSERT INTO public.users (uid, nickname, avatar_path)
+      INSERT INTO public.talkers (uid, nickname, avatar_path)
       VALUES (arg_uid, arg_nickname, arg_avatar_path) RETURNING id INTO result;
     END IF;
   END IF;
@@ -150,7 +150,7 @@ CREATE OR REPLACE FUNCTION public.func_clean_db()
 AS
 $BODY$
 BEGIN
-  TRUNCATE TABLE public.rooms, public.messages, public.users RESTART IDENTITY;
+  TRUNCATE TABLE public.rooms, public.messages, public.talkers RESTART IDENTITY;
 END;
 $BODY$
   LANGUAGE plpgsql;
