@@ -415,7 +415,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 		r.waitForSyncMsg = message.NotDesiredPack
 		return true
 	}
-
+	logger.Info("player chosen pack_ID", packId)
 	packs := r.field.GetPacksSlice()
 	for i, pack := range *packs {
 		if pack.ID == uint64(packId) {
@@ -427,7 +427,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 			logger.Error("pack with id", packId, "wasn't found in packs slice")
 		}
 	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: int64(packId)}}}
 
 	if len(*packs) == packTotal-2*packsPerPlayer {
 		r.waitForSyncMsg = "READY"
