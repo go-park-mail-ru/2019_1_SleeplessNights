@@ -3,7 +3,6 @@ handlers/secret
 test.html
 server.log
 .idea
-main_microservice/database/config.json
 chat_microservice/database/config.json
 user_microservice/database/config.json
 game_microservice/database/config.json

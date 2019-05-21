@@ -109,7 +109,7 @@ func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	_, err = w.Write([]byte(`{"avatar_path": "` + avatarName + `"}`))
+	_, err = w.Write([]byte(`{"avatarPath": "` + avatarName + `"}`))
 	if err != nil {
 		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
