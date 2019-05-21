@@ -44,7 +44,7 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateUser ")
 	}
-	room.GetInstance().Join(room.User{
+	room.GetInstance().Join(room.Talker{
 		Conn:       conn,
 		Nickname:   user.Nickname,
 		AvatarPath: user.AvatarPath,
