@@ -1,6 +1,6 @@
 package database
 
-func (db *dbManager) AddMessage(talkerId uint64, roomId uint64, payload []byte) (err error) {
+func (db *dbManager) DeleteRoom(roomId uint64) (err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -9,8 +9,7 @@ func (db *dbManager) AddMessage(talkerId uint64, roomId uint64, payload []byte) 
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec(`SELECT * FROM func_add_message ($1::BIGINT, $2::BIGINT, $3::JSON)`,
-		talkerId, roomId, payload)
+	_, err = tx.Exec(`SELECT * FROM func_delete_room($1::BIGINT)`, roomId)
 	if err != nil {
 		logger.Errorf("Failed to exec: %v", err.Error())
 		return

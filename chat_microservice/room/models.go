@@ -2,6 +2,7 @@ package room
 
 import (
 	"github.com/gorilla/websocket"
+	"sync"
 )
 
 type Talker struct {
@@ -26,4 +27,11 @@ type ResponseMessage struct {
 	AvatarPath string `json:"avatarPath"`
 	Id         uint64 `json:"id"`
 	Text       string `json:"text"`
+}
+
+type room struct {
+	maxConnections int64
+	Id             uint64
+	usersPool      map[uint64]*Talker
+	mx             sync.Mutex
 }

@@ -61,8 +61,8 @@ func (us *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			logger.Debugf("Len of user pool: %d", len(chat.usersPool))
-			for _, user := range chat.usersPool {
+			logger.Debugf("Len of user pool: %d", len(chat.roomsPool[roomId].usersPool))
+			for _, user := range chat.roomsPool[roomId].usersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())

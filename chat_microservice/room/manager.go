@@ -5,7 +5,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
-	"sync"
 )
 
 var logger *log.Logger
@@ -25,27 +24,33 @@ var (
 	limit          = uint64(config.GetInt("chat_ms.pkg.room.msg_limit"))
 )
 
-type room struct {
-	maxConnections int64
-	Id             uint64
-	usersPool      map[uint64]*Talker
-	mx             sync.Mutex
+type roomManager struct {
+	roomsPool map[uint64]*room
 }
 
-var chat *room
+var chat *roomManager
 
 func init() {
-	id, err := database.GetInstance().AddRoom(nil)
+	roomIds, err := database.GetInstance().GetRoomsIds()
 	if err != nil {
 		logger.Error("Chat_room init", err)
 	}
-	chat = &room{
-		Id:             id,
-		maxConnections: maxConnections,
-		usersPool:      make(map[uint64]*Talker),
+
+	roomsPool := make(map[uint64]*room)
+	for _, r := range roomIds {
+		var room = &room{
+			Id:             r,
+			maxConnections: maxConnections,
+			usersPool:      make(map[uint64]*Talker),
+		}
+		roomsPool[room.Id] = room
+	}
+
+	chat = &roomManager{
+		roomsPool: roomsPool,
 	}
 }
 
-func GetInstance() *room {
+func GetInstance() *roomManager {
 	return chat
 }
