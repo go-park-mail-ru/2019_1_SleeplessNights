@@ -46,6 +46,15 @@ func init() {
 		roomsPool[room.id] = room
 	}
 
+	if len(roomsPool) == 0 {
+		var room = &room{
+			id:             1,
+			maxConnections: maxConnections,
+			usersPool:      make(map[uint64]*Talker),
+		}
+		roomsPool[room.id] = room
+	}
+
 	chat = &roomManager{
 		RoomsPool: roomsPool,
 	}
@@ -55,7 +64,7 @@ func GetInstance() *roomManager {
 	return chat
 }
 
-func CreateRoom(id uint64) (r *room){
+func CreateRoom(id uint64) (r *room) {
 	r = &room{
 		id:             id,
 		maxConnections: maxConnections,

@@ -20,6 +20,7 @@ func init() {
 }
 
 func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
+
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -48,14 +49,14 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthorized := false
-	if user.Id != 0 {
-		isAuthorized = true
-	}
-
 	if _, ok := room.GetInstance().RoomsPool[roomId]; !ok {
 		r := room.CreateRoom(roomId)
 		room.GetInstance().RoomsPool[roomId] = r
+	}
+
+	isAuthorized := false
+	if user.Id != 0 {
+		isAuthorized = true
 	}
 
 	logger.Infof("Users authStatus - %v ID: %d", isAuthorized, user.Id)
@@ -70,7 +71,9 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		Conn:       conn,
 		Nickname:   user.Nickname,
 		AvatarPath: user.AvatarPath,
-		Id:         userId})
+		Id:         userId,
+	})
+
 	if err != nil {
 		logger.Error(`Failed in deleting room from db`, err)
 		w.WriteHeader(http.StatusInternalServerError)
