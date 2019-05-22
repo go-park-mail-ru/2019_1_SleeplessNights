@@ -83,10 +83,16 @@ message ChatMessage {
     string message = 2;
 }
 
+message HistoryInfo {
+    Room   room  = 1;
+    uint64 since = 2;
+    uint32 limit = 3;
+}
+
 service ChatMS {
     rpc CreateRoom  (RoomSettings) returns (Room)        {}
     rpc JoinRoom    (User)         returns (Nothing)     {}
-    rpc GetPrevMsgs (Room)         returns (ChatHistory) {} //Get previous messages
+    rpc GetPrevMsgs (HistoryInfo)         returns (ChatHistory) {} //Get previous messages
     rpc SendMessage (ChatMessage)  returns (Nothing)     {}
     rpc LeaveRoom   (LeaveInfo)    returns (Nothing)     {}
     rpc DeleteRoom  (Room)         returns (Nothing)     {}
