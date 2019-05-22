@@ -31,7 +31,7 @@ type ResponseMessage struct {
 
 type room struct {
 	maxConnections int64
-	Id             uint64
+	id             uint64
 	usersPool      map[uint64]*Talker
 	mx             sync.Mutex
 }

@@ -7,24 +7,30 @@ import (
 	"sync"
 )
 
-func (chat *room) Join(user Talker) {
+func (r *room) Join(user Talker) (err error) {
 	logger.Info("User ", user.Nickname, "Joined room")
 
-	chat.mx.Lock()
-	chat.usersPool[user.Id] = &user
+	r.mx.Lock()
+	r.usersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	logger.Info("Started Listening from User", user.Nickname)
 	go func() {
-		user.StartListen(chat.Id)
+		user.StartListen(r.id)
 		wg.Done()
 	}()
-	chat.mx.Unlock()
+	r.mx.Unlock()
 	wg.Wait()
-	chat.mx.Lock()
+	r.mx.Lock()
 	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
-	delete(chat.usersPool, user.Id)
-	chat.mx.Unlock()
+	delete(r.usersPool, user.Id)
+	if len(r.usersPool) == 0 && r.id != 1 {
+		err = database.GetInstance().DeleteRoom(r.id)
+		delete(chat.RoomsPool, r.id)
+		return
+	}
+	r.mx.Unlock()
+	return
 }
 
 func (us *Talker) StartListen(roomId uint64) {
@@ -61,8 +67,8 @@ func (us *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			logger.Debugf("Len of user pool: %d", len(chat.roomsPool[roomId].usersPool))
-			for _, user := range chat.roomsPool[roomId].usersPool {
+			logger.Debugf("Len of user pool: %d", len(chat.RoomsPool[roomId].usersPool))
+			for _, user := range chat.RoomsPool[roomId].usersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())

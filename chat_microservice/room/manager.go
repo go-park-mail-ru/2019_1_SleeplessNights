@@ -25,7 +25,7 @@ var (
 )
 
 type roomManager struct {
-	roomsPool map[uint64]*room
+	RoomsPool map[uint64]*room
 }
 
 var chat *roomManager
@@ -39,18 +39,27 @@ func init() {
 	roomsPool := make(map[uint64]*room)
 	for _, r := range roomIds {
 		var room = &room{
-			Id:             r,
+			id:             r,
 			maxConnections: maxConnections,
 			usersPool:      make(map[uint64]*Talker),
 		}
-		roomsPool[room.Id] = room
+		roomsPool[room.id] = room
 	}
 
 	chat = &roomManager{
-		roomsPool: roomsPool,
+		RoomsPool: roomsPool,
 	}
 }
 
 func GetInstance() *roomManager {
 	return chat
+}
+
+func CreateRoom(id uint64) (r *room){
+	r = &room{
+		id:             id,
+		maxConnections: maxConnections,
+		usersPool:      make(map[uint64]*Talker),
+	}
+	return
 }
