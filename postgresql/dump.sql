@@ -103,8 +103,8 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
--- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+-- func clean_game_db
+CREATE OR REPLACE FUNCTION public.func_clean_game_db()
   RETURNS VOID
 AS
 $BODY$
@@ -292,8 +292,8 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
--- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+-- func clean_user_db
+CREATE OR REPLACE FUNCTION public.func_clean_user_db()
   RETURNS VOID
 AS
 $BODY$
@@ -590,8 +590,8 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
--- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+-- func clean_chat_db
+CREATE OR REPLACE FUNCTION public.func_clean_chat_db()
   RETURNS VOID
 AS
 $BODY$

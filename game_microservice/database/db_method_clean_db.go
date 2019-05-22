@@ -8,7 +8,7 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec(`SELECT * FROM public.func_clean_db()`)
+	_, err = tx.Exec(`SELECT * FROM public.func_clean_game_db()`)
 	if err != nil {
 		return
 	}

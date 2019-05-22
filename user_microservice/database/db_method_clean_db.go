@@ -9,7 +9,7 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec(`SELECT * FROM public.func_clean_db()`)
+	_, err = tx.Exec(`SELECT * FROM public.func_clean_user_db()`)
 	if err != nil {
 		logger.Errorf("Failed to exec: %v", err.Error())
 		return
