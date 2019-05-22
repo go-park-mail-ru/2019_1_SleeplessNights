@@ -61,3 +61,33 @@ service UserMS {
     rpc GetUserById        (UserId)        returns (User)            {}
 }
 
+message RoomSettings {
+    uint32 maxConnections = 1;
+}
+
+message Room {
+    uint64 id = 1;
+}
+
+message LeaveInfo {
+    Room room = 1;
+    User user = 2;
+}
+
+message ChatHistory {
+    string messages = 1; //Строка в формате JSON
+}
+
+message ChatMessage {
+    User   talker  = 1;
+    string message = 2;
+}
+
+service ChatMS {
+    rpc CreateRoom  (RoomSettings) returns (Room)        {}
+    rpc JoinRoom    (User)         returns (Nothing)     {}
+    rpc GetPrevMsgs (Room)         returns (ChatHistory) {} //Get previous messages
+    rpc SendMessage (ChatMessage)  returns (Nothing)     {}
+    rpc LeaveRoom   (LeaveInfo)    returns (Nothing)     {}
+    rpc DeleteRoom  (Room)         returns (Nothing)     {}
+}
