@@ -8,9 +8,9 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 -- table Question'sPack
 CREATE TABLE public.question_pack
 (
-  id          BIGSERIAL    NOT NULL,
+  id        BIGSERIAL    NOT NULL,
   icon_path VARCHAR(100) NOT NULL,
-  theme       VARCHAR(100) NOT NULL
+  theme     VARCHAR(100) NOT NULL
 );
 
 ALTER TABLE ONLY public.question_pack
@@ -19,11 +19,11 @@ ALTER TABLE ONLY public.question_pack
 -- table question
 CREATE TABLE public.question
 (
-  id      BIGSERIAL     NOT NULL,
+  id      BIGSERIAL      NOT NULL,
   answers VARCHAR(200)[] NOT NULL,
-  correct INTEGER       NOT NULL,
-  text    TEXT          NOT NULL,
-  pack_id BIGINT        NOT NULL
+  correct INTEGER        NOT NULL,
+  text    TEXT           NOT NULL,
+  pack_id BIGINT         NOT NULL
 );
 
 ALTER TABLE ONLY public.question
@@ -94,11 +94,11 @@ BEGIN
           arg_correct,
           arg_text,
           arg_pack_id);
--- EXCEPTION
---   WHEN foreign_key_violation THEN
---     RAISE SQLSTATE '23503';
---   WHEN unique_violation THEN
---     RAISE SQLSTATE '23505';
+  -- EXCEPTION
+  --   WHEN foreign_key_violation THEN
+  --     RAISE SQLSTATE '23503';
+  --   WHEN unique_violation THEN
+  --     RAISE SQLSTATE '23505';
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -438,7 +438,7 @@ ALTER TABLE ONLY public.talkers
 -- table rooms
 CREATE TABLE public.rooms
 (
-  id    BIGSERIAL NOT NULL,
+  id      BIGSERIAL NOT NULL,
   talkers BIGINT[]
 );
 
@@ -448,10 +448,10 @@ ALTER TABLE ONLY public.rooms
 -- table messages
 CREATE TABLE public.messages
 (
-  id      BIGSERIAL NOT NULL,
-  payload JSON      NOT NULL,
+  id        BIGSERIAL NOT NULL,
+  payload   JSON      NOT NULL,
   talker_id BIGINT    NOT NULL,
-  room_id BIGINT    NOT NULL
+  room_id   BIGINT    NOT NULL
 );
 
 ALTER TABLE ONLY public.messages
@@ -484,8 +484,8 @@ CREATE INDEX room_id_idx ON public.messages USING btree (room_id);
 
 -- func update_talker
 CREATE OR REPLACE FUNCTION public.func_update_talker(arg_uid BIGINT,
-                                                   arg_nickname TEXT,
-                                                   arg_avatar_path TEXT)
+                                                     arg_nickname TEXT,
+                                                     arg_avatar_path TEXT)
   RETURNS BIGINT
 AS
 $BODY$
@@ -543,14 +543,18 @@ $BODY$
 
 -- func get_rooms
 CREATE OR REPLACE FUNCTION public.func_get_rooms()
-  RETURNS BIGINT
+  RETURNS SETOF BIGINT
 AS
 $BODY$
 DECLARE
   result BIGINT;
+  rec    RECORD;
 BEGIN
-  SELECT id FROM public.rooms;
-  RETURN result;
+  FOR rec in SELECT id FROM public.rooms
+    LOOP
+      result := rec.id;
+      RETURN NEXT result;
+    END LOOP;
 END;
 $BODY$
   LANGUAGE plpgsql;

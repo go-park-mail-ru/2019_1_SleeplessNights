@@ -33,26 +33,16 @@ var chat *roomManager
 func init() {
 	roomIds, err := database.GetInstance().GetRoomsIds()
 	if err != nil {
-		logger.Error("Chat_room init", err)
+		logger.Error("Chat_room init", err.Error())
 	}
 
 	roomsPool := make(map[uint64]*room)
 	for _, r := range roomIds {
-		var room = &room{
-			id:             r,
-			maxConnections: maxConnections,
-			usersPool:      make(map[uint64]*Talker),
-		}
-		roomsPool[room.id] = room
+		roomsPool[r] = CreateRoom(r)
 	}
 
 	if len(roomsPool) == 0 {
-		var room = &room{
-			id:             1,
-			maxConnections: maxConnections,
-			usersPool:      make(map[uint64]*Talker),
-		}
-		roomsPool[room.id] = room
+		roomsPool[1] = CreateRoom(1)
 	}
 
 	chat = &roomManager{
