@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-func (chat *room) Join(user User) {
+func (chat *room) Join(user Talker) {
 	logger.Info("User ", user.Nickname, "Joined room")
 
 	chat.mx.Lock()
@@ -27,7 +27,7 @@ func (chat *room) Join(user User) {
 	chat.mx.Unlock()
 }
 
-func (us *User) StartListen(roomId uint64) {
+func (us *Talker) StartListen(roomId uint64) {
 
 	var msg Message
 	for {

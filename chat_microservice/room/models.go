@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type User struct {
+type Talker struct {
 	Conn       *websocket.Conn
 	Nickname   string
 	AvatarPath string

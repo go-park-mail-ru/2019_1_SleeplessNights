@@ -28,7 +28,7 @@ var (
 type room struct {
 	maxConnections int64
 	Id             uint64
-	usersPool      map[uint64]*User
+	usersPool      map[uint64]*Talker
 	mx             sync.Mutex
 }
 
@@ -42,7 +42,7 @@ func init() {
 	chat = &room{
 		Id:             id,
 		maxConnections: maxConnections,
-		usersPool:      make(map[uint64]*User),
+		usersPool:      make(map[uint64]*Talker),
 	}
 }
 
