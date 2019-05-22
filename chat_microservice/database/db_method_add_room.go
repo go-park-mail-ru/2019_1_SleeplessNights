@@ -1,6 +1,6 @@
 package database
 
-func (db *dbManager) AddRoom(users []uint64) (id uint64, err error) {
+func (db *dbManager) AddRoom(talkers []uint64) (id uint64, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -9,7 +9,7 @@ func (db *dbManager) AddRoom(users []uint64) (id uint64, err error) {
 	}
 	defer tx.Rollback()
 
-	row := tx.QueryRow(`SELECT * FROM func_add_room ($1)`, users)
+	row := tx.QueryRow(`SELECT * FROM func_add_room ($1)`, talkers)
 	err = row.Scan(&id)
 	if err != nil {
 		logger.Errorf("Failed to get row: %v", err.Error())

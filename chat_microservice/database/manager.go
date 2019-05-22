@@ -28,7 +28,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("DataBase")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("chat_ms.log_level")))
 }
 
 type dbManager struct {

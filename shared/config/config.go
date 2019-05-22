@@ -18,7 +18,7 @@ var (
 	logger                            = log.GetLogger("ViperConfig")
 	consul          *consulapi.Client
 	consulLastIndex uint64            = 0
-	consulKvPrefix                    = "dev/"
+	consulKvPrefix                    = ""
 )
 
 func init() {

@@ -41,9 +41,9 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 
 	//TODO GET chatroom pointer, try to add user_manager to chat as a new chat member
 
-	userId, err := database.GetInstance().UpdateUser(user.Id, user.Nickname, user.AvatarPath)
+	userId, err := database.GetInstance().UpdateTalker(user.Id, user.Nickname, user.AvatarPath)
 	if err != nil {
-		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateUser ")
+		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateTalker ")
 	}
 	room.GetInstance().Join(room.User{
 		Conn:       conn,

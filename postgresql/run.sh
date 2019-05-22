@@ -20,7 +20,8 @@ go run ${BASEPATH}/postgresql/get_postgres_parameter.go password > password
 password=$(tail -n 1 password)
 rm password
 
-image=$(docker build ${BASEPATH}/postgresql/. -q -t sleepless_nights_postgres)
+image="sleepless_nights_postgres"
+docker build ${BASEPATH}/postgresql/. -q -t ${image}
 
 container=$(docker run \
     -e POSTGRES_DB=${db_name} \

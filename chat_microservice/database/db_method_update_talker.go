@@ -1,6 +1,6 @@
 package database
 
-func (db *dbManager) UpdateUser(uid uint64, nickname string, avatarPath string) (id uint64, err error) {
+func (db *dbManager) UpdateTalker(uid uint64, nickname string, avatarPath string) (id uint64, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -9,7 +9,7 @@ func (db *dbManager) UpdateUser(uid uint64, nickname string, avatarPath string) 
 	}
 	defer tx.Rollback()
 
-	row := tx.QueryRow(`SELECT * FROM func_update_user ($1, $2, $3)`,
+	row := tx.QueryRow(`SELECT * FROM func_update_talker ($1, $2, $3)`,
 		uid, nickname, avatarPath)
 	err = row.Scan(&id)
 	if err != nil {

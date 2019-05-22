@@ -423,7 +423,7 @@ $BODY$
 -- TABLES --------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
--- table users
+-- table talkers
 CREATE TABLE public.talkers
 (
   id          BIGSERIAL NOT NULL,
@@ -433,13 +433,13 @@ CREATE TABLE public.talkers
 );
 
 ALTER TABLE ONLY public.talkers
-  ADD CONSTRAINT users_pk PRIMARY KEY (id);
+  ADD CONSTRAINT talkers_pk PRIMARY KEY (id);
 
 -- table rooms
 CREATE TABLE public.rooms
 (
   id    BIGSERIAL NOT NULL,
-  users BIGINT[]
+  talkers BIGINT[]
 );
 
 ALTER TABLE ONLY public.rooms
@@ -450,7 +450,7 @@ CREATE TABLE public.messages
 (
   id      BIGSERIAL NOT NULL,
   payload JSON      NOT NULL,
-  user_id BIGINT    NOT NULL,
+  talker_id BIGINT    NOT NULL,
   room_id BIGINT    NOT NULL
 );
 
@@ -458,7 +458,7 @@ ALTER TABLE ONLY public.messages
   ADD CONSTRAINT messages_pk PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.messages
-  ADD CONSTRAINT "message_user_id_fk" FOREIGN KEY (user_id) REFERENCES public.talkers (id);
+  ADD CONSTRAINT "message_talker_id_fk" FOREIGN KEY (talker_id) REFERENCES public.talkers (id);
 
 ALTER TABLE ONLY public.messages
   ADD CONSTRAINT "message_room_id_fk" FOREIGN KEY (room_id) REFERENCES public.rooms (id);
@@ -468,11 +468,11 @@ ALTER TABLE ONLY public.messages
 -- INDEXES -------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
--- index user_id_idx
-CREATE INDEX user_id_idx ON public.messages USING btree (user_id);
+-- index talker_id_idx
+CREATE INDEX talker_id_idx ON public.messages USING btree (talker_id);
 
--- index users_idx
-CREATE INDEX users_idx ON public.rooms USING btree (users);
+-- index talkers_idx
+CREATE INDEX talkers_idx ON public.rooms USING btree (talkers);
 
 -- index room_id_idx
 CREATE INDEX room_id_idx ON public.messages USING btree (room_id);
@@ -482,8 +482,8 @@ CREATE INDEX room_id_idx ON public.messages USING btree (room_id);
 -- FUNCTIONS -----------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
--- func update_user
-CREATE OR REPLACE FUNCTION public.func_update_user(arg_uid BIGINT,
+-- func update_talker
+CREATE OR REPLACE FUNCTION public.func_update_talker(arg_uid BIGINT,
                                                    arg_nickname TEXT,
                                                    arg_avatar_path TEXT)
   RETURNS BIGINT
@@ -511,15 +511,15 @@ $BODY$
   LANGUAGE plpgsql;
 
 -- func add_message
-CREATE OR REPLACE FUNCTION public.func_add_message(arg_user_id BIGINT,
+CREATE OR REPLACE FUNCTION public.func_add_message(arg_talker_id BIGINT,
                                                    arg_room_id BIGINT,
                                                    arg_payload JSON)
   RETURNS VOID
 AS
 $BODY$
 BEGIN
-  INSERT INTO public.messages (user_id, payload, room_id)
-  VALUES (arg_user_id,
+  INSERT INTO public.messages (talker_id, payload, room_id)
+  VALUES (arg_talker_id,
           arg_payload,
           arg_room_id);
 END;
@@ -534,7 +534,7 @@ $BODY$
 DECLARE
   result BIGINT;
 BEGIN
-  INSERT INTO public.rooms (users)
+  INSERT INTO public.rooms (talkers)
   VALUES (arg_authors) RETURNING id INTO result;
   RETURN result;
 END;
