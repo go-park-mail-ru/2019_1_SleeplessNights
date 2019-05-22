@@ -19,12 +19,18 @@ import (
 const (
 	responseInterval = 500
 	channelCapacity  = 50
+	packTotal        = 10
+	packsPerPlayer   = 2
+	timeToAnswer     = 20
+	timeToMove       = 20
+	timeToChoosePack = 20
 )
 
 const (
 	StatusJoined = iota
 	StatusReady
 	StatusLeft
+	StatusSelectedPacks
 	StatusWannaContinue
 	StatusWannaChangeOpponent
 	StatusWannaQuit
@@ -38,17 +44,20 @@ type MessageWrapper struct {
 type Room struct {
 	//TODO develop Close() method
 	//Channel to exchange event messages between Room and GameField
-	requestsQueue  chan MessageWrapper
-	responsesQueue chan MessageWrapper
-	p1             player.Player
-	p2             player.Player
-	p1Status       int
-	p2Status       int
-	active         *player.Player
-	mu             sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
-	field          game_field.GameField
-	waitForSyncMsg string
-	timer          *time.Timer
+	requestsQueue     chan MessageWrapper
+	responsesQueue    chan MessageWrapper
+	p1                player.Player
+	p2                player.Player
+	p1Status          int
+	p2Status          int
+	active            *player.Player
+	mu                sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
+	field             game_field.GameField
+	waitForSyncMsg    string
+	timerToAnswer     *time.Timer
+	timerToMove       *time.Timer
+	timerToChoosePack *time.Timer
+	syncChan          chan bool
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно
@@ -59,13 +68,13 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	//1. 2 места свободно -> занимаем первое место
 	//2. Свободно 1 место -> занимаем место, поднимаем флаг недоступности комнаты, начинаем игровой процесс
 	logger.Infof("player with UID %d entered Try Join", p.UID())
-	r.mu.Lock()
+
 	found := false
 
 	if r.p1 == nil {
 		r.p1 = p
 		r.p1Status = StatusJoined
-		logger.Infof("Player with UID %d is now p1 in room", p.UID())
+		logger.Infof("Player  with UID %d is now p1 in room", p.UID())
 		err := r.notifyP1(message.Message{Title: "CONNECTED", Payload: "you've been added to room"})
 		if err != nil {
 			logger.Error("Failed to notify player ", p.UID())
@@ -84,49 +93,14 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	}
 
 	if r.p1 != nil && r.p2 != nil {
-		logger.Infof("All players joined the game, p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
-		//TODO Prepare Match
-		//TODO Then run buildEnv after PrepareMatch
-		// In build Env составление и доставание даннных для вопросов
-		go func() {
-
-			//TODO handle possible panic
-			r.prepareMatch()
-		}()
-
+		logger.Infof("All players joined the Room, p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
+		logger.Info("Started Listening Messages ")
+		r.active = &r.p1
+		r.StartRequestsListening()
+		r.StartResponsesSender()
+		r.waitForSyncMsg = "READY"
 	}
-
-	r.mu.Unlock()
 	return found
-}
-
-func (r *Room) notifyP1(msg message.Message) (err error) {
-	err = r.p1.Send(msg)
-	if err != nil {
-		logger.Error("Failed to send Message to P1", err)
-	}
-	return
-}
-
-func (r *Room) notifyP2(msg message.Message) (err error) {
-	err = r.p2.Send(msg)
-	if err != nil {
-		logger.Error("Failed to send Message to P2", err)
-	}
-	return
-}
-
-func (r *Room) notifyAll(msg message.Message) (err error) {
-	err = r.notifyP1(msg)
-	if err != nil {
-		return
-	}
-
-	err = r.notifyP2(msg)
-	if err != nil {
-		return
-	}
-	return nil
 }
 
 func (r *Room) grantGodMod(p player.Player, token []byte) {
@@ -140,55 +114,4 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 	//4. Здесь мы проверяем валидность токена, и возвращаем в сообщении игроку матрицу правильных ответов
 	//5. ВАЖНО! Конретно это сообщение надо отправлять напрямую конкретному игроку, а не через notify
 	//TODO develop
-}
-
-//Проверка Уместности сообщения ( на уровне комнаты)
-func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
-	r.mu.Lock()
-	if wm.msg.Title == message.Leave {
-		isValid = true
-		r.mu.Unlock()
-		return
-	}
-	if wm.msg.Title == message.ChangeOpponent || wm.msg.Title == message.Quit || wm.msg.Title == message.Continue {
-		isValid = true
-		r.mu.Unlock()
-		return
-	}
-	if wm.msg.Title == message.State {
-		isValid = true
-		r.mu.Unlock()
-		return
-	}
-	if wm.msg.Title == message.QuestionsThemesRequest {
-		isValid = true
-		r.mu.Unlock()
-		return
-	}
-	if wm.msg.Title == message.NotDesiredPacks {
-		isValid = true
-		r.mu.Unlock()
-		return
-	}
-	if wm.msg.Title == message.ThemesRequest {
-		isValid = true
-		r.mu.Unlock()
-		return
-	}
-
-	if wm.player != r.active && (wm.msg.Title != message.Ready) {
-		logger.Error("isSync Player addr error")
-		isValid = false
-		r.mu.Unlock()
-		return
-	}
-	if r.waitForSyncMsg != wm.msg.Title {
-		logger.Error("isSync title error")
-		isValid = false
-		r.mu.Unlock()
-		return
-	}
-	isValid = true
-	r.mu.Unlock()
-	return
 }
