@@ -7,10 +7,12 @@ http_port=$(jq -r '.ports.http' ${config_file})  #Достаём из конфи
 #TODO start consul server
 
 container=$(docker run \
-    -d --net=host \
+    -d \
+    -p ${http_port}:${http_port} \
+    -h ${client_addr} \
     -e "CONSUL_LOCAL_CONFIG=${config}" \
     consul agent -ui -dev);
 
 echo "Consul container: ${container}"
 
-go run ${BASEPATH}/consul/update_kv.go -addr ${client_addr}:${http_port}
+go run ${BASEPATH}/consul/update_kv.go -addr ${CONSUL_ADDR}
