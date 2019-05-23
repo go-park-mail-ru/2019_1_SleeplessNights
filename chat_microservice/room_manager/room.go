@@ -67,9 +67,6 @@ func (t *Talker) StartListen(roomId uint64) {
 				}
 			}
 		case scrollTitle:
-			logger.Debug(msg.Payload.Since)
-			logger.Debug(roomId)
-			logger.Debug(limit)
 			messages, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
 			if err != nil {
 				logger.Error(err.Error())
