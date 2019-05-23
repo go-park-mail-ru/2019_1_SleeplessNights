@@ -67,12 +67,26 @@ func (t *Talker) StartListen(roomId uint64) {
 				}
 			}
 		case scrollTitle:
-			messages, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
+			payload, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
 			if err != nil {
 				logger.Error(err.Error())
 			}
 
-			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
+			var messages []responseMessage
+			for _, str := range payload{
+				var rm responseMessage
+				err := json.Unmarshal([]byte(str), &rm)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				messages = append(messages, rm)
+			}
+
+			msg := &scrollMessages{
+				messages: messages,
+			}
+
+			err = t.Conn.WriteJSON(msg)
 			if err != nil {
 				logger.Error(err.Error())
 			}

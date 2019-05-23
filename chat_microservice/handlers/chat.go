@@ -26,11 +26,11 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	str := r.URL.Query().Get("room_manager")
+	str := r.URL.Query().Get("room")
 	var roomId uint64
 	var err error
 	if str == "" {
-		roomId = 1
+		roomId = room_manager.GlobalChatId
 	} else {
 		roomId, err = strconv.ParseUint(str, 10, 64)
 		if err != nil {
@@ -48,8 +48,9 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
 
-
-	if _, ok := room_manager.GetInstance().RoomsPool[roomId]; ok {
+	logger.Debug(roomId)
+	if _, ok := room_manager.GetInstance().RoomsPool[roomId]; !ok {
+		logger.Debug(ok)
 		logger.Error(`Failed in finding room`)
 		w.WriteHeader(http.StatusBadRequest)
 		return

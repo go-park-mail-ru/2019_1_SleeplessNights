@@ -23,7 +23,7 @@ const (
 )
 
 const (
-	globalChatId = uint64(1)
+	GlobalChatId = uint64(1)
 )
 
 var (
@@ -46,11 +46,12 @@ func init() {
 
 	roomsPool := make(map[uint64]*room)
 	for _, r := range roomIds {
+		logger.Debug(r)
 		roomsPool[r] = createRoom(r, maxConnections)
 	}
 
 	if len(roomsPool) == 0 {
-		roomsPool[globalChatId] = createRoom(globalChatId, maxConnections)
+		roomsPool[GlobalChatId] = createRoom(GlobalChatId, maxConnections)
 	}
 
 	chat = &roomManager{

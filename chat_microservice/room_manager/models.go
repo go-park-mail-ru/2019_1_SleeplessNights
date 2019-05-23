@@ -35,3 +35,7 @@ type room struct {
 	UsersPool      map[uint64]*Talker
 	mx             sync.Mutex
 }
+
+type scrollMessages struct {
+	messages []responseMessage `json:"messages"`
+}
