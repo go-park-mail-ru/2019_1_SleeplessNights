@@ -1,7 +1,7 @@
 package database
 
-func (db *dbManager) CleanerDBForTests() (err error) {
-	//TODO remove?
+func (db *dbManager) DeleteRoom(roomId uint64) (err error) {
+
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		logger.Errorf("Failed to begin tx: %v", err.Error())
@@ -9,14 +9,14 @@ func (db *dbManager) CleanerDBForTests() (err error) {
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec(`SELECT * FROM public.func_clean_user_db()`)
+	_, err = tx.Exec(`SELECT * FROM func_delete_room($1::BIGINT)`, roomId)
 	if err != nil {
 		logger.Errorf("Failed to exec: %v", err.Error())
 		return
 	}
 
 	err = tx.Commit()
-	if err !=  nil {
+	if err != nil {
 		logger.Errorf("Failed to commit tx: %v", err.Error())
 		return
 	}

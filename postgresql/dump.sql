@@ -1,16 +1,16 @@
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- GAME ----------------------------------------------------------------------------------------------------------------
 -- TABLES --------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
 -- table Question'sPack
 CREATE TABLE public.question_pack
 (
-  id          BIGSERIAL    NOT NULL,
+  id        BIGSERIAL    NOT NULL,
   icon_path VARCHAR(100) NOT NULL,
-  theme       VARCHAR(100) NOT NULL
+  theme     VARCHAR(100) NOT NULL
 );
 
 ALTER TABLE ONLY public.question_pack
@@ -19,11 +19,11 @@ ALTER TABLE ONLY public.question_pack
 -- table question
 CREATE TABLE public.question
 (
-  id      BIGSERIAL     NOT NULL,
+  id      BIGSERIAL      NOT NULL,
   answers VARCHAR(200)[] NOT NULL,
-  correct INTEGER       NOT NULL,
-  text    TEXT          NOT NULL,
-  pack_id BIGINT        NOT NULL
+  correct INTEGER        NOT NULL,
+  text    TEXT           NOT NULL,
+  pack_id BIGINT         NOT NULL
 );
 
 ALTER TABLE ONLY public.question
@@ -33,7 +33,7 @@ ALTER TABLE ONLY public.question
   ADD CONSTRAINT "question_pack_id_fk" FOREIGN KEY (pack_id) REFERENCES public.question_pack (id);
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- GAME ----------------------------------------------------------------------------------------------------------------
 -- TYPES ---------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ CREATE TYPE public.type_question AS
   );
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- GAME ----------------------------------------------------------------------------------------------------------------
 -- FUNCTIONS -----------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -94,17 +94,17 @@ BEGIN
           arg_correct,
           arg_text,
           arg_pack_id);
--- EXCEPTION
---   WHEN foreign_key_violation THEN
---     RAISE SQLSTATE '23503';
---   WHEN unique_violation THEN
---     RAISE SQLSTATE '23505';
+  -- EXCEPTION
+  --   WHEN foreign_key_violation THEN
+  --     RAISE SQLSTATE '23503';
+  --   WHEN unique_violation THEN
+  --     RAISE SQLSTATE '23505';
 END;
 $BODY$
   LANGUAGE plpgsql;
 
--- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+-- func clean_game_db
+CREATE OR REPLACE FUNCTION public.func_clean_game_db()
   RETURNS VOID
 AS
 $BODY$
@@ -165,7 +165,7 @@ $BODY$
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- USER ----------------------------------------------------------------------------------------------------------------
 -- TABLES --------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -194,7 +194,7 @@ ALTER TABLE ONLY public.users
   ADD CONSTRAINT users_pk PRIMARY KEY (id);
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- USER ----------------------------------------------------------------------------------------------------------------
 -- TRIGGERS ------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -217,7 +217,7 @@ CREATE TRIGGER update_users_rating
 EXECUTE PROCEDURE public.update_rating();
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- USER ----------------------------------------------------------------------------------------------------------------
 -- INDEXES -------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -225,7 +225,7 @@ EXECUTE PROCEDURE public.update_rating();
 CREATE INDEX rating_idx ON public.users (rating DESC);
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- USER ----------------------------------------------------------------------------------------------------------------
 -- TYPES ---------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -245,7 +245,7 @@ CREATE TYPE public.type_user AS
   );
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- USER ----------------------------------------------------------------------------------------------------------------
 -- FUNCTIONS -----------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -292,8 +292,8 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
--- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+-- func clean_user_db
+CREATE OR REPLACE FUNCTION public.func_clean_user_db()
   RETURNS VOID
 AS
 $BODY$
@@ -419,7 +419,7 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
-------------------------------------------------------------------------------------------------------------------------
+-- CHAT ----------------------------------------------------------------------------------------------------------------
 -- TABLES --------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -438,7 +438,7 @@ ALTER TABLE ONLY public.talkers
 -- table rooms
 CREATE TABLE public.rooms
 (
-  id    BIGSERIAL NOT NULL,
+  id      BIGSERIAL NOT NULL,
   talkers BIGINT[]
 );
 
@@ -448,10 +448,10 @@ ALTER TABLE ONLY public.rooms
 -- table messages
 CREATE TABLE public.messages
 (
-  id      BIGSERIAL NOT NULL,
-  payload JSON      NOT NULL,
+  id        BIGSERIAL NOT NULL,
+  payload   JSON      NOT NULL,
   talker_id BIGINT    NOT NULL,
-  room_id BIGINT    NOT NULL
+  room_id   BIGINT    NOT NULL
 );
 
 ALTER TABLE ONLY public.messages
@@ -461,10 +461,10 @@ ALTER TABLE ONLY public.messages
   ADD CONSTRAINT "message_talker_id_fk" FOREIGN KEY (talker_id) REFERENCES public.talkers (id);
 
 ALTER TABLE ONLY public.messages
-  ADD CONSTRAINT "message_room_id_fk" FOREIGN KEY (room_id) REFERENCES public.rooms (id);
+  ADD CONSTRAINT "message_room_id_fk" FOREIGN KEY (room_id) REFERENCES public.rooms (id) ON DELETE CASCADE;
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- CHAT ----------------------------------------------------------------------------------------------------------------
 -- INDEXES -------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -478,14 +478,14 @@ CREATE INDEX talkers_idx ON public.rooms USING btree (talkers);
 CREATE INDEX room_id_idx ON public.messages USING btree (room_id);
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- CHAT ----------------------------------------------------------------------------------------------------------------
 -- FUNCTIONS -----------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
 -- func update_talker
 CREATE OR REPLACE FUNCTION public.func_update_talker(arg_uid BIGINT,
-                                                   arg_nickname TEXT,
-                                                   arg_avatar_path TEXT)
+                                                     arg_nickname TEXT,
+                                                     arg_avatar_path TEXT)
   RETURNS BIGINT
 AS
 $BODY$
@@ -541,6 +541,35 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
+-- func get_rooms
+CREATE OR REPLACE FUNCTION public.func_get_rooms()
+  RETURNS SETOF BIGINT
+AS
+$BODY$
+DECLARE
+  result BIGINT;
+  rec    RECORD;
+BEGIN
+  FOR rec in SELECT id FROM public.rooms
+    LOOP
+      result := rec.id;
+      RETURN NEXT result;
+    END LOOP;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+-- func delete_room
+CREATE OR REPLACE FUNCTION public.func_delete_room(arg_room_id BIGINT)
+  RETURNS VOID
+AS
+$BODY$
+BEGIN
+  DELETE FROM public.rooms WHERE id = arg_room_id ;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
 -- func get_messages
 CREATE OR REPLACE FUNCTION public.func_get_messages(arg_room_id BIGINT,
                                                     arg_since BIGINT,
@@ -565,8 +594,8 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
--- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+-- func clean_chat_db
+CREATE OR REPLACE FUNCTION public.func_clean_chat_db()
   RETURNS VOID
 AS
 $BODY$

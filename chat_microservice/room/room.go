@@ -7,28 +7,31 @@ import (
 	"sync"
 )
 
-func (chat *room) Join(user Talker) {
+func (r *room) Join(user Talker) {
 	logger.Info("User ", user.Nickname, "Joined room")
-
-	chat.mx.Lock()
-	chat.usersPool[user.Id] = &user
+	r.mx.Lock()
+	r.usersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	logger.Info("Started Listening from User", user.Nickname)
 	go func() {
-		user.StartListen(chat.Id)
+		user.StartListen(r.id)
 		wg.Done()
 	}()
-	chat.mx.Unlock()
+	r.mx.Unlock()
 	wg.Wait()
-	chat.mx.Lock()
+	r.mx.Lock()
 	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
-	delete(chat.usersPool, user.Id)
-	chat.mx.Unlock()
+	delete(r.usersPool, user.Id)
+	if len(r.usersPool) == 0 && r.id != 1 {
+		chat.Mx.Lock()
+		delete(chat.RoomsPool, r.id)
+		chat.Mx.Unlock()
+	}
+	r.mx.Unlock()
 }
 
 func (us *Talker) StartListen(roomId uint64) {
-
 	var msg Message
 	for {
 		err := us.Conn.ReadJSON(&msg)
@@ -61,8 +64,8 @@ func (us *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			logger.Debugf("Len of user pool: %d", len(chat.usersPool))
-			for _, user := range chat.usersPool {
+			logger.Debugf("Len of user pool: %d", len(chat.RoomsPool[roomId].usersPool))
+			for _, user := range chat.RoomsPool[roomId].usersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())
@@ -74,7 +77,8 @@ func (us *Talker) StartListen(roomId uint64) {
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			logger.Info(messages)
+			logger.Debug(messages)
+
 			err = us.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
 			if err != nil {
 				logger.Error(err.Error())

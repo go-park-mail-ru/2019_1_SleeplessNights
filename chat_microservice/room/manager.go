@@ -25,27 +25,42 @@ var (
 	limit          = uint64(config.GetInt("chat_ms.pkg.room.msg_limit"))
 )
 
-type room struct {
-	maxConnections int64
-	Id             uint64
-	usersPool      map[uint64]*Talker
-	mx             sync.Mutex
+type roomManager struct {
+	RoomsPool map[uint64]*room
+	Mx             sync.Mutex
 }
 
-var chat *room
+var chat *roomManager
 
 func init() {
-	id, err := database.GetInstance().AddRoom(nil)
+	roomIds, err := database.GetInstance().GetRoomsIds()
 	if err != nil {
-		logger.Error("Chat_room init", err)
+		logger.Error("Chat_room init", err.Error())
 	}
-	chat = &room{
-		Id:             id,
+
+	roomsPool := make(map[uint64]*room)
+	for _, r := range roomIds {
+		roomsPool[r] = CreateRoom(r)
+	}
+
+	if len(roomsPool) == 0 {
+		roomsPool[1] = CreateRoom(1)
+	}
+
+	chat = &roomManager{
+		RoomsPool: roomsPool,
+	}
+}
+
+func GetInstance() *roomManager {
+	return chat
+}
+
+func CreateRoom(id uint64) (r *room) {
+	r = &room{
+		id:             id,
 		maxConnections: maxConnections,
 		usersPool:      make(map[uint64]*Talker),
 	}
-}
-
-func GetInstance() *room {
-	return chat
+	return
 }
