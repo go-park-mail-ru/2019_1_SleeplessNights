@@ -49,7 +49,7 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
 
 
-	if _, ok := room_manager.GetInstance().RoomsPool[roomId]; !ok {
+	if _, ok := room_manager.GetInstance().RoomsPool[roomId]; ok {
 		logger.Error(`Failed in finding room`)
 		w.WriteHeader(http.StatusBadRequest)
 		return
