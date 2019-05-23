@@ -1,4 +1,4 @@
-package room
+package room_manager
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 )
 
 func (r *room) Join(user Talker) {
-	logger.Info("User ", user.Nickname, "Joined room")
+	logger.Info("User ", user.Nickname, "Joined room_manager")
 	r.mx.Lock()
 	r.usersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
@@ -23,21 +23,16 @@ func (r *room) Join(user Talker) {
 	r.mx.Lock()
 	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
 	delete(r.usersPool, user.Id)
-	if len(r.usersPool) == 0 && r.id != 1 {
-		chat.Mx.Lock()
-		delete(chat.RoomsPool, r.id)
-		chat.Mx.Unlock()
-	}
 	r.mx.Unlock()
 }
 
-func (us *Talker) StartListen(roomId uint64) {
-	var msg Message
+func (t *Talker) StartListen(roomId uint64) {
+	var msg message
 	for {
-		err := us.Conn.ReadJSON(&msg)
+		err := t.Conn.ReadJSON(&msg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err) {
-				logger.Infof("Talker %d closed the connection", us.Id)
+				logger.Infof("Talker %d closed the connection", t.Id)
 				return
 			}
 		}
@@ -47,10 +42,10 @@ func (us *Talker) StartListen(roomId uint64) {
 
 		switch msg.Title {
 		case postTitle:
-			respMsg := ResponseMessage{
-				Nickname:   us.Nickname,
-				AvatarPath: us.AvatarPath,
-				Id:         us.Id,
+			respMsg := responseMessage{
+				Nickname:   t.Nickname,
+				AvatarPath: t.AvatarPath,
+				Id:         t.Id,
 				Text:       msg.Payload.Text,
 			}
 
@@ -65,7 +60,7 @@ func (us *Talker) StartListen(roomId uint64) {
 			}
 
 			logger.Debugf("Len of user pool: %d", len(chat.RoomsPool[roomId].usersPool))
-			for _, user := range chat.RoomsPool[roomId].usersPool {
+			for _, user  := range chat.RoomsPool[roomId].usersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())
@@ -79,7 +74,7 @@ func (us *Talker) StartListen(roomId uint64) {
 			}
 			logger.Debug(messages)
 
-			err = us.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
+			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
 			if err != nil {
 				logger.Error(err.Error())
 			}

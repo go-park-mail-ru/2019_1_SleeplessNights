@@ -1,4 +1,4 @@
-package room
+package room_manager
 
 import (
 	"github.com/gorilla/websocket"
@@ -12,17 +12,17 @@ type Talker struct {
 	Id         uint64
 }
 
-type Message struct {
+type message struct {
 	Title   string  `json:"title"`
-	Payload Payload `json:"payload"`
+	Payload payload `json:"payload"`
 }
 
-type Payload struct {
+type payload struct {
 	Text  string `json:"text,omitempty"`
 	Since uint64 `json:"since,omitempty"`
 }
 
-type ResponseMessage struct {
+type responseMessage struct {
 	Nickname   string `json:"nickname"`
 	AvatarPath string `json:"avatarPath"`
 	Id         uint64 `json:"id"`
@@ -30,7 +30,7 @@ type ResponseMessage struct {
 }
 
 type room struct {
-	maxConnections int64
+	maxConnections uint64
 	id             uint64
 	usersPool      map[uint64]*Talker
 	mx             sync.Mutex
