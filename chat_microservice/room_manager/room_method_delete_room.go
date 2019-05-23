@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (rm *roomManager) DeleteRoom(ctx context.Context, in *services.Room, opts ...grpc.CallOption) (n *services.Nothing, err error) {
+func (rm *roomManager) DeleteRoom(ctx context.Context, in *services.RoomId, opts ...grpc.CallOption) (n *services.Nothing, err error) {
 
 	if in.Id == globalChatId {
 		logger.Errorf(`Failed to delete global chat`)

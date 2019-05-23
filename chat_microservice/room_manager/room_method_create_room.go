@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings, opts ...grpc.CallOption) (room *services.Room, err error) {
+func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings, opts ...grpc.CallOption) (rId *services.RoomId, err error) {
 
 	roomId, err := database.GetInstance().AddRoom(nil)
 	if _err, ok := err.(pgx.PgError); ok {
@@ -23,6 +23,6 @@ func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings
 	rm.RoomsPool[roomId] = r
 	rm.Mx.Unlock()
 
-	room.Id = r.id
+	rId.Id = roomId
 	return
 }
