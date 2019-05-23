@@ -7,9 +7,8 @@ import (
 	"sync"
 )
 
-func (r *room) Join(user Talker) (err error) {
+func (r *room) Join(user Talker) {
 	logger.Info("User ", user.Nickname, "Joined room")
-
 	r.mx.Lock()
 	r.usersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
@@ -25,16 +24,14 @@ func (r *room) Join(user Talker) (err error) {
 	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
 	delete(r.usersPool, user.Id)
 	if len(r.usersPool) == 0 && r.id != 1 {
-		err = database.GetInstance().DeleteRoom(r.id)
+		chat.Mx.Lock()
 		delete(chat.RoomsPool, r.id)
-		return
+		chat.Mx.Unlock()
 	}
 	r.mx.Unlock()
-	return
 }
 
 func (us *Talker) StartListen(roomId uint64) {
-
 	var msg Message
 	for {
 		err := us.Conn.ReadJSON(&msg)
@@ -80,7 +77,8 @@ func (us *Talker) StartListen(roomId uint64) {
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			logger.Info(messages)
+			logger.Debug(messages)
+
 			err = us.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
 			if err != nil {
 				logger.Error(err.Error())

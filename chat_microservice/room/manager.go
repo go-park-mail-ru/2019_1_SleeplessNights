@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
+	"sync"
 )
 
 var logger *log.Logger
@@ -26,6 +27,7 @@ var (
 
 type roomManager struct {
 	RoomsPool map[uint64]*room
+	Mx             sync.Mutex
 }
 
 var chat *roomManager

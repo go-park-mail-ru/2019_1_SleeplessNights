@@ -36,22 +36,25 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		roomId, err = strconv.ParseUint(str, 10, 64)
 		if err != nil {
 			logger.Error(`Failed in getting query"`, err)
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
-	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
 	if err != nil {
 		logger.Error(`Micro service error in "EnterChat" during connection"`, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
+
 
 	if _, ok := room.GetInstance().RoomsPool[roomId]; !ok {
 		r := room.CreateRoom(roomId)
+		room.GetInstance().Mx.Lock()
 		room.GetInstance().RoomsPool[roomId] = r
+		room.GetInstance().Mx.Unlock()
 	}
 
 	isAuthorized := false
@@ -67,16 +70,10 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateTalker ")
 	}
-	err = room.GetInstance().RoomsPool[roomId].Join(room.Talker{
+	room.GetInstance().RoomsPool[roomId].Join(room.Talker{
 		Conn:       conn,
 		Nickname:   user.Nickname,
 		AvatarPath: user.AvatarPath,
 		Id:         userId,
 	})
-
-	if err != nil {
-		logger.Error(`Failed in deleting room from db`, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 }
