@@ -27,8 +27,7 @@ const (
 )
 
 var (
-	//maxConnections = uint64(config.GetInt("chat_ms.pkg.room_manager.max_connections"))
-	maxConnections = uint64(2)
+	maxConnections = uint64(config.GetInt("chat_ms.pkg.room_manager.max_connections"))
 	limit          = uint64(config.GetInt("chat_ms.pkg.room_manager.msg_limit"))
 )
 
