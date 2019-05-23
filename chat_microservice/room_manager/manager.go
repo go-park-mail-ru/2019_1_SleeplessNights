@@ -65,8 +65,8 @@ func GetInstance() *roomManager {
 func createRoom(id uint64, maxConn uint64) (r *room) {
 	r = &room{
 		id:             id,
-		maxConnections: maxConn,
-		usersPool:      make(map[uint64]*Talker),
+		MaxConnections: maxConn,
+		UsersPool:      make(map[uint64]*Talker),
 	}
 	return
 }

@@ -10,7 +10,6 @@ import (
 )
 
 func (rm *roomManager) DeleteRoom(ctx context.Context, in *services.RoomId, opts ...grpc.CallOption) (n *services.Nothing, err error) {
-
 	if in.Id == globalChatId {
 		logger.Errorf(`Failed to delete global chat`)
 		err = errors.New("ERROR: trying delete global chat")

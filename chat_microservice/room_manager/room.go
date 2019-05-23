@@ -10,7 +10,7 @@ import (
 func (r *room) Join(user Talker) {
 	logger.Info("User ", user.Nickname, "Joined room_manager")
 	r.mx.Lock()
-	r.usersPool[user.Id] = &user
+	r.UsersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	logger.Info("Started Listening from User", user.Nickname)
@@ -22,7 +22,7 @@ func (r *room) Join(user Talker) {
 	wg.Wait()
 	r.mx.Lock()
 	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
-	delete(r.usersPool, user.Id)
+	delete(r.UsersPool, user.Id)
 	r.mx.Unlock()
 }
 
@@ -59,8 +59,8 @@ func (t *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			logger.Debugf("Len of user pool: %d", len(chat.RoomsPool[roomId].usersPool))
-			for _, user  := range chat.RoomsPool[roomId].usersPool {
+			logger.Debugf("Len of user pool: %d", len(chat.RoomsPool[roomId].UsersPool))
+			for _, user  := range chat.RoomsPool[roomId].UsersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())
@@ -68,6 +68,8 @@ func (t *Talker) StartListen(roomId uint64) {
 			}
 		case scrollTitle:
 			logger.Debug(msg.Payload.Since)
+			logger.Debug(roomId)
+			logger.Debug(limit)
 			messages, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
 			if err != nil {
 				logger.Error(err.Error())

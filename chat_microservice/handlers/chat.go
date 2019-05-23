@@ -55,6 +55,13 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	room := room_manager.GetInstance().RoomsPool[roomId]
+	if uint64(len(room.UsersPool)) == room.MaxConnections{
+		logger.Error(`Failed because room is full`)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
 	isAuthorized := false
 	if user.Id != 0 {
 		isAuthorized = true

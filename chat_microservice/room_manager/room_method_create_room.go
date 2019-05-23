@@ -9,7 +9,6 @@ import (
 )
 
 func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings, opts ...grpc.CallOption) (rId *services.RoomId, err error) {
-
 	roomId, err := database.GetInstance().AddRoom(nil)
 	if _err, ok := err.(pgx.PgError); ok {
 		logger.Errorf("Failed to add user: %v", err.Error())
