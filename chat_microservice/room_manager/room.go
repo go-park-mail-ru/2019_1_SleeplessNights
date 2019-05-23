@@ -71,7 +71,6 @@ func (t *Talker) StartListen(roomId uint64) {
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			logger.Debug(messages)
 
 			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
 			if err != nil {
