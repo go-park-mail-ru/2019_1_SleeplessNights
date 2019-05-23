@@ -46,7 +46,6 @@ func init() {
 
 	roomsPool := make(map[uint64]*room)
 	for _, r := range roomIds {
-		logger.Debug(r)
 		roomsPool[r] = createRoom(r, maxConnections)
 	}
 
