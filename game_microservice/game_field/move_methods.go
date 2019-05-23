@@ -31,6 +31,7 @@ func (gf *GameField) GetAvailableCells(playerIdx int) (cellsCoordinates []Pair) 
 	var secondPlayer *gfPlayer
 	var player *gfPlayer
 	cellsCoordinates = make([]Pair, 0)
+	//TODO remove magic constants
 	if playerIdx == 1 {
 		player = &gf.p1
 		rowIdx = 7

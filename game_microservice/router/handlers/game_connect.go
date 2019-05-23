@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/gorilla/websocket"
@@ -13,7 +14,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("GameMS-mux")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("main_ms.log_level")))
 }
 
 func UpgradeWs(user *services.User, w http.ResponseWriter, r *http.Request) {

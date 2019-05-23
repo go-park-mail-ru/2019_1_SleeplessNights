@@ -32,6 +32,34 @@ dev:
       database:
         max_connections: 100
         acquire_timeout: "3s"
+  game_ms: #Конфигурация game microservice
+    log_level: 6 #logrus.TraceLevel
+    port: 8006
+    pkg:
+      room:
+        response_interval: "500ms" #Интервал периодов рассылки сервером сообщений
+        channel_capacity: 50 #Размер очередей входящих и исходящих сообщений комнаты
+        pack_total: 10
+        packs_to_ban_count: 2
+        time_to_answer: "20s"
+        time_to_move: "20s"
+        time_to_choose_pack: "20s"
+      game_field:
+        size: 8
+        questions_num: 60
+        turn_duration: "20s"
+        prize_pos:
+          - x: 3
+            y: 3
+          - x: 3
+            y: 4
+          - x: 4
+            y: 3
+          - x: 4
+            y: 4
+      database:
+        max_connections: 100
+        acquire_timeout: "3s"
   postgres:
     port: 5000
     host: "0.0.0.0"

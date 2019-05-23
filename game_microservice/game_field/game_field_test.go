@@ -15,7 +15,7 @@ func TestGameField_Build(t *testing.T) {
 		atomic.AddUint64(idSource, 1)
 		return database.Question{
 			PackID:          *idSource,
-			QuestionJson:    "{}",
+			QuestionJ:    "{}",
 			CorrectAnswerId: rand.Int() % 4,
 		}
 	}

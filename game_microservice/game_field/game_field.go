@@ -3,16 +3,19 @@ package game_field
 import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"time"
 )
 
 var logger *log.Logger
 
-const (
-	fieldSize    = 8
-	TurnDuration = 20 * time.Second
-	QuestionsNum = 60
+var (
+	fieldSize    = config.GetInt("game_ms.pkg.game_field.size")
+	QuestionsNum = config.GetInt("game_ms.pkg.game_field.questions_num")
+	TurnDuration = config.GetDuration("game_field.pkg.game_field.turn_duration", 20*time.Second)
 )
 
 var prizePos []Pair
@@ -20,7 +23,12 @@ var prizePos []Pair
 //В начале игры игроков не существует никаких позиций, они находятся как бы вне поля
 func init() {
 	logger = log.GetLogger("GameMS")
-	prizePos = []Pair{{3, 3}, {3, 4}, {4, 3}, {4, 4}}
+	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
+	var ok bool
+	prizePos, ok = viper.Get("game_ms.pkg.game_field.prize_pos").([]Pair)
+	if !ok {
+		logger.Fatal("Can not convert interface{} to []Pair")
+	}
 }
 
 type GameField struct {
@@ -94,5 +102,5 @@ func (gf *GameField) GetCurrentState() string {
 		p2State = fmt.Sprintf("\n\n player1 %d, {X:%d, Y:%d},answers: +:%d -:%d \n ", gf.p2.id, gf.p2.pos.X, gf.p2.pos.Y, gf.p1.rightAnswers, gf.p1.falseAnswers)
 
 	}
-	return (fieldState + p1State + p2State)
+	return fieldState + p1State + p2State
 }

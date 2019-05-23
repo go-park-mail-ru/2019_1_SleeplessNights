@@ -3,8 +3,10 @@ package factory
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 	"sync/atomic"
 )
 
@@ -20,6 +22,7 @@ var logger *log.Logger
 
 func init () {
 	logger = log.GetLogger("PlayerFactory")
+	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
 }
 
 var factory *playerFactory //Вот она

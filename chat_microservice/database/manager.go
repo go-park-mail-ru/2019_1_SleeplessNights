@@ -10,17 +10,9 @@ import (
 )
 
 var (
-	maxConnections = config.GetInt("user_ms.pkg.database.max_connections")
-	acquireTimeout time.Duration
+	maxConnections = config.GetInt("chat_ms.pkg.database.max_connections")
+	acquireTimeout = config.GetDuration("chat_ms.pkg.database.acquire_timeout", 3*time.Second)
 )
-
-func init() {
-	var err error
-	acquireTimeout, err = time.ParseDuration(config.GetString("user_ms.pkg.database.acquire_timeout"))
-	if err != nil {
-		acquireTimeout = 3 * time.Second
-	}
-}
 
 var db *dbManager
 

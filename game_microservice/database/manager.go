@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/jackc/pgx"
 	"github.com/xlab/closer"
 	"os"
@@ -11,9 +12,9 @@ import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 )
 
-const (
-	maxConnections = 3
-	acquireTimeout = 3 * time.Second
+var (
+	maxConnections = config.GetInt("game_ms.pkg.database.max_connections")
+	acquireTimeout = config.GetDuration("game_ms.pkg.database.acquire_timeout", 3*time.Second)
 )
 
 var logger *log.Logger

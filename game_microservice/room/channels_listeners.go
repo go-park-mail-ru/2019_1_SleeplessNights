@@ -32,7 +32,7 @@ func (r *Room) StartRequestsListening() {
 				logger.Error("Got message with invalid structure")
 				continue
 			}
-			logger.Info("Message Passed Sync Valid")
+			logger.Info("Message Passed Valid")
 			logger.Info("Message Entered Sync Valid")
 			if !r.isSyncValid(msg) {
 				logger.Warningf("Got SyncInvalid message of type %s from player UID %d, expected %s from player %d",
@@ -57,6 +57,6 @@ func (r *Room) StartResponsesSender() {
 				logger.Error("responseQueue: error trying to send response to player", err)
 			}
 		}
-		time.Sleep(responseInterval * time.Millisecond)
+		time.Sleep(responseInterval)
 	}()
 }
