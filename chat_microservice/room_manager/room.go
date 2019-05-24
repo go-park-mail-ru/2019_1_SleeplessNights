@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/gorilla/websocket"
+	"strings"
 	"sync"
 )
 
@@ -67,26 +68,19 @@ func (t *Talker) StartListen(roomId uint64) {
 				}
 			}
 		case scrollTitle:
+			logger.Debug(limit)
+			logger.Debug(msg.Payload.Since)
+			logger.Debug(roomId)
 			payload, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
 			if err != nil {
 				logger.Error(err.Error())
 			}
+			logger.Debug(payload)
 
-			var messages []responseMessage
-			for _, str := range payload{
-				var rm responseMessage
-				err := json.Unmarshal([]byte(str), &rm)
-				if err != nil {
-					logger.Error(err.Error())
-				}
-				messages = append(messages, rm)
-			}
+			strPyload := "[" + strings.Join(payload, ",") + "]"
 
-			msg := &scrollMessages{
-				messages: messages,
-			}
-
-			err = t.Conn.WriteJSON(msg)
+			logger.Debug(strPyload)
+			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(strPyload))
 			if err != nil {
 				logger.Error(err.Error())
 			}
