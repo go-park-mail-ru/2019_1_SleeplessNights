@@ -60,7 +60,6 @@ func (t *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			logger.Debugf("Len of user pool: %d", len(chat.RoomsPool[roomId].UsersPool))
 			for _, user  := range chat.RoomsPool[roomId].UsersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
@@ -68,19 +67,14 @@ func (t *Talker) StartListen(roomId uint64) {
 				}
 			}
 		case scrollTitle:
-			logger.Debug(limit)
-			logger.Debug(msg.Payload.Since)
-			logger.Debug(roomId)
 			payload, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			logger.Debug(payload)
 
-			strPyload := "[" + strings.Join(payload, ",") + "]"
+			strPayload := "[" + strings.Join(payload, ",") + "]"
 
-			logger.Debug(strPyload)
-			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(strPyload))
+			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(strPayload))
 			if err != nil {
 				logger.Error(err.Error())
 			}

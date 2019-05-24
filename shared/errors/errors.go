@@ -10,7 +10,7 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("Validator")
+	logger = log.GetLogger("Errors")
 	logger.SetLogLevel(logrus.TraceLevel)
 }
 
