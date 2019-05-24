@@ -57,6 +57,9 @@ dev:
             y: 3
           - x: 4
             y: 4
+      game:
+        max_rooms: 100
+        player_input_queue_len: 100
       database:
         max_connections: 100
         acquire_timeout: "3s"
