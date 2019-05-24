@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/room"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/room_manager"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
@@ -20,7 +20,6 @@ func init() {
 }
 
 func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
-
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -31,11 +30,11 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	var roomId uint64
 	var err error
 	if str == "" {
-		roomId = 1
+		roomId = room_manager.GlobalChatId
 	} else {
 		roomId, err = strconv.ParseUint(str, 10, 64)
 		if err != nil {
-			logger.Error(`Failed in getting query"`, err)
+			logger.Error(`Failed in getting query`, err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -43,18 +42,23 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Error(`Micro service error in "EnterChat" during connection"`, err)
+		logger.Error(`Micro service error in "EnterChat" during connection`, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
 
+	if _, ok := room_manager.GetInstance().RoomsPool[roomId]; !ok {
+		logger.Error(`Failed in finding room`)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	if _, ok := room.GetInstance().RoomsPool[roomId]; !ok {
-		r := room.CreateRoom(roomId)
-		room.GetInstance().Mx.Lock()
-		room.GetInstance().RoomsPool[roomId] = r
-		room.GetInstance().Mx.Unlock()
+	room := room_manager.GetInstance().RoomsPool[roomId]
+	if uint64(len(room.UsersPool)) == room.MaxConnections{
+		logger.Error(`Failed because room is full`)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
 	}
 
 	isAuthorized := false
@@ -70,7 +74,7 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateTalker ")
 	}
-	room.GetInstance().RoomsPool[roomId].Join(room.Talker{
+	room_manager.GetInstance().RoomsPool[roomId].Join(room_manager.Talker{
 		Conn:       conn,
 		Nickname:   user.Nickname,
 		AvatarPath: user.AvatarPath,

@@ -26,7 +26,7 @@ dev:
     log_level: 6 #logrus.TraceLevel
     port: 8005
     pkg:
-      room:
+      room_manager:
         max_connections: 100
         msg_limit: 20
       database:

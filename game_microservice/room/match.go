@@ -50,7 +50,7 @@ func (r *Room) buildEnv() {
 
 	if err != nil {
 		logger.Error("Error occurred while fetching question packs from DB:", err)
-		//TODO deal with error, maybe kill the room
+		//TODO deal with error, maybe kill the room_manager
 	}
 	logger.Info("Got packs from database")
 	packIDs := make([]uint64, 0)
@@ -63,7 +63,7 @@ func (r *Room) buildEnv() {
 	questions, err := database.GetInstance().GetQuestions(packIDs)
 	if err != nil || len(questions) < game_field.QuestionsNum {
 		logger.Error("Error occurred while fetching question from DB:", err)
-		//TODO deal with error, maybe kill the room
+		//TODO deal with error, maybe kill the room_manager
 	}
 
 	r.field.Build(questions)

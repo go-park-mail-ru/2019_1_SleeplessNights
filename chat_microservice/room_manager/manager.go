@@ -1,9 +1,11 @@
-package room
+package room_manager
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 	"sync"
 )
@@ -20,14 +22,18 @@ const (
 	scrollTitle = "SCROLL"
 )
 
+const (
+	GlobalChatId = uint64(1)
+)
+
 var (
-	maxConnections = int64(config.GetInt("chat_ms.pkg.room.max_connections"))
-	limit          = uint64(config.GetInt("chat_ms.pkg.room.msg_limit"))
+	maxConnections = uint64(config.GetInt("chat_ms.pkg.room_manager.max_connections"))
+	limit          = uint64(config.GetInt("chat_ms.pkg.room_manager.msg_limit"))
 )
 
 type roomManager struct {
 	RoomsPool map[uint64]*room
-	Mx             sync.Mutex
+	Mx        sync.Mutex
 }
 
 var chat *roomManager
@@ -40,11 +46,11 @@ func init() {
 
 	roomsPool := make(map[uint64]*room)
 	for _, r := range roomIds {
-		roomsPool[r] = CreateRoom(r)
+		roomsPool[r] = createRoom(r, maxConnections)
 	}
 
 	if len(roomsPool) == 0 {
-		roomsPool[1] = CreateRoom(1)
+		roomsPool[GlobalChatId] = createRoom(GlobalChatId, maxConnections)
 	}
 
 	chat = &roomManager{
@@ -56,11 +62,28 @@ func GetInstance() *roomManager {
 	return chat
 }
 
-func CreateRoom(id uint64) (r *room) {
+func createRoom(id uint64, maxConn uint64) (r *room) {
 	r = &room{
 		id:             id,
-		maxConnections: maxConnections,
-		usersPool:      make(map[uint64]*Talker),
+		MaxConnections: maxConn,
+		UsersPool:      make(map[uint64]*Talker),
+	}
+	return
+}
+
+const (
+	nodataFound         = "P0002"
+	foreignKeyViolation = "23503"
+)
+
+func handlerError(pgError pgx.PgError) (err error) {
+	switch pgError.Code {
+	case foreignKeyViolation:
+		err = errors.DataBaseForeignKeyViolation
+	case nodataFound:
+		err = errors.DataBaseNoDataFound
+	default:
+		err = pgError
 	}
 	return
 }

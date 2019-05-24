@@ -1,8 +1,6 @@
 package database
 
-import "strings"
-
-func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (payload string, err error) {
+func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (messages []string, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -19,7 +17,6 @@ func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (pay
 	}
 	defer rows.Close()
 
-	var messages []string
 	for rows.Next() {
 		var str string
 		err = rows.Scan(&str)
@@ -41,10 +38,5 @@ func (db *dbManager) GetMessages(roomId uint64, since uint64, limit uint64) (pay
 		logger.Errorf("Failed to commit tx: %v", err.Error())
 		return
 	}
-
-	prefix := `"{"messages":[`
-	suffix := `]}"`
-	payload = strings.Join(messages, ",")
-	payload = prefix + payload + suffix
 	return
 }

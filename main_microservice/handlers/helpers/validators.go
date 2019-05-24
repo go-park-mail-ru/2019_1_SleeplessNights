@@ -1,24 +1,14 @@
 package helpers
 
 import (
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"github.com/sirupsen/logrus"
 	"mime/multipart"
 	"net/http"
-	"regexp"
 	"strings"
 )
 
 const (
 	MaxPhotoSize = 2 * 1024 * 1024
 )
-
-var logger *log.Logger
-
-func init() {
-	logger = log.GetLogger("Validator")
-	logger.SetLogLevel(logrus.TraceLevel)
-}
 
 var avatarTypeWhiteList map[string]struct{}
 
@@ -81,8 +71,9 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	return requestErrors, nil
 }
 
+
 func validateEmail(email string, requestErrors *ErrorSet) (err error) {
-	isValid, err := regexp.Match("^[a-z0-9._%+-]+@[a-z0-9-]+.+.[a-z]{2,4}$", []byte(email))
+	isValid := emailReg.Match([]byte(email))
 	if !isValid {
 		logger.Errorf("Email isn't valid")
 		*requestErrors = append(*requestErrors, InvalidEmailErrorMsg)
@@ -100,11 +91,7 @@ func validatePassword(password string, requestErrors *ErrorSet) (err error) {
 }
 
 func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
-	isValid, err := regexp.Match("^[a-zA-Z0-9-_]*$", []byte(nickname))
-	if err != nil {
-		logger.Errorf("Failed to match: %v", err.Error())
-		return
-	}
+	isValid := nicknameReg.Match([]byte(nickname))
 	if !isValid {
 		logger.Errorf("Nickname isn't valid")
 		*requestErrors = append(*requestErrors, InvalidNicknameErrorMsg)
