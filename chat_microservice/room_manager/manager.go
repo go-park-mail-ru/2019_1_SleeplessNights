@@ -39,7 +39,7 @@ type roomManager struct {
 var chat *roomManager
 
 func init() {
-	rooms, err := database.GetInstance().GetRoomsIds()
+	rooms, err := database.GetInstance().GetRooms()
 	if err != nil {
 		logger.Error("Chat_room init", err.Error())
 	}

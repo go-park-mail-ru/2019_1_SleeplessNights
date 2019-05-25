@@ -1,6 +1,6 @@
 package database
 
-func (db *dbManager) GetRoomsIds() (rooms []room, err error) {
+func (db *dbManager) GetRooms() (rooms []room, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
