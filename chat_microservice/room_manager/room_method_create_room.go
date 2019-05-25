@@ -8,8 +8,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings, opts ...grpc.CallOption) (rId *services.RoomId, err error) {
-	roomId, err := database.GetInstance().AddRoom(nil)
+func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings, opts ...grpc.CallOption) (*services.RoomId, error) {
+
+	roomId, err := database.GetInstance().AddRoom(in.Talkers)
 	if _err, ok := err.(pgx.PgError); ok {
 		logger.Errorf("Failed to add user: %v", err.Error())
 		err = handlerError(_err)
@@ -22,6 +23,8 @@ func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings
 	rm.RoomsPool[roomId] = r
 	rm.Mx.Unlock()
 
-	rId.Id = roomId
-	return
+	rId := &services.RoomId{
+		Id: roomId,
+	}
+	return rId, err
 }

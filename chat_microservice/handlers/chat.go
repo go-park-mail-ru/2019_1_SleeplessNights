@@ -20,12 +20,6 @@ func init() {
 }
 
 func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-
 	str := r.URL.Query().Get("room")
 	var roomId uint64
 	var err error
@@ -34,19 +28,11 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	} else {
 		roomId, err = strconv.ParseUint(str, 10, 64)
 		if err != nil {
-			logger.Error(`Failed in getting query`, err)
+			logger.Error(`Failed in getting query:`, err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		logger.Error(`Micro service error in "EnterChat" during connection`, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
 
 	if _, ok := room_manager.GetInstance().RoomsPool[roomId]; !ok {
 		logger.Error(`Failed in finding room`)
@@ -86,6 +72,21 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("Failed to get user_manager in ChatConnect, from db.getI.UpdateTalker ")
 	}
+
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		logger.Error(`Micro service error in "EnterChat" during connection`, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	logger.Infof("Someone's connected to websocket chat, ID: %d", user.Id)
+
 	room_manager.GetInstance().RoomsPool[roomId].Join(room_manager.Talker{
 		Conn:       conn,
 		Nickname:   user.Nickname,
