@@ -16,7 +16,7 @@ func (r *room) Join(user Talker) {
 	wg.Add(1)
 	logger.Info("Started Listening from User", user.Nickname)
 	go func() {
-		user.StartListen(r.id)
+		user.StartListen(r.Id)
 		wg.Done()
 	}()
 	r.mx.Unlock()

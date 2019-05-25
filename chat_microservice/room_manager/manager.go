@@ -69,7 +69,7 @@ func GetInstance() *roomManager {
 
 func createRoom(id, maxConn uint64, talkersArray []uint64) (r *room) {
 	r = &room{
-		id:             id,
+		Id:             id,
 		MaxConnections: maxConn,
 		TalkersPool:    make(map[uint64]*Talker),
 		AccessArray:    talkersArray,

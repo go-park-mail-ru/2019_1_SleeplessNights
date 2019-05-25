@@ -55,22 +55,24 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	}
 
 	room := room_manager.GetInstance().RoomsPool[roomId]
-	if uint64(len(room.TalkersPool)) == room.MaxConnections{
+	if uint64(len(room.TalkersPool)) == room.MaxConnections {
 		logger.Error(`Failed because room is full`)
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
 
-	var haveAccess bool
-	for _, id := range room.AccessArray{
-		if id == user.Id{
-			haveAccess = true
+	if room.Id != room_manager.GlobalChatId {
+		var haveAccess bool
+		for _, id := range room.AccessArray {
+			if id == user.Id {
+				haveAccess = true
+			}
 		}
-	}
-	if !haveAccess{
-		logger.Error(`Failed because user hasn't access to  enter this room!`)
-		w.WriteHeader(http.StatusServiceUnavailable)
-		return
+		if !haveAccess {
+			logger.Error(`Failed because user hasn't access to  enter this room!`)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 	}
 
 	isAuthorized := false
