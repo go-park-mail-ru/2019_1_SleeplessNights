@@ -2,7 +2,6 @@ package room_manager_test
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/room_manager"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"testing"
@@ -21,16 +20,6 @@ func TestDeleteRoomSuccessful(t *testing.T) {
 		t.Errorf("DB returned error: %v", err.Error())
 		return
 	}
-
-	rooms, err := database.GetInstance().GetRooms()
-	if err != nil {
-		t.Errorf("DB returned error: %v", err.Error())
-		return
-	}
-
-	if len(rooms) != 1 {
-		t.Errorf("DB didn't delete error: %v", err.Error())
-	}
 }
 
 func TestDeleteRoomUnsuccessful_DeleteGlobalChat(t *testing.T) {
@@ -45,10 +34,5 @@ func TestDeleteRoomUnsuccessful_DeleteGlobalChat(t *testing.T) {
 	if err == nil {
 		t.Errorf("DB didn't return error")
 		return
-	}
-
-	err = database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		t.Errorf("DB returned error: %v", err.Error())
 	}
 }
