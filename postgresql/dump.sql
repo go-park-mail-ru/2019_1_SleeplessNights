@@ -439,7 +439,7 @@ ALTER TABLE ONLY public.talkers
 CREATE TABLE public.rooms
 (
   id      BIGSERIAL NOT NULL,
-  talkers BIGINT[]
+  talkers BIGINT[]  NOT NULL
 );
 
 ALTER TABLE ONLY public.rooms

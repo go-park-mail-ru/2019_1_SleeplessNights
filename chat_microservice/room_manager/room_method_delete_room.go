@@ -18,7 +18,7 @@ func (rm *roomManager) DeleteRoom(ctx context.Context, in *services.RoomId, opts
 
 	err = database.GetInstance().DeleteRoom(in.Id)
 	if _err, ok := err.(pgx.PgError); ok {
-		logger.Errorf("Failed to add user: %v", err.Error())
+		logger.Errorf("Failed to delete room: %v", err.Error())
 		err = handlerError(_err)
 		return nil, err
 	}

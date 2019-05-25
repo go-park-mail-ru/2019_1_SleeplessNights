@@ -43,7 +43,6 @@ func TestCreateUserUnsuccessful(t *testing.T) {
 
 	var ctx context.Context
 	expected := errors.DataBaseUniqueViolation
-	//TODO исправить ошибку, будет выдаваться с добавление текса "rps ..."
 	_, err := user_manager.GetInstance().CreateUser(ctx, &oldUser)
 	if err == nil {
 		t.Errorf("DB didn't return any error")
