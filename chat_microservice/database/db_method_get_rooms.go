@@ -1,6 +1,6 @@
 package database
 
-func (db *dbManager) GetRoomsIds() (roomIds []uint64, err error) {
+func (db *dbManager) GetRoomsIds() (rooms []room, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -17,13 +17,13 @@ func (db *dbManager) GetRoomsIds() (roomIds []uint64, err error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var roomId uint64
-		err = rows.Scan(&roomId)
+		var r room
+		err = rows.Scan(&r.Id, &r.AccessArray)
 		if err != nil {
 			logger.Errorf("Failed to get row: %v", err.Error())
 			return
 		}
-		roomIds = append(roomIds, roomId)
+		rooms = append(rooms, r)
 	}
 
 	err = rows.Err()

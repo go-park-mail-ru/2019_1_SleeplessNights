@@ -387,7 +387,7 @@ BEGIN
       result.matches := rec.matches;
       result.wins := rec.wins;
       result.rating := rec.rating;
-      RETURN next result;
+      RETURN NEXT result;
     END LOOP;
 END;
 $BODY$
@@ -479,6 +479,18 @@ CREATE INDEX room_id_idx ON public.messages USING btree (room_id);
 
 
 -- CHAT ----------------------------------------------------------------------------------------------------------------
+-- TYPES ---------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+-- type room
+CREATE TYPE public.type_room AS
+  (
+  id BIGINT,
+  talkers BIGINT[]
+  );
+
+
+-- CHAT ----------------------------------------------------------------------------------------------------------------
 -- FUNCTIONS -----------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -543,16 +555,17 @@ $BODY$
 
 -- func get_rooms
 CREATE OR REPLACE FUNCTION public.func_get_rooms()
-  RETURNS SETOF BIGINT
+  RETURNS SETOF public.type_room
 AS
 $BODY$
 DECLARE
-  result BIGINT;
+  result public.type_room;
   rec    RECORD;
 BEGIN
-  FOR rec in SELECT id FROM public.rooms
+  FOR rec in SELECT * FROM public.rooms
     LOOP
-      result := rec.id;
+      result.id := rec.id;
+      result.talkers := rec.talkers;
       RETURN NEXT result;
     END LOOP;
 END;

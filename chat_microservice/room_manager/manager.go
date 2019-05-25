@@ -39,18 +39,18 @@ type roomManager struct {
 var chat *roomManager
 
 func init() {
-	roomIds, err := database.GetInstance().GetRoomsIds()
+	rooms, err := database.GetInstance().GetRoomsIds()
 	if err != nil {
 		logger.Error("Chat_room init", err.Error())
 	}
 
 	roomsPool := make(map[uint64]*room)
-	for _, r := range roomIds {
-		roomsPool[r] = createRoom(r, maxConnections)
+	for _, r := range rooms {
+		roomsPool[r.Id] = createRoom(r.Id, maxConnections, r.AccessArray)
 	}
 
 	if len(roomsPool) == 0 {
-		roomsPool[GlobalChatId] = createRoom(GlobalChatId, maxConnections)
+		roomsPool[GlobalChatId] = createRoom(GlobalChatId, maxConnections, nil)
 
 		_, err = database.GetInstance().AddRoom([]uint64{})
 		if err != nil {
@@ -67,11 +67,12 @@ func GetInstance() *roomManager {
 	return chat
 }
 
-func createRoom(id uint64, maxConn uint64) (r *room) {
+func createRoom(id, maxConn uint64, talkersArray []uint64) (r *room) {
 	r = &room{
 		id:             id,
 		MaxConnections: maxConn,
-		UsersPool:      make(map[uint64]*Talker),
+		TalkersPool:    make(map[uint64]*Talker),
+		AccessArray:    talkersArray,
 	}
 	return
 }

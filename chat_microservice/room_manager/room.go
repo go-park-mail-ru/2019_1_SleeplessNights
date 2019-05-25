@@ -11,7 +11,7 @@ import (
 func (r *room) Join(user Talker) {
 	logger.Info("User ", user.Nickname, "Joined room_manager")
 	r.mx.Lock()
-	r.UsersPool[user.Id] = &user
+	r.TalkersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	logger.Info("Started Listening from User", user.Nickname)
@@ -23,7 +23,7 @@ func (r *room) Join(user Talker) {
 	wg.Wait()
 	r.mx.Lock()
 	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
-	delete(r.UsersPool, user.Id)
+	delete(r.TalkersPool, user.Id)
 	r.mx.Unlock()
 }
 
@@ -60,7 +60,7 @@ func (t *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			for _, user  := range chat.RoomsPool[roomId].UsersPool {
+			for _, user  := range chat.RoomsPool[roomId].TalkersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())

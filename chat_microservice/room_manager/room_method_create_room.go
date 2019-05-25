@@ -16,7 +16,7 @@ func (rm *roomManager) CreateRoom(ctx context.Context, in *services.RoomSettings
 		return nil, err
 	}
 
-	r := createRoom(roomId, uint64(in.MaxConnections))
+	r := createRoom(roomId, uint64(in.MaxConnections), in.Talkers)
 
 	rm.Mx.Lock()
 	rm.RoomsPool[roomId] = r

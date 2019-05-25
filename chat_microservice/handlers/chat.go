@@ -50,13 +50,25 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := room_manager.GetInstance().RoomsPool[roomId]; !ok {
 		logger.Error(`Failed in finding room`)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	room := room_manager.GetInstance().RoomsPool[roomId]
-	if uint64(len(room.UsersPool)) == room.MaxConnections{
+	if uint64(len(room.TalkersPool)) == room.MaxConnections{
 		logger.Error(`Failed because room is full`)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	var haveAccess bool
+	for _, id := range room.AccessArray{
+		if id == user.Id{
+			haveAccess = true
+		}
+	}
+	if !haveAccess{
+		logger.Error(`Failed because user hasn't access to come into this room!`)
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
@@ -67,8 +79,6 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Infof("Users authStatus - %v ID: %d", isAuthorized, user.Id)
-
-	//TODO GET chatroom pointer, try to add user_manager to chat as a new chat member
 
 	userId, err := database.GetInstance().UpdateTalker(user.Id, user.Nickname, user.AvatarPath)
 	if err != nil {
