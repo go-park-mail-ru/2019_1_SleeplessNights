@@ -51,6 +51,11 @@ func init() {
 
 	if len(roomsPool) == 0 {
 		roomsPool[GlobalChatId] = createRoom(GlobalChatId, maxConnections)
+
+		_, err = database.GetInstance().AddRoom([]uint64{})
+		if err != nil {
+			logger.Error("Failed in adding global room", err.Error())
+		}
 	}
 
 	chat = &roomManager{
