@@ -68,7 +68,7 @@ func EnterChat(user *services.User, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if !haveAccess{
-		logger.Error(`Failed because user hasn't access to come into this room!`)
+		logger.Error(`Failed because user hasn't access to  enter this room!`)
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
