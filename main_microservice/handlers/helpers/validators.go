@@ -58,7 +58,6 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 
 	password2 := r.Form.Get("password2")
 	if password != password2 {
-		logger.Errorf("Failed to get form `password2`: %v", err.Error())
 		requestErrors = append(requestErrors, PasswordsDoNotMatchErrorMsg)
 	}
 
