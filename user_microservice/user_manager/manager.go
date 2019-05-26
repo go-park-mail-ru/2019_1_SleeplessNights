@@ -29,7 +29,7 @@ type userManager struct {
 }
 
 func init() {
-	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
+	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret") //TODO а тут нужно уберать basepath????
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {

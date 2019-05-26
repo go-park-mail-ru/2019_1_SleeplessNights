@@ -28,6 +28,7 @@ func TestCreateUserSuccessful(t *testing.T) {
 		t.Error(err.Error())
 		return
 	}
+
 	if newUser.Email != oldUser.Email || newUser.Nickname != oldUser.Nickname {
 		t.Errorf("DB returned wrong user:\ngot %v, %v\nwant %v, %v\n",
 			newUser.Email, newUser.Nickname, oldUser.Email, oldUser.Nickname)
