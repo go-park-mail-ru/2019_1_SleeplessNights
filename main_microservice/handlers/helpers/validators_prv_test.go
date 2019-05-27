@@ -67,10 +67,7 @@ func TestValidateEmailSuccessful(t *testing.T) {
 
 	for _, test := range tests {
 		var requestErrors ErrorSet
-		err := validateEmail(test.email, &requestErrors)
-		if err != nil {
-			t.Errorf("Number: %v\nValidator returned error: %v\n", test.number, err.Error())
-		}
+		validateEmail(test.email, &requestErrors)
 		if len(requestErrors) != 0 {
 			t.Errorf("Number: %v\nValidator returned validation error: %v\n", test.number, requestErrors)
 		}
@@ -123,10 +120,7 @@ func TestValidateEmailUnsuccessful(t *testing.T) {
 
 	for _, test := range tests {
 		var requestErrors ErrorSet
-		err := validateEmail(test.email, &requestErrors)
-		if err != nil {
-			t.Errorf("Number: %v\nValidator returned error: %v\n", test.number, err.Error())
-		}
+		validateEmail(test.email, &requestErrors)
 		if len(requestErrors) == 0 {
 			t.Errorf("Number: %v\nValidator didn't return validation error", test.number)
 		}
@@ -137,10 +131,7 @@ func TestValidatePasswordSuccessful(t *testing.T) {
 	test := "sdfhjksdafhjkadsfhjk"
 
 	var requestErrors ErrorSet
-	err := validatePassword(test, &requestErrors)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	validatePassword(test, &requestErrors)
 	if len(requestErrors) != 0 {
 		t.Errorf("Validator returned validation error: %v\n", requestErrors)
 	}
@@ -150,10 +141,7 @@ func TestValidatePasswordUnsuccessful(t *testing.T) {
 	test := "sss"
 
 	var requestErrors ErrorSet
-	err := validatePassword(test, &requestErrors)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	validatePassword(test, &requestErrors)
 	if len(requestErrors) == 0 {
 		t.Errorf("Validator didn't return validation error")
 	}
@@ -185,10 +173,7 @@ func TestValidateNicknameSuccessful(t *testing.T) {
 
 	for _, test := range tests {
 		var requestErrors ErrorSet
-		err := validateNickname(test.nickname, &requestErrors)
-		if err != nil {
-			t.Errorf("Number: %v\nValidator returned error: %v\n", test.number, err.Error())
-		}
+		validateNickname(test.nickname, &requestErrors)
 		if len(requestErrors) != 0 {
 			t.Errorf("Number: %v\nValidator returned validation error: %v\n", test.number, requestErrors)
 		}
@@ -229,10 +214,7 @@ func TestValidateNicknameUnsuccessful(t *testing.T) {
 
 	for _, test := range tests {
 		var requestErrors ErrorSet
-		err := validateNickname(test.nickname, &requestErrors)
-		if err != nil {
-			t.Errorf("Number: %v\nValidator returned error: %v\n", test.number, err.Error())
-		}
+		validateNickname(test.nickname, &requestErrors)
 		if len(requestErrors) == 0 {
 			t.Errorf("Number: %v\nValidator didn't return validation error", test.number)
 		}
@@ -252,10 +234,7 @@ func TestValidateAvatarSuccessful(t *testing.T) {
 	avatar := req.MultipartForm.File["avatar"][0]
 
 	var requestErrors ErrorSet
-	err = validateAvatar(avatar, &requestErrors)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	validateAvatar(avatar, &requestErrors)
 	if len(requestErrors) != 0 {
 		t.Errorf("Validator returned validation error: %v\n", requestErrors)
 	}
@@ -268,10 +247,7 @@ func TestValidateAvatarUnsuccessfulEmptyFile(t *testing.T) {
 	}
 
 	var requestErrors ErrorSet
-	err := validateAvatar(avatar, &requestErrors)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	validateAvatar(avatar, &requestErrors)
 	if len(requestErrors) == 0 {
 		t.Errorf("Validator didn't return validation error")
 	}
@@ -290,10 +266,7 @@ func TestValidateAvatarUnsuccessfulTooMuchSize(t *testing.T) {
 	avatar := req.MultipartForm.File["avatar"][0]
 
 	var requestErrors ErrorSet
-	err = validateAvatar(avatar, &requestErrors)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	validateAvatar(avatar, &requestErrors)
 	if len(requestErrors) == 0 {
 		t.Errorf("Validator didn't return validation error")
 	}
@@ -312,10 +285,7 @@ func TestValidateAvatarUnsuccessfulWrongType(t *testing.T) {
 	avatar := req.MultipartForm.File["avatar"][0]
 
 	var requestErrors ErrorSet
-	err = validateAvatar(avatar, &requestErrors)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	validateAvatar(avatar, &requestErrors)
 	if len(requestErrors) == 0 {
 		t.Errorf("Validator didn't return validation error")
 	}

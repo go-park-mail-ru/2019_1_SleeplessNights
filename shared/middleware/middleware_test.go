@@ -9,6 +9,14 @@ import (
 	"testing"
 )
 
+const (
+	DomainsCORS     = "http://localhost:8000"
+	MethodsCORS     = "GET, POST, PATCH, DELETE, OPTIONS"
+	CredentialsCORS = "true"
+	//TODO FIX CORS HEADERS
+	HeadersCORS = "X-Requested-With, Content-type, User-Agent, Cache-Control, Cookie, Origin, Accept-Encoding, Connection, Host, Upgrade-Insecure-Requests, User-Agent, Referer, Access-Control-Request-Method, Access-Control-Request-Headers"
+)
+
 func TestMiddlewareCORS(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -20,24 +28,24 @@ func TestMiddlewareCORS(t *testing.T) {
 	_router.HandleFunc("/", func(http.ResponseWriter, *http.Request) {})
 	_router.ServeHTTP(resp, req)
 
-	if resp.Header().Get("Access-Control-Allow-Origin") != m.DomainsCORS {
+	if resp.Header().Get("Access-Control-Allow-Origin") != DomainsCORS {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.DomainsCORS, resp.Header().Get("Access-Control-Allow-Origin"))
+			DomainsCORS, resp.Header().Get("Access-Control-Allow-Origin"))
 	}
 
-	if resp.Header().Get("Access-Control-Allow-Credentials") != m.CredentialsCORS {
+	if resp.Header().Get("Access-Control-Allow-Credentials") != CredentialsCORS {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.CredentialsCORS, resp.Header().Get("Access-Control-Allow-Credentials"))
+			CredentialsCORS, resp.Header().Get("Access-Control-Allow-Credentials"))
 	}
 
-	if resp.Header().Get("Access-Control-Allow-Methods") != m.MethodsCORS {
+	if resp.Header().Get("Access-Control-Allow-Methods") != MethodsCORS {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.MethodsCORS, resp.Header().Get("Access-Control-Allow-Methods"))
+			MethodsCORS, resp.Header().Get("Access-Control-Allow-Methods"))
 	}
 
-	if resp.Header().Get("Access-Control-Allow-Headers") != m.HeadersCORS {
+	if resp.Header().Get("Access-Control-Allow-Headers") != HeadersCORS {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.HeadersCORS, resp.Header().Get("Access-Control-Allow-Headers"))
+			HeadersCORS, resp.Header().Get("Access-Control-Allow-Headers"))
 	}
 }
 

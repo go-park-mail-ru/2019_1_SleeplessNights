@@ -11,7 +11,7 @@ func TestGetProfileSuccessful(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("DB returned error: %v", err.Error())
 	}
 
 	oldUser := services.User{
@@ -30,7 +30,7 @@ func TestGetProfileSuccessful(t *testing.T) {
 
 	_, err = database.GetInstance().AddUser(oldUser.Email, oldUser.Nickname, oldUser.AvatarPath, []byte{}, []byte{})
 	if err != nil {
-		t.Error(err.Error())
+		t.Errorf("DB returned error: %v", err.Error())
 		return
 	}
 
@@ -81,6 +81,6 @@ func TestGetProfileUnsuccessful(t *testing.T) {
 
 	err = database.GetInstance().CleanerDBForTests()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("DB returned error: %v", err.Error())
 	}
 }

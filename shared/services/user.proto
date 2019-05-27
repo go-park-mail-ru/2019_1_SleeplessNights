@@ -61,3 +61,16 @@ service UserMS {
     rpc GetUserById        (UserId)        returns (User)            {}
 }
 
+message RoomSettings {
+    uint64 maxConnections   = 1;
+    repeated uint64 Talkers = 2;
+}
+
+message RoomId {
+    uint64 id = 1;
+}
+
+service ChatMS {
+    rpc CreateRoom  (RoomSettings) returns (RoomId)        {}
+    rpc DeleteRoom  (RoomId)       returns (Nothing)       {}
+}

@@ -38,6 +38,7 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 		}
 		profiles = append(profiles, &profile)
 	}
+
 	leaderBoardPage = &services.LeaderBoardPage{
 		Leaders: profiles,
 	}
@@ -48,7 +49,7 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 	}
 	logger.Info(profiles)
 	err = tx.Commit()
-	if err !=  nil {
+	if err != nil {
 		logger.Errorf("Failed to commit tx: %v", err.Error())
 		return
 	}

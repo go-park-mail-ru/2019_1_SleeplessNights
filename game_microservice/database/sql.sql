@@ -8,9 +8,9 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 -- table Question'sPack
 CREATE TABLE public.question_pack
 (
-  id          BIGSERIAL    NOT NULL,
+  id        BIGSERIAL    NOT NULL,
   icon_path VARCHAR(100) NOT NULL,
-  theme       VARCHAR(100) NOT NULL
+  theme     VARCHAR(100) NOT NULL
 );
 
 ALTER TABLE ONLY public.question_pack
@@ -19,11 +19,11 @@ ALTER TABLE ONLY public.question_pack
 -- table question
 CREATE TABLE public.question
 (
-  id      BIGSERIAL     NOT NULL,
+  id      BIGSERIAL      NOT NULL,
   answers VARCHAR(200)[] NOT NULL,
-  correct INTEGER       NOT NULL,
-  text    TEXT          NOT NULL,
-  pack_id BIGINT        NOT NULL
+  correct INTEGER        NOT NULL,
+  text    TEXT           NOT NULL,
+  pack_id BIGINT         NOT NULL
 );
 
 ALTER TABLE ONLY public.question

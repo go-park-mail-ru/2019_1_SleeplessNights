@@ -10,7 +10,7 @@ func TestCleanerDBForTests(t *testing.T) {
 
 	err := database.GetInstance().CleanerDBForTests()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("DB returned error: %v", err.Error())
 	}
 
 	user := services.User{
@@ -21,13 +21,13 @@ func TestCleanerDBForTests(t *testing.T) {
 
 	user, err = database.GetInstance().AddUser(user.Email, user.Nickname, user.AvatarPath, []byte{}, []byte{})
 	if err != nil {
-		t.Error(err.Error())
+		t.Errorf("DB returned error: %v", err.Error())
 		return
 	}
 
 	err = database.GetInstance().CleanerDBForTests()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("DB returned error: %v", err.Error())
 	}
 
 	length, err := database.GetInstance().GetLenUsers()
@@ -40,6 +40,6 @@ func TestCleanerDBForTests(t *testing.T) {
 
 	err = database.GetInstance().CleanerDBForTests()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("DB returned error: %v", err.Error())
 	}
 }

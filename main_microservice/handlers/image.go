@@ -2,15 +2,14 @@ package handlers
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"os"
 )
 
-const (
-	AvatarPrefix = "/main_microservice/static/img/"
-)
+var AvatarPrefix = config.GetString("main_ms.pkg.handlers.avatar_prefix")
 
 func ImgHandler(w http.ResponseWriter, r *http.Request) {
 

@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -26,7 +27,7 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -42,14 +43,14 @@ func TestAuthHandlerSuccessfulWithCreateFakeData(t *testing.T) {
 	}
 
 	cases := []TestCaseAuth{
-		TestCaseAuth{
+		{
 			number:    1,
 			email:     "test@test.com",
 			nickname:  "boob",
 			password1: "1209Qawsed",
 			password2: "1209Qawsed",
 		},
-		TestCaseAuth{
+		{
 			number:    2,
 			email:     "1@test.com",
 			nickname:  "asdasdsdasds",
@@ -115,7 +116,7 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -131,63 +132,25 @@ func TestAuthHandlerUnsuccessfulWrongFormsAndNotRegister(t *testing.T) {
 	}
 
 	cases := []TestCaseAuth{
-		//TestCaseAuth{
-		//	number:   1,
-		//	email:    "test@1.com", //TODO with only numbers after @
-		//	password1: "asdasdasdsadasdQ",
-		//	error:    `{"email":"","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
-		//},
-		TestCaseAuth{
-			number:    2,
+		{
+			number:    1,
 			email:     "test@@test.com",
-			password1: "asdasdasdsadasdQ",
-			error:     `{"email":"Неверно введён адрес электронной почты"}`,
+			password1: "asdasdasddQ",
+			error:     `{"password":"Неверно введён пароль"}`,
 		},
-		TestCaseAuth{
-			number:    3,
+		{
+			number:    2,
 			email:     "te&st@test.com",
 			password1: "asdasdasdsadasdQ",
-			error:     `{"email":"Неверно введён адрес электронной почты"}`,
-		},
-		TestCaseAuth{
-			number:    4,
-			email:     "test@test.com",
-			password1: "asdsdQ",
-			error:     `{"password":"Пароль слишком короткий"}`,
-		},
-		TestCaseAuth{
-			number:    5,
-			email:     "teesttest.com",
-			password1: "asdasdasdsadasdQ",
-			error:     `{"email":"Неверно введён адрес электронной почты"}`,
-		},
-		//TestCaseAuth{
-		//	number:   6,
-		//	email:    "_____@test.com",
-		//	password1: "asdasdasdsadasd",
-		//	error:    `{"email":"","password":"","password2":"","nickname":"","avatar":"","error":["Пользователь с таким адресом электронной почты не зарегистрирован"]}`,
-		//},
-		TestCaseAuth{
-			number:    7,
-			email:     "teest@test.com",
-			password1: "",
-			error:     `{"password":"Пароль слишком короткий"}`,
-		},
-		TestCaseAuth{
-			number:    8,
-			email:     "",
-			password1: "asdasdasdsadasd",
-			error:     `{"email":"Неверно введён адрес электронной почты"}`,
+			error:     `{"password":"Неверно введён пароль"}`,
 		},
 	}
 
 	for _, item := range cases {
-		email := item.email
-		password := item.password1
 
 		form := url.Values{}
-		form.Add("email", email)
-		form.Add("password", password)
+		form.Add("email", item.email)
+		form.Add("password", item.password1)
 
 		req := httptest.NewRequest(http.MethodPost, handlers.ApiAuth, nil)
 		req.PostForm = form
@@ -218,7 +181,7 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -254,7 +217,7 @@ func TestAuthHandlerUnsuccessfulWrongParseForm(t *testing.T) {
 		}
 
 		//TODO change this expected
-		expected := `{"email":"Неверно введён адрес электронной почты","password":"Пароль слишком короткий"}`
+		expected := `{"password":"Неверно введён пароль"}`
 		if response := resp.Body.String(); response != expected {
 			t.Errorf("\nhandler returned wrong error response:\ngot %v\nwant %v;\n",
 				response, expected)
@@ -267,7 +230,7 @@ func TestAuthDeleteHandlerSuccessful(t *testing.T) {
 	var userManager services.UserMSClient
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -341,6 +304,11 @@ func TestAuthDeleteHandlerSuccessful(t *testing.T) {
 			t.Errorf("\nhandler returned wrong cookie:\ngot %v\nwant %v;\n",
 				cookie, expected)
 		}
+	}
+
+	_, err = userManager.ClearDB(context.Background(), &nothing)
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }
 

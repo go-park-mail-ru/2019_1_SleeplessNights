@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Handlers")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("main_ms.pkg.handlers.log_level")))
 }
 
 var userManager services.UserMSClient
@@ -20,7 +21,7 @@ var userManager services.UserMSClient
 func init() {
 	logger.SetLogLevel(logrus.DebugLevel)
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {

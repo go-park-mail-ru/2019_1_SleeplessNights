@@ -1,3 +1,70 @@
 dev:
   main_ms: #Конфигурация main microservice
+    log_level: 4 #logrus.InfoLevel
     port: 8080
+    pkg:
+      handlers:
+        log_level: 4 #logrus.InfoLevel
+        avatar_prefix: "/main_microservice/static/img/"
+        leaderborad_page_len: 10
+      helpers:
+        cookie:
+          name: "session_token"
+          life_len: "10h"
+          http_only: true
+          secure: false
+  user_ms: #Конфигурация user microservice
+    log_level: 4 #logrus.InfoLevel
+    address: "127.0.0.1:8081"
+    pkg:
+      user_manager:
+        session_life_len: "10h"
+      database:
+        max_connections: 100
+        acquire_timeout: "3s"
+  chat_ms: #Конфигурация chat microservice
+    log_level: 6 #logrus.TraceLevel
+    port: 8005
+    pkg:
+      room_manager:
+        max_connections: 100
+        msg_limit: 20
+      database:
+        max_connections: 100
+        acquire_timeout: "3s"
+  postgres:
+    port: 5000
+    host: "0.0.0.0"
+    db_name: "sleepless_nights"
+    user: "database"
+    password: "database"
+  shared:
+    log_level: 4 #logrus.InfoLevel
+    pkg:
+      middleware:
+        CORS:
+          domains:
+            - "http://localhost:8000"
+          methods:
+            - "GET"
+            - "POST"
+            - "PATCH"
+            - "DELETE"
+            - "OPTIONS"
+          cresentials: true
+          headers:
+            - "X-Requested-With"
+            - "Content-type"
+            - "User-Agent"
+            - "Cache-Control"
+            - "Cookie"
+            - "Origin"
+            - "Accept-Encoding"
+            - "Connection"
+            - "Host"
+            - "Upgrade-Insecure-Requests"
+            - "User-Agent"
+            - "Referer"
+            - "Access-Control-Request-Method"
+            - "Access-Control-Request-Headers"
+
