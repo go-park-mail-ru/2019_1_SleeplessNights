@@ -21,12 +21,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestErrors, err := helpers.ValidateRegisterRequest(r)
-	if err != nil {
-		logger.Errorf("Failed to validate request: %v", err.Error())
-		helpers.Return500(&w, err)
-		return
-	}
+	requestErrors := helpers.ValidateRegisterRequest(r)
 	if requestErrors != nil {
 		logger.Errorf("RequestErrors isn't empty.")
 		helpers.Return400(&w, requestErrors)

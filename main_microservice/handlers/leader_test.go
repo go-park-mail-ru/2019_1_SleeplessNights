@@ -29,11 +29,27 @@ func TestLeadersHandlerSuccessful(t *testing.T) {
 }
 
 
-func TestLeadersHandlerUnsuccessfulWithWrongValue(t *testing.T) {
+func TestLeadersHandlerUnsuccessful_WithWrongValue(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
 	qq := req.URL.Query()
 	qq.Add("page", "aa")
+	req.URL.RawQuery = qq.Encode()
+
+	resp := httptest.NewRecorder()
+
+	http.HandlerFunc(handlers.LeadersHandler).ServeHTTP(resp, req)
+	if status := resp.Code; status != http.StatusInternalServerError {
+		t.Errorf("\nhandler returned wrong status code:\ngot %v\nwant %v\n",
+			status, http.StatusInternalServerError)
+	}
+}
+
+func TestLeadersHandlerUnsuccessful_WithZeroValue(t *testing.T) {
+
+	req := httptest.NewRequest(http.MethodGet, handlers.ApiLeader, nil)
+	qq := req.URL.Query()
+	qq.Add("page", "")
 	req.URL.RawQuery = qq.Encode()
 
 	resp := httptest.NewRecorder()

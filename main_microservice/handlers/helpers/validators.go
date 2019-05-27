@@ -12,49 +12,27 @@ const (
 
 var avatarTypeWhiteList map[string]struct{}
 
-func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet, err error) {
+func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet) {
 	newNickname := r.Form.Get("nickname")
-
-	err = validateNickname(newNickname, &requestErrors)
-	if err != nil {
-		logger.Error("Failed to update profile:", err)
-		return
-	}
+	validateNickname(newNickname, &requestErrors)
 
 	newEmail := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", newEmail)
-
-	err = validateEmail(newEmail, &requestErrors)
-	if err != nil {
-		logger.Error("Failed to update profile:", err)
-		return
-	}
+	validateEmail(newEmail, &requestErrors)
 
 	avatar := r.MultipartForm.File["avatar"][0]
+	validateAvatar(avatar, &requestErrors)
 
-	err = validateAvatar(avatar, &requestErrors)
-	if err != nil {
-		logger.Error("Failed to update profile:", err)
-		return
-	}
-	return requestErrors, nil
+	return requestErrors
 }
 
-func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error) {
+func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet) {
 	email := strings.ToLower(r.Form.Get("email"))
 	r.Form.Set("email", email)
-	err = validateEmail(email, &requestErrors)
-	if err != nil {
-		logger.Errorf("Failed to validate email: %v", err.Error())
-		return
-	}
+	validateEmail(email, &requestErrors)
 
 	password := r.Form.Get("password")
-	err = validatePassword(password, &requestErrors)
-	if err != nil {
-		logger.Errorf("Failed to get form `password`: %v", err.Error())
-		return
-	}
+	validatePassword(password, &requestErrors)
 
 	password2 := r.Form.Get("password2")
 	if password != password2 {
@@ -62,34 +40,28 @@ func ValidateRegisterRequest(r *http.Request) (requestErrors ErrorSet, err error
 	}
 
 	nickname := r.Form.Get("nickname")
-	err = validateNickname(nickname, &requestErrors)
-	if err != nil {
-		logger.Errorf("Failed to get form `nickname`: %v", err.Error())
-		return
-	}
-	return requestErrors, nil
+	validateNickname(nickname, &requestErrors)
+
+	return requestErrors
 }
 
-
-func validateEmail(email string, requestErrors *ErrorSet) (err error) {
+func validateEmail(email string, requestErrors *ErrorSet) {
 	isValid := emailReg.Match([]byte(email))
 	if !isValid {
 		logger.Errorf("Email isn't valid")
 		*requestErrors = append(*requestErrors, InvalidEmailErrorMsg)
 	}
-	return
 }
 
-func validatePassword(password string, requestErrors *ErrorSet) (err error) {
+func validatePassword(password string, requestErrors *ErrorSet) {
 	isValid := len(password) >= 6
 	if !isValid {
 		logger.Errorf("Password isn't valid")
 		*requestErrors = append(*requestErrors, PasswordIsTooSmallErrorMsg)
 	}
-	return nil
 }
 
-func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
+func validateNickname(nickname string, requestErrors *ErrorSet) {
 	isValid := nicknameReg.Match([]byte(nickname))
 	if !isValid {
 		logger.Errorf("Nickname isn't valid")
@@ -103,10 +75,9 @@ func validateNickname(nickname string, requestErrors *ErrorSet) (err error) {
 		logger.Errorf("Nickname is long")
 		*requestErrors = append(*requestErrors, NicknameIsTooLongErrorMsg)
 	}
-	return
 }
 
-func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) (err error) {
+func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) {
 
 	if avatar.Size == 0 {
 		logger.Errorf("Avatar is empty")
@@ -121,9 +92,8 @@ func validateAvatar(avatar *multipart.FileHeader, requestErrors *ErrorSet) (err 
 		logger.Errorf("Avatar didn't find")
 		*requestErrors = append(*requestErrors, AvatarExtensionError)
 	}
-
-	return nil
 }
+
 func init() {
 	avatarTypeWhiteList = make(map[string]struct{})
 	avatarTypeWhiteList["image/gif"] = struct{}{}

@@ -85,10 +85,7 @@ func TestValidateUpdateProfileRequestSuccessful(t *testing.T) {
 
 	req.MultipartForm.File["avatar"][0].Header.Set("content-type", "image/jpeg")
 
-	reqErr, err := helpers.ValidateUpdateProfileRequest(req)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	reqErr := helpers.ValidateUpdateProfileRequest(req)
 	if len(reqErr) != 0 {
 		t.Errorf("Validator returned validation error: %v\n", reqErr)
 	}
@@ -159,10 +156,7 @@ func TestValidateUpdateProfileRequestUnsuccessful(t *testing.T) {
 
 	req.MultipartForm.File["avatar"][0].Header.Set("content-type", "image/jpeg")
 
-	reqErr, err := helpers.ValidateUpdateProfileRequest(req)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	reqErr := helpers.ValidateUpdateProfileRequest(req)
 	if len(reqErr) == 0 {
 		t.Errorf("Validator didn't return validation error: %v\n", reqErr)
 	}
@@ -191,10 +185,7 @@ func TestValidateRegisterRequestSuccessful(t *testing.T) {
 		return
 	}
 
-	reqErr, err := helpers.ValidateRegisterRequest(req)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	reqErr := helpers.ValidateRegisterRequest(req)
 	if len(reqErr) != 0 {
 		t.Errorf("Validator returned validation error: %v\n", reqErr)
 	}
@@ -223,10 +214,7 @@ func TestValidateRegisterRequestUnsuccessful(t *testing.T) {
 		return
 	}
 
-	reqErr, err := helpers.ValidateRegisterRequest(req)
-	if err != nil {
-		t.Errorf("Validator returned error: %v\n", err.Error())
-	}
+	reqErr := helpers.ValidateRegisterRequest(req)
 	if len(reqErr) == 0 {
 		t.Errorf("Validator didn't return validation error: %v\n", reqErr)
 	}

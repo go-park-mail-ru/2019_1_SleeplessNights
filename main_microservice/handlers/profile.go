@@ -39,12 +39,7 @@ func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	requestErrors, err := helpers.ValidateUpdateProfileRequest(r)
-	if err != nil {
-		logger.Errorf("Failed to validate request: %v", err.Error())
-		helpers.Return500(&w, err)
-		return
-	}
+	requestErrors:= helpers.ValidateUpdateProfileRequest(r)
 	if requestErrors != nil {
 		logger.Errorf("RequestErrors isn't empty.")
 		helpers.Return400(&w, requestErrors)
