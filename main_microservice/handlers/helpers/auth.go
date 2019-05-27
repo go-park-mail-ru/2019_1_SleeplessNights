@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-func BuildSessionCookie(sessionToken *services.SessionToken)(sessionCookie http.Cookie) {
+func BuildSessionCookie(sessionToken *services.SessionToken) (sessionCookie http.Cookie) {
 	sessionCookie = http.Cookie{
-		Name: "session_token",
-		Value: sessionToken.Token,
-		Expires: time.Now().Add(4 * time.Hour),
+		Name:     "session_token",
+		Value:    sessionToken.Token,
+		Expires:  time.Now().Add(4 * time.Hour),
 		HttpOnly: true,
 	}
 	return

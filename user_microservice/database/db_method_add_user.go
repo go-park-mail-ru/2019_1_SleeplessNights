@@ -5,6 +5,7 @@ import "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 func (db *dbManager) AddUser(email, nickname, avatarPath string, password, salt []byte) (user services.User, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
+		logger.Errorf("Failed to begin tx: %v", err.Error())
 		return
 	}
 	defer tx.Rollback()
@@ -18,9 +19,14 @@ func (db *dbManager) AddUser(email, nickname, avatarPath string, password, salt 
 		&user.Nickname,
 		&user.AvatarPath)
 	if err != nil {
+		logger.Errorf("Failed to get row: %v", err.Error())
 		return
 	}
 
 	err = tx.Commit()
+	if err !=  nil {
+		logger.Errorf("Failed to commit tx: %v", err.Error())
+		return
+	}
 	return
 }

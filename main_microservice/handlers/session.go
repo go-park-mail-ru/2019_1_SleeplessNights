@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"net/http"
+	"regexp"
 )
 
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,13 +17,8 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 			helpers.FormParsingErrorMsg,
 			err.Error(),
 		}
+		logger.Errorf("Failed to parse form: %v", err.Error())
 		helpers.Return400(&w, formErrorMessages)
-		return
-	}
-
-	requestErrors, err := helpers.ValidateAuthRequest(r)
-	if requestErrors != nil {
-		helpers.Return400(&w, requestErrors)
 		return
 	}
 
@@ -32,14 +28,26 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 		})
 	if err != nil {
-		switch err.Error() {
-		case errors.DataBaseNoDataFound.Error():
+		logger.Errorf("Failed to make token: %v", err.Error())
+		matchedUV, _err := regexp.Match(errors.DataBaseUniqueViolation.Error(), []byte(err.Error()))
+		if _err != nil {
+			logger.Errorf("Failed to match: %v", _err.Error())
+			helpers.Return500(&w, _err)
+			return
+		}
+		matchedNDF, _err := regexp.Match(errors.DataBaseNoDataFound.Error(), []byte(err.Error()))
+		if _err != nil {
+			logger.Errorf("Failed to match: %v", _err.Error())
+			helpers.Return500(&w, _err)
+			return
+		}
+		if matchedUV {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
 			return
-		case errors.AuthWrongPassword.Error():
+		} else if matchedNDF {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
 			return
-		default:
+		} else {
 			helpers.Return500(&w, err)
 			return
 		}
@@ -50,17 +58,20 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := userManager.CheckToken(context.Background(), sessionToken)
 	if err != nil {
+		logger.Errorf("Failed to check token: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 
 	data, err := json.Marshal(user)
 	if err != nil {
+		logger.Errorf("Failed to marshal user: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 	_, err = w.Write(data)
 	if err != nil {
+		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
@@ -69,6 +80,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 func AuthDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
+		logger.Errorf("Failed to get cookie: %v", err.Error())
 		r.Header.Add("Referer", r.URL.String())
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -79,6 +91,7 @@ func AuthDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 	_, err = w.Write([]byte("{}"))
 	if err != nil {
+		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}

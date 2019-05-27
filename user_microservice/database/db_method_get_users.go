@@ -5,8 +5,7 @@ import "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *services.LeaderBoardPage, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
-		logger.Error("Get users Method error, Begin transaction")
-
+		logger.Errorf("Failed to begin tx: %v", err.Error())
 		return
 	}
 	defer tx.Rollback()
@@ -14,7 +13,7 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 	rows, err := tx.Query(`SELECT id, email, nickname, avatar_path, rating, win_rate, matches
 	FROM public.func_get_users($1::BIGINT, $2::BIGINT)`, page.Since, page.Limit)
 	if err != nil {
-		logger.Error("Get users Method error")
+		logger.Errorf("Failed to get rows: %v", err.Error())
 		return
 	}
 	defer rows.Close()
@@ -34,7 +33,7 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 			&profile.WinRate,
 			&profile.Matches)
 		if err != nil {
-			logger.Error("GetUsers db method Error")
+			logger.Errorf("Failed to get row: %v", err.Error())
 			return
 		}
 		profiles = append(profiles, &profile)
@@ -44,10 +43,14 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 	}
 	err = rows.Err()
 	if err != nil {
-		logger.Error("GetUsers db method Error")
+		logger.Errorf("Failed to scan: %v", err.Error())
 		return
 	}
 	logger.Info(profiles)
 	err = tx.Commit()
+	if err !=  nil {
+		logger.Errorf("Failed to commit tx: %v", err.Error())
+		return
+	}
 	return
 }

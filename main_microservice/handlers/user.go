@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"net/http"
+	"regexp"
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,16 +17,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			helpers.FormParsingErrorMsg,
 			err.Error(),
 		}
+		logger.Errorf("Failed to parse form: %v", err.Error())
 		helpers.Return400(&w, formErrorMessages)
 		return
 	}
 
 	requestErrors, err := helpers.ValidateRegisterRequest(r)
 	if err != nil {
+		logger.Errorf("Failed to validate request: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 	if requestErrors != nil {
+		logger.Errorf("RequestErrors isn't empty.")
 		helpers.Return400(&w, requestErrors)
 		return
 	}
@@ -36,15 +40,18 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 			Nickname: r.Form.Get("nickname"),
 		})
-
-
 	if err != nil {
-
-		switch err.Error() {
-		case errors.DataBaseUniqueViolation.Error():
+		logger.Errorf("Failed to create user: %v", err.Error())
+		matchedUV, _err := regexp.Match(errors.DataBaseUniqueViolation.Error(), []byte(err.Error()))
+		if _err != nil {
+			logger.Errorf("Failed to match: %v", _err.Error())
+			helpers.Return500(&w, _err)
+			return
+		}
+		if matchedUV {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
 			return
-		default:
+		} else {
 			helpers.Return500(&w, err)
 			return
 		}
@@ -56,6 +63,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 		})
 	if err != nil {
+		logger.Errorf("Failed to make token: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
@@ -65,11 +73,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.Marshal(user)
 	if err != nil {
+		logger.Errorf("Failed to marshal user: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 	_, err = w.Write(data)
 	if err != nil {
+		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}

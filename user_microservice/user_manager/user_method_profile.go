@@ -10,6 +10,7 @@ import (
 func (us *userManager) GetProfile(ctx context.Context, in *services.User) (*services.Profile, error) {
 	profile, err := database.GetInstance().GetProfile(in.Id)
 	if _err, ok := err.(pgx.PgError); ok {
+		logger.Errorf("Failed to get profile: %v", err.Error())
 		err = handlerError(_err)
 		return nil, err
 	}
@@ -19,6 +20,7 @@ func (us *userManager) GetProfile(ctx context.Context, in *services.User) (*serv
 func (us *userManager) UpdateProfile(ctx context.Context, in *services.User) (*services.User, error) {
 	err := database.GetInstance().UpdateUser(in)
 	if _err, ok := err.(pgx.PgError); ok {
+		logger.Errorf("Failed to update user: %v", err.Error())
 		err = handlerError(_err)
 		return nil, err
 	}

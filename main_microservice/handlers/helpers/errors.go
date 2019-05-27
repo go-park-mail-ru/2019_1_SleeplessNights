@@ -2,24 +2,23 @@ package helpers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
 const (
 	FormParsingErrorMsg         = "Ошибка разбора формы"
 	UniqueEmailErrorMsg         = "Пользователь с таким адресом электронной почты уже зарегистрирован"
-	MissedUserErrorMsg          = "Пользователь с таким адресом электронной почты не зарегистрирован"
+	MissedUserErrorMsg          = "Неверно введён адрес электронной почты или пароль"
 	InvalidEmailErrorMsg        = "Неверно введён адрес электронной почты"
 	WrongPassword               = "Неверно введён пароль"
 	PasswordsDoNotMatchErrorMsg = "Пароли не совпадают"
 	PasswordIsTooSmallErrorMsg  = "Пароль слишком короткий"
-	InvalidNicknameErrorMsg     = "Никнейм может состоять только из букв латинского алфавита и символов '-' и '_'"
-	NicknameIsTooSmallErrorMsg  = "Никнейм не может быть короче 3 символов"
+	InvalidNicknameErrorMsg     = "Никнейм может состоять только из букв латинского алфавита, цифр и символов '-' и '_'"
+	NicknameIsTooSmallErrorMsg  = "Никнейм не может быть короче 4 символов"
 	NicknameIsTooLongErrorMsg   = "Никнейм не может быть длиннее 16 символов"
 	AvatarExtensionError        = "Файл имеет неподдерживаемый формат"
 	AvatarIsMissingError        = "Файл аватара не содержит данных"
-	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 10МБайт)"
+	AvatarFileIsTooBig          = "Файл аватара слишком большой (более 2МБайт)"
 )
 
 type ErrorSet []string
@@ -74,11 +73,11 @@ func Return500(w *http.ResponseWriter, err error) {
 	data := ErrorSet{err.Error()}
 	jsonData, err := MarshalToJSON(data)
 	if err != nil {
-		log.Println("Error while marshaling json for 500 response")
+		logger.Errorf("Error while marshaling json for 500 response")
 	}
 	_, err = (*w).Write(jsonData)
 	if err != nil {
-		log.Println("Error while writing request body for 500 response")
+		logger.Errorf("Error while writing request body for 500 response")
 	}
 }
 
@@ -87,12 +86,12 @@ func Return400(w *http.ResponseWriter, requestErrorMessages ErrorSet) {
 	data := requestErrorMessages
 	jsonData, err := MarshalToJSON(data)
 	if err != nil {
-		log.Println("Error while marshaling json for 400 response")
+		logger.Errorf("Error while marshaling json for 400 response")
 		Return500(w, err)
 	}
 	_, err = (*w).Write(jsonData)
 	if err != nil {
-		log.Println("Error while writing request body for 400 response")
+		logger.Errorf("Error while writing request body for 400 response")
 		Return500(w, err)
 	}
 }

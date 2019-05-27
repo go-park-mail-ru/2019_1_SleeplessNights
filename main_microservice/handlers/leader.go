@@ -19,6 +19,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 
 	since, err := strconv.ParseUint(page, 10, 32)
 	if err != nil {
+		logger.Errorf("Failed to parse page: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
@@ -29,18 +30,21 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 			Limit: limit,
 		})
 	if err != nil {
+		logger.Errorf("Failed to get leader board page: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 
 	data, err := json.Marshal(leaders)
 	if err != nil {
+		logger.Errorf("Failed to marshal leaders: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 	_, err = w.Write(data)
 	logger.Info(data)
 	if err != nil {
+		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
