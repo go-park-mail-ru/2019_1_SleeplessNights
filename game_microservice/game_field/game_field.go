@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"time"
 )
 
 var logger *log.Logger
 
 const (
 	fieldSize    = 8
-	TurnDuration = 20 * time.Second
+	TurnDuration = 20
 	QuestionsNum = 60
 )
 

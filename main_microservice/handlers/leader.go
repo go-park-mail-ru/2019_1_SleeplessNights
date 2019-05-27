@@ -39,6 +39,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = w.Write(data)
+	logger.Info(data)
 	if err != nil {
 		helpers.Return500(&w, err)
 		return

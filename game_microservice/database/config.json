@@ -1,7 +1,7 @@
 {
   "host": "localhost",
   "port": 5432,
-  "user": "postgres",
-  "password": "1209qawsed",
-  "dbname": "game_database"
+  "user": "jahongir",
+  "password": "Password1234",
+  "dbname": "gamedb"
 }

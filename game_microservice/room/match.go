@@ -24,7 +24,7 @@ func init() {
 
 var userManager services.UserMSClient
 const (
-	StartGameDelay = 1.1
+	StartGameDelay = 1300
 )
 func init() {
 	var err error
@@ -74,7 +74,7 @@ func (r *Room) prepareMatch() {
 
 	logger.Info("Entered Prepare Match Room")
 	logger.Info("Delay")
-	time.Sleep(StartGameDelay*time.Second)
+	time.Sleep(StartGameDelay*time.Millisecond)
 	//BuildEnv достает только выбранные паки и строит игровое поле по ним
 	r.buildEnv()
 
@@ -86,14 +86,6 @@ func (r *Room) prepareMatch() {
 
 	if err != nil {
 		logger.Error("Failed to notify Player 1:", err)
-	}
-	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
-	if err != nil {
-		logger.Error("failed to get userprofile1 from grpc:", err)
-	}
-	err = r.notifyP2(message.Message{Title: message.OpponentProfile, Payload: user1})
-	if err != nil {
-		logger.Error("Failed to notify Player 2:", err)
 	}
 
 	logger.Info("Игрокам Отправлены StartGame")
@@ -148,6 +140,18 @@ func (r *Room) startGameProcess() {
 		logger.Error("failed to get userprofile2 from grpc:", err)
 	}
 	err = r.notifyP1(message.Message{Title: message.OpponentProfile, Payload: user2})
+	if err != nil {
+		logger.Error("Failed to notify Player 1:", err)
+	}
+
+	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p1.UID()})
+	if err != nil {
+		logger.Error("failed to get userprofile1 from grpc:", err)
+	}
+	err = r.notifyP2(message.Message{Title: message.OpponentProfile, Payload: user1})
+	if err != nil {
+		logger.Error("Failed to notify Player 2:", err)
+	}
 
 	//Send available pack to players
 	packs, err := database.GetInstance().GetPacksOfQuestions(packTotal)
