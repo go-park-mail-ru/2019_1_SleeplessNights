@@ -9,7 +9,7 @@ func (db *dbManager) UpdateTalker(uid uint64, nickname string, avatarPath string
 	}
 	defer tx.Rollback()
 
-	row := tx.QueryRow(`SELECT * FROM func_update_talker ($1::BIGINT, $2::TEXT, $3::TEXT)`,
+	row := tx.QueryRow(`SELECT * FROM func_update_talker($1::BIGINT, $2::TEXT, $3::TEXT)`,
 		uid, nickname, avatarPath)
 	err = row.Scan(&id)
 	if err != nil {

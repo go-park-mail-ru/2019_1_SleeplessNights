@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
@@ -24,7 +25,7 @@ func init() {
 
 var userManager services.UserMSClient
 const (
-	StartGameDelay = 1100
+	StartGameDelay = 1300
 )
 func init() {
 	var err error
@@ -58,7 +59,7 @@ func (r *Room) buildEnv() {
 	questions, err := database.GetInstance().GetQuestions(packIDs)
 	if err != nil || len(questions) < game_field.QuestionsNum {
 		logger.Error("Error occurred while fetching question from DB:", err)
-		//TODO deal with error, maybe kill the room
+		//TODO deal with error, maybe kill the room_manager
 	}
 
 	r.field.Build(questions)
@@ -86,14 +87,6 @@ func (r *Room) prepareMatch() {
 
 	if err != nil {
 		logger.Error("Failed to notify Player 1:", err)
-	}
-	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
-	if err != nil {
-		logger.Error("failed to get userprofile1 from grpc:", err)
-	}
-	err = r.notifyP2(message.Message{Title: message.OpponentProfile, Payload: user1})
-	if err != nil {
-		logger.Error("Failed to notify Player 2:", err)
 	}
 
 	logger.Info("Игрокам Отправлены StartGame")
@@ -137,7 +130,7 @@ func (r *Room) prepareMatch() {
 	//Send Available cells to active player (Do it every time, after giving player a turn rights
 	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-	r.timerToMove = time.AfterFunc(timeToMove, r.GoToTimerFunc)
+	r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
 }
 
 //Точка входа в игровой процесс
@@ -148,6 +141,18 @@ func (r *Room) startGameProcess() {
 		logger.Error("failed to get userprofile2 from grpc:", err)
 	}
 	err = r.notifyP1(message.Message{Title: message.OpponentProfile, Payload: user2})
+	if err != nil {
+		logger.Error("Failed to notify Player 1:", err)
+	}
+
+	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p1.UID()})
+	if err != nil {
+		logger.Error("failed to get userprofile1 from grpc:", err)
+	}
+	err = r.notifyP2(message.Message{Title: message.OpponentProfile, Payload: user1})
+	if err != nil {
+		logger.Error("Failed to notify Player 2:", err)
+	}
 
 	//Send available pack to players
 	packs, err := database.GetInstance().GetPacksOfQuestions(packTotal)

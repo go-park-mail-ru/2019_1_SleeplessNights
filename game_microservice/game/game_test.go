@@ -16,7 +16,7 @@ func TestGetInstance(t *testing.T) {
 //func TestGameFacade_PlayByWebsocket(t *testing.T) {
 //	game = &gameFacade{
 //		maxRooms: 1,
-//		rooms:    make(map[uint64]*room.Room, maxRooms),
+//		rooms:    make(map[uint64]*room_manager.Room, maxRooms),
 //		idSource: 0,
 //		in:       make(chan player.Player, 1),
 //	}

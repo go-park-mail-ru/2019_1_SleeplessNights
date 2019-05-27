@@ -8,7 +8,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"net/http"
-	"regexp"
 )
 
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,18 +29,8 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	if err != nil {
 		logger.Errorf("Failed to make token: %v", err.Error())
-		matchedUV, _err := regexp.Match(errors.DataBaseUniqueViolation.Error(), []byte(err.Error()))
-		if _err != nil {
-			logger.Errorf("Failed to match: %v", _err.Error())
-			helpers.Return500(&w, _err)
-			return
-		}
-		matchedNDF, _err := regexp.Match(errors.DataBaseNoDataFound.Error(), []byte(err.Error()))
-		if _err != nil {
-			logger.Errorf("Failed to match: %v", _err.Error())
-			helpers.Return500(&w, _err)
-			return
-		}
+		matchedUV:= errors.DataBaseUniqueViolationReg.Match([]byte(err.Error()))
+		matchedNDF:= errors.DataBaseNoDataFoundReg.Match([]byte(err.Error()))
 		if matchedUV {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
 			return

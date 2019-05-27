@@ -1,46 +1,39 @@
-package room
+package room_manager
 
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/gorilla/websocket"
+	"strings"
 	"sync"
 )
 
-func (r *room) Join(user Talker) (err error) {
-	logger.Info("User ", user.Nickname, "Joined room")
-
+func (r *room) Join(user Talker) {
+	logger.Info("User ", user.Nickname, "Joined room_manager")
 	r.mx.Lock()
-	r.usersPool[user.Id] = &user
+	r.TalkersPool[user.Id] = &user
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	logger.Info("Started Listening from User", user.Nickname)
 	go func() {
-		user.StartListen(r.id)
+		user.StartListen(r.Id)
 		wg.Done()
 	}()
 	r.mx.Unlock()
 	wg.Wait()
 	r.mx.Lock()
 	logger.Info(" User", user.Nickname, "is Leaving Chat Room")
-	delete(r.usersPool, user.Id)
-	if len(r.usersPool) == 0 && r.id != 1 {
-		err = database.GetInstance().DeleteRoom(r.id)
-		delete(chat.RoomsPool, r.id)
-		return
-	}
+	delete(r.TalkersPool, user.Id)
 	r.mx.Unlock()
-	return
 }
 
-func (us *Talker) StartListen(roomId uint64) {
-
-	var msg Message
+func (t *Talker) StartListen(roomId uint64) {
+	var msg message
 	for {
-		err := us.Conn.ReadJSON(&msg)
+		err := t.Conn.ReadJSON(&msg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err) {
-				logger.Infof("Talker %d closed the connection", us.Id)
+				logger.Infof("Talker %d closed the connection", t.Id)
 				return
 			}
 		}
@@ -50,10 +43,10 @@ func (us *Talker) StartListen(roomId uint64) {
 
 		switch msg.Title {
 		case postTitle:
-			respMsg := ResponseMessage{
-				Nickname:   us.Nickname,
-				AvatarPath: us.AvatarPath,
-				Id:         us.Id,
+			respMsg := responseMessage{
+				Nickname:   t.Nickname,
+				AvatarPath: t.AvatarPath,
+				Id:         t.Id,
 				Text:       msg.Payload.Text,
 			}
 
@@ -67,21 +60,21 @@ func (us *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			logger.Debugf("Len of user pool: %d", len(chat.RoomsPool[roomId].usersPool))
-			for _, user := range chat.RoomsPool[roomId].usersPool {
+			for _, user  := range chat.RoomsPool[roomId].TalkersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())
 				}
 			}
 		case scrollTitle:
-			logger.Debug(msg.Payload.Since)
-			messages, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
+			payload, err := database.GetInstance().GetMessages(roomId, uint64(msg.Payload.Since), limit)
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			logger.Info(messages)
-			err = us.Conn.WriteMessage(websocket.BinaryMessage, []byte(messages))
+
+			strPayload := "[" + strings.Join(payload, ",") + "]"
+
+			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(strPayload))
 			if err != nil {
 				logger.Error(err.Error())
 			}

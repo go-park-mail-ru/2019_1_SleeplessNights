@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-var limit = uint64(config.GetInt("main_ms.pkg,handlers.leaderboard_page_len"))
+var limit = uint64(config.GetInt("main_ms.pkg.handlers.leaderborad_page_len"))
 
 func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("page")
@@ -43,6 +43,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = w.Write(data)
+	logger.Info(data)
 	if err != nil {
 		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
