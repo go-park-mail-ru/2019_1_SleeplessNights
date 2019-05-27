@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
@@ -18,9 +19,8 @@ import (
 var logger *log.Logger
 
 func init() {
-
 	logger = log.GetLogger("GameMS")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
 }
 
 var userManager services.UserMSClient
@@ -178,7 +178,7 @@ func (r *Room) startGameProcess() {
 	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
 	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
 	r.waitForSyncMsg = message.NotDesiredPack
-	r.timerToChoosePack = time.AfterFunc(timeToChoosePack*time.Second, r.ChoosePackTimerFunc)
+	r.timerToChoosePack = time.AfterFunc(timeToChoosePack, r.ChoosePackTimerFunc)
 	logger.Infof("StartMatch : Game process has started p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 }
 

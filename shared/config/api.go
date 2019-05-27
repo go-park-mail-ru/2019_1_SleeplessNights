@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"time"
 )
 
 var configuration = "dev"
@@ -24,4 +25,12 @@ func GetStringSlice(key string) []string {
 
 func GetBool(key string) bool {
 	return viper.GetBool(configuration + "." + key)
+}
+
+func GetDuration(key string, defaultValue time.Duration) time.Duration {
+	duration, err := time.ParseDuration(GetString(key))
+	if err != nil {
+		duration = defaultValue
+	}
+	return duration
 }

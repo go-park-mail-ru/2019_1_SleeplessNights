@@ -12,16 +12,8 @@ import (
 
 var (
 	maxConnections = config.GetInt("user_ms.pkg.database.max_connections")
-	acquireTimeout time.Duration
+	acquireTimeout = config.GetDuration("user_ms.pkg.database.acquire_timeout", 3*time.Second)
 )
-
-func init() {
-	var err error
-	acquireTimeout, err = time.ParseDuration(config.GetString("user_ms.pkg.database.acquire_timeout"))
-	if err != nil {
-		acquireTimeout = 3 * time.Second
-	}
-}
 
 var logger *log.Logger
 

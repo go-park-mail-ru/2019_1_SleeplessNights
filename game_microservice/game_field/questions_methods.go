@@ -21,7 +21,7 @@ func (gf *GameField) GetQuestionsThemes() (packArray []uint) {
 		for j := 0; j < fieldSize; j++ {
 			if gf.field[i][j].question != nil {
 				fmt.Println((gf.field[i][j]).question)
-				packArray = append(packArray, ((gf.field[i][j]).question.PackID))
+				packArray = append(packArray, (gf.field[i][j]).question.PackID)
 			}
 		}
 	}

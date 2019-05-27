@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"sync"
 	"time"
 )
@@ -16,14 +17,16 @@ import (
 //* Собираться и пересобираться, не выкидывая игроков, если оба решили сыграть ещё партию вместе или это лобби
 //* Поддерживать обработку отвалившегося игрока
 
-const (
-	responseInterval = 500
-	channelCapacity  = 50
-	packTotal        = 10
-	packsPerPlayer   = 2
-	timeToAnswer     = 20
-	timeToMove       = 20
-	timeToChoosePack = 20
+const defaultUserMoveTimeout = 20 * time.Second
+
+var (
+	responseInterval = config.GetDuration("game_ms.pkg.room.response_interval", 500 * time.Millisecond)
+	channelCapacity  = config.GetInt("game_ms.pkg.room.channel_capacity")
+	packTotal        = config.GetInt("game_ms.pkg.room.pack_total")
+	packsPerPlayer   = config.GetInt("game_ms.pkg.room.packs_to_ban_count")
+	timeToAnswer     = config.GetDuration("game_ms.pkg.room.time_to_answer", defaultUserMoveTimeout)
+	timeToMove       = config.GetDuration("game_ms.pkg.room.time_to_move", defaultUserMoveTimeout)
+	timeToChoosePack = config.GetDuration("game_ms.pkg.room.time_to_choose_pack", defaultUserMoveTimeout)
 )
 
 const (

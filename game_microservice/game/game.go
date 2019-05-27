@@ -11,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player/factory"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/room"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -31,12 +32,12 @@ var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Game")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
 }
 
-const (
-	maxRooms                = 100
-	maxPlayersInputQueueLen = 100
+var (
+	maxRooms                = config.GetInt("game_ms.pkg.game.max_rooms")
+	maxPlayersInputQueueLen = config.GetInt("game_ms.pkg.game.player_input_queue_len")
 )
 
 var game *gameFacade
