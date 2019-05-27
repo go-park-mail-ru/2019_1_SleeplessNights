@@ -16,6 +16,7 @@ func (db *dbManager) GetPacksOfQuestions(number int) (packs []Pack, err error) {
 
 	var pack Pack
 	for rows.Next() {
+
 		err = rows.Scan(
 			&pack.ID,
 			&pack.IconPath,

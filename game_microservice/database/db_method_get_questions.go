@@ -1,6 +1,8 @@
 package database
 
-func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, qsFF []QuestionForFrontend, err error) {
+import "encoding/json"
+
+func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, err error) {
 
 	tx, err := db.dataBase.Begin()
 	if err != nil {
@@ -30,9 +32,12 @@ func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, qsFF 
 		qFF.Text = question.Text
 		qFF.Answers = question.Answers
 		qFF.PackID = question.PackID
-
+		jsonData, err := json.Marshal(qFF)
+		if err != nil {
+			return nil, err
+		}
+		question.JSON = jsonData
 		questions = append(questions, question)
-		qsFF = append(qsFF, qFF)
 	}
 	err = rows.Err()
 	if err != nil {

@@ -42,6 +42,7 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = w.Write(data)
+	logger.Info(data)
 	if err != nil {
 		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)

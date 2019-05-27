@@ -35,7 +35,13 @@ func ImgHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.Return500(&w, err)
 		return
 	}
-	w.Header().Set("Content-type", http.DetectContentType(avatar))
+	content_type := http.DetectContentType(avatar)
+	if content_type == "text/plain; charset=utf-8" {
+		w.Header().Set("Content-type", "image/svg+xml")
+	} else {
+		w.Header().Set("Content-type", content_type)
+	}
+
 	_, err = w.Write(avatar)
 	if err != nil {
 		logger.Errorf("Failed to write response: %v", err.Error())
