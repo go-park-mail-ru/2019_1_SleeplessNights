@@ -47,7 +47,7 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 		logger.Errorf("Failed to scan: %v", err.Error())
 		return
 	}
-
+	logger.Info(profiles)
 	err = tx.Commit()
 	if err != nil {
 		logger.Errorf("Failed to commit tx: %v", err.Error())

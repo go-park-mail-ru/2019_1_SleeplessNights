@@ -4,57 +4,15 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
+	"time"
 )
 
-func (r *Room) MessageHandlerMux(m MessageWrapper) {
-	switch m.msg.Title {
-
-	case message.Ready:
-		{
-			r.ReadyHandler(m)
-		}
-	case message.GoTo:
-		{
-			r.GoToHandler(m)
-		}
-	case message.ClientAnswer:
-		{
-			r.ClientAnswerHandler(m)
-		}
-	case message.Leave:
-		{
-			r.LeaveHandler(m)
-		}
-
-	case message.Continue:
-		{
-			r.ContinueHandler(m)
-		}
-	case message.ChangeOpponent:
-		{
-			r.ChangeOpponentHandler(m)
-		}
-	case message.Quit:
-		{
-			r.QuitHandler(m)
-		}
-	case message.State:
-		{
-			r.CurrentStateHandler(m)
-		}
-	case message.ThemesRequest:
-		{
-			r.ThemesRequestHandler(m)
-		}
-	case message.QuestionsThemesRequest:
-		{
-			r.QuestionsThemesHandler(m)
-		}
-	}
+type Pair struct {
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 func (r *Room) ReadyHandler(m MessageWrapper) bool {
-	r.mu.Lock()
 
 	if m.player == &r.p1 {
 		logger.Info("Игрок 1 Готов")
@@ -67,39 +25,22 @@ func (r *Room) ReadyHandler(m MessageWrapper) bool {
 
 	if r.p1Status == StatusReady && r.p2Status == StatusReady {
 		//After getting ready messages from both players set p1 as active and send messages
-		r.waitForSyncMsg = message.GoTo
 		r.active = &r.p1
-
-		logger.Info("Ход игрока 1, ожидание команды GoTo")
-
-		r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
-		r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
-		// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
-		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
-
-		var secondPlayer *player.Player
-		if &r.p1 == r.active {
-			secondPlayer = &r.p2
-		}
-		if &r.p2 == r.active {
-			secondPlayer = &r.p1
-		}
-
-		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
-
-		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+		go r.startGameProcess()
 
 	}
 
-	r.mu.Unlock()
 	return true
 }
 
 func (r *Room) GoToHandler(m MessageWrapper) bool {
 	logger.Infof("player UID %d requested GoTo", (*m.player).UID())
 
-	r.mu.Lock()
+	if r.timerToMove.Stop() {
+		logger.Info("GoToHandler Timer is disabled manually")
+	} else {
+		logger.Info("GoToHandler Timer is disabled by timeout")
+	}
 	var secondPlayer *player.Player
 
 	if &r.p1 == m.player {
@@ -114,7 +55,48 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 	nextY := int(st["y"].(float64))
 	logger.Info("Sending SelectedCell Index to players")
 
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
+	
+	//Признак таймаута хода игрока
+	if nextY == -1 && nextX == -1 {
+		//Смена хода
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.OpponentTurn, Payload: nil}}
+		r.changeTurn()
+		r.waitForSyncMsg = message.GoTo
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourTurn, Payload: nil}}
+
+		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
+
+		if &r.p1 == r.active {
+			secondPlayer = &r.p2
+		}
+		if &r.p2 == r.active {
+			secondPlayer = &r.p1
+		}
+		if len(cellsSlice) != 0 {
+
+			cells := make([]Pair, 0)
+			for _, cell := range cellsSlice {
+				cells = append(cells, Pair{cell.X, cell.Y})
+			}
+			payload := struct {
+				CellsSlice []Pair
+				Time       time.Duration
+			}{
+				CellsSlice: cells,
+				Time:       timeToMove,
+			}
+			//Send Available cells to active player (Do it every time, after giving player a turn rights
+			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
+			r.timerToMove = time.AfterFunc(timeToAnswer*time.Second, r.GoToTimerFunc)
+			r.waitForSyncMsg = message.GoTo
+			return true
+		} else {
+			logger.Error("Unexpected condition")
+		}
+	}
+        r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
+	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
 
 	var eventSlice []event.Event
 	var err error
@@ -129,7 +111,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 
 	if err != nil {
 		logger.Error("GoToHandler, called TryMovePLayer, got error", err)
-		r.mu.Unlock()
+
 		return false
 	}
 
@@ -139,15 +121,16 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			q, ok := e.Edata.(string)
 			if !ok {
 				logger.Error("Go_To handler couldn't cast Edata interface with question to string")
+
 				return false
 			}
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourQuestion, Payload: q}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentQuestion, Payload: q}}
 			r.waitForSyncMsg = "ANSWER"
-			//TODO start Timer, if
+			r.timerToAnswer = time.AfterFunc(timeToAnswer*time.Second, r.AnswerTimerFunc)
 		}
 		if e.Etype == event.WinPrize {
-			//Write to DB results of the match
+			//Write to DB results of the
 			logger.Info("player", (*r.active).ID(), "Has Won the prize")
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Win, Payload: nil}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Loss, Payload: nil}}
@@ -157,14 +140,19 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 		}
 	}
 
-	r.mu.Unlock()
-
 	return true
 }
 
 func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
+
 	logger.Infof("player UID %d answered to ClientAnswerHandler", (*m.player).UID())
-	r.mu.Lock()
+
+	if r.timerToAnswer.Stop() {
+		logger.Info("ClientAnswerHandler Timer is disabled manually")
+	} else {
+		logger.Info("ClientAnswerHandler Timer is disabled by timeout")
+	}
+	logger.Info("")
 	st, ok := m.msg.Payload.(map[string]interface{})
 	if !ok {
 		logger.Error("ClientAnswerHandler, couldn't cast payload with answer_id to map[string]interface{}")
@@ -221,29 +209,39 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 			secondPlayer = &r.p1
 		}
 		if len(cellsSlice) != 0 {
+
+			cells := make([]Pair, 0)
+			for _, cell := range cellsSlice {
+				cells = append(cells, Pair{cell.X, cell.Y})
+			}
+			payload := struct {
+				CellsSlice []Pair
+				Time       time.Duration
+			}{
+				CellsSlice: cells,
+				Time:       timeToMove,
+			}
 			//Send Available cells to active player (Do it every time, after giving player a turn rights
-			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
-			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
+			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
+			r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
 
 		} else {
 			logger.Error("Unexpected condition")
 		}
 	}
-	r.mu.Unlock()
 	return true
 }
 
 func (r *Room) LeaveHandler(m MessageWrapper) bool {
-	r.mu.Lock()
 
-	r.mu.Unlock()
 	return true
 }
 
 //Оставить комнату с теми же игроками, создать для них новое игровое поле
 //Если один из них голосует выйти, то написать об этом другому
 func (r *Room) ContinueHandler(m MessageWrapper) bool {
-	r.mu.Lock()
+
 	var secondPlayer *player.Player
 
 	if &r.p1 == m.player {
@@ -273,19 +271,31 @@ func (r *Room) ContinueHandler(m MessageWrapper) bool {
 		r.active = &r.p2
 		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
 
+		cells := make([]Pair, 0)
+		for _, cell := range cellsSlice {
+			cells = append(cells, Pair{cell.X, cell.Y})
+		}
+		payload := struct {
+			CellsSlice []Pair
+			Time       time.Duration
+		}{
+			CellsSlice: cells,
+			Time:       timeToMove,
+		}
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: cellsSlice}}
+		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
+		r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
 
+		//Start Timer Here
 		r.waitForSyncMsg = message.GoTo
 
 	}
-	r.mu.Unlock()
 	return true
 }
 
 //Выбросить "игрока" из комнаты, поместить в другую (пока не надо трогать)
 func (r *Room) ChangeOpponentHandler(m MessageWrapper) bool {
-	r.mu.Lock()
 
 	var secondPlayer *player.Player
 	//var thisPlayer *player.Player
@@ -298,32 +308,26 @@ func (r *Room) ChangeOpponentHandler(m MessageWrapper) bool {
 		//thisPlayer = &r.p2
 		secondPlayer = &r.p1
 	}
-
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
 
-	r.mu.Unlock()
 	return true
 
 }
 
 //Выбросить "пользователя" в главное меню,  connection "игрока" уничтожить
 func (r *Room) QuitHandler(m MessageWrapper) bool {
-	r.mu.Lock()
 
 	var secondPlayer *player.Player
 	//var thisPlayer *player.Player
 
 	if &r.p1 == m.player {
-		///	thisPlayer=&r.p1
 		secondPlayer = &r.p2
 	}
 	if &r.p2 == m.player {
-		///	thisPlayer = &r.p2
 		secondPlayer = &r.p1
 	}
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
 
-	r.mu.Unlock()
 	return true
 }
 
@@ -342,13 +346,70 @@ func (r *Room) CurrentStateHandler(m MessageWrapper) {
 	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.CurrentState, Payload: message.GameState{r.field.GetCurrentState()}}}
 }
 
-func (r *Room) ThemesRequestHandler(m MessageWrapper) {
-	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.Themes, Payload: r.field.GetThemesSlice()}}
+func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
+	logger.Info("entered PackSelectorHandler")
+	if r.timerToChoosePack.Stop() {
+		logger.Info("PackSelectorHandler, Timer is disabled manually")
+	} else {
+		logger.Info("PackSelectorHandler, Timer is disabled by timeout")
+	}
 
-}
+	st, ok := m.msg.Payload.(map[string]interface{})
+	if !ok {
+		logger.Error("PackSelectorHandler, couldn't cast payload with pack_id to map[string]interface{}")
+	}
+	packId, ok := st["pack_id"].(float64)
+	if !ok {
+		logger.Error(`PackSelectorHandler, couldn't find value in map st with key "pack_id" `)
+	}
 
-//Maybe send response to websocket connection without request
-func (r *Room) QuestionsThemesHandler(m MessageWrapper) {
-	packArray := r.field.GetQuestionsThemes()
-	r.responsesQueue <- MessageWrapper{m.player, message.Message{Title: message.QuestionsThemes, Payload: packArray}}
+	var secondPlayer *player.Player
+	var thisPlayer *player.Player
+
+	if &r.p1 == m.player {
+		thisPlayer = &r.p1
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == m.player {
+		thisPlayer = &r.p2
+		secondPlayer = &r.p1
+	}
+	//Check if player hasn't answered in time
+	if packId == -1 {
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: -1}}}
+
+		r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
+
+		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
+		r.changeTurn()
+		r.timerToChoosePack = time.AfterFunc(timeToMove*time.Second, r.ChoosePackTimerFunc)
+		r.waitForSyncMsg = message.NotDesiredPack
+		return true
+	}
+	logger.Info("player chosen pack_ID", packId)
+	packs := r.field.GetPacksSlice()
+	for i, pack := range *packs {
+		if pack.ID == uint64(packId) {
+			(*packs)[i] = (*packs)[len(*packs)-1] // Replace it with the last one. CAREFUL only works if you have enough elements.
+			*packs = (*packs)[:len(*packs)-1]     // Chop off the last one.
+			break
+		}
+		if i+1 == len(*packs) {
+			logger.Error("pack with id", packId, "wasn't found in packs slice")
+		}
+	}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: int64(packId)}}}
+
+	if len(*packs) == packTotal-2*packsPerPlayer {
+		r.active = &r.p1
+		go r.prepareMatch()
+		return true
+	}
+
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
+	r.changeTurn()
+	r.timerToChoosePack = time.AfterFunc(timeToMove*time.Second, r.ChoosePackTimerFunc)
+	r.waitForSyncMsg = message.NotDesiredPack
+	return true
 }
