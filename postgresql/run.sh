@@ -29,6 +29,6 @@ container=$(docker run \
     -e POSTGRES_PASSWORD=${password} \
     -h ${host} \
     -p ${port}:5432 \
-    -d ${image});
+    ${image});
 
 echo "Postgres container: ${container}"

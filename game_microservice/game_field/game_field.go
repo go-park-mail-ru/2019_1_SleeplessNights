@@ -6,14 +6,15 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"strconv"
 	"time"
 )
 
 var logger *log.Logger
 
+const fieldSize = 8
+
 var (
-	fieldSize    = config.GetInt("game_ms.pkg.game_field.size")
 	QuestionsNum = config.GetInt("game_ms.pkg.game_field.questions_num")
 	TurnDuration = config.GetDuration("game_field.pkg.game_field.turn_duration", 20*time.Second)
 )
@@ -24,10 +25,21 @@ var prizePos []Pair
 func init() {
 	logger = log.GetLogger("GameMS")
 	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
-	var ok bool
-	prizePos, ok = viper.Get("game_ms.pkg.game_field.prize_pos").([]Pair)
-	if !ok {
-		logger.Fatal("Can not convert interface{} to []Pair")
+	prizePosRaw := config.GetMapStringToInterface("game_ms.pkg.game_field.prize_pos")
+	for i := 0; i < len(prizePosRaw); i++ {
+		prize, ok := prizePosRaw[strconv.Itoa(i)].(map[string]interface{})
+		if !ok {
+			logger.Fatal("Unable to convert prize to map[string]interface{}")
+		}
+		x, err := strconv.Atoi(prize["x"].(string))
+		if err != nil {
+			logger.Fatal("Can't convert prizePos.x to int")
+		}
+		y, err := strconv.Atoi(prize["y"].(string))
+		if err != nil {
+			logger.Fatal("Can't convert prizePos.y to int")
+		}
+		prizePos = append(prizePos, Pair{X: x, Y: y})
 	}
 }
 

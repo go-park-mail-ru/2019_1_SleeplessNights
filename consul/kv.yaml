@@ -50,13 +50,13 @@ dev:
         turn_duration: "20s"
         prize_pos:
           - x: 3
-            y: 3
+            "y": 3
           - x: 3
-            y: 4
+            "y": 4
           - x: 4
-            y: 3
+            "y": 3
           - x: 4
-            y: 4
+            "y": 4
       game:
         max_rooms: 100
         player_input_queue_len: 100

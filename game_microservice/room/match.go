@@ -6,7 +6,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"

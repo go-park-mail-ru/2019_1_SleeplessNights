@@ -8,7 +8,11 @@ import (
 var configuration = "dev"
 
 func Get(key string) interface{} {
-	return viper.Get(configuration + "." + key)
+	return  viper.Get(configuration + "." + key)
+}
+
+func GetMapStringToInterface(key string) map[string]interface{} {
+	return viper.GetStringMap(configuration + "." + key)
 }
 
 func GetInt(key string) int {
