@@ -1,4 +1,18 @@
 #!/bin/bash
+#Разбираем параметры командной строки
+rebuild=false
+tidy=false
+run_ms=true
+while [[ -n "$1" ]]
+do
+case "$1" in
+--rebuild) rebuild=true;;
+--tidy) tidy=true;;
+--no-ms) run_ms=false;;
+*) return 1;;
+esac
+shift
+done
 
 #Устанавливаем BASEPATH
 ABSOLUTE_FILENAME=`readlink -e "$0"` #Абсолютный путь до скрипта
@@ -14,3 +28,35 @@ export CONSUL_ADDR=${client_addr}:${http_port}
 ${BASEPATH}/consul/run.sh
 #Запускаем postgres
 ${BASEPATH}/postgresql/run.sh
+
+#Оптимизируем зависимости
+if ${tidy}
+then
+    current_dir=$PWD
+    cd ${BASEPATH}
+    go mod tidy
+    cd ${current_dir}
+fi
+
+#Билдим бекэнд
+BACKEND_IMAGE="sleepless_nights_backend"
+export BACKEND_IMAGE=${BACKEND_IMAGE}
+if ${rebuild}
+then
+    echo "Building backend container..."
+    docker build ${BASEPATH}/. -t ${BACKEND_IMAGE}
+    echo "Backend container built!"
+fi
+
+#Запускаем микросервисы
+if ${run_ms}
+then
+    #Запускаем User-MS
+    ${BASEPATH}/user_microservice/run.sh
+    #Запускаем Main-MS
+    ${BASEPATH}/main_microservice/run.sh
+    #Запускаем Game-MS
+    ${BASEPATH}/game_microservice/run.sh
+    #Запускаем Chat-MS
+    ${BASEPATH}/chat_microservice/run.sh
+fi
