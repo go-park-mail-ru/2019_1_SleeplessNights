@@ -5,6 +5,7 @@ WORKDIR /server
 COPY . /server/
 #Запускаем сервер
 RUN cd /server
+RUN go mod tidy
 RUN go get -u
 RUN cd chat_microservice && go generate -n && cd ..
 RUN cd game_microservice && go generate -n && cd ..
