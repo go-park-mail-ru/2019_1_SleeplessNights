@@ -1,5 +1,7 @@
 package database
 
+import json "github.com/mailru/easyjson"
+
 func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, err error) {
 
 	tx, err := db.dataBase.Begin()
@@ -30,7 +32,7 @@ func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, err e
 		qFF.Text = question.Text
 		qFF.Answers = question.Answers
 		qFF.PackID = question.PackID
-		jsonData, err := qFF.MarshalJSON()
+		jsonData, err := json.Marshal(qFF)
 		if err != nil {
 			return nil, err
 		}
