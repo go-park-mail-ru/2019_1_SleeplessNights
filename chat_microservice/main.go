@@ -8,7 +8,6 @@ import (
 	"github.com/xlab/closer"
 	"net/http"
 )
-//go:generate echo "Hello world"
 var logger *log.Logger
 
 func init() {
