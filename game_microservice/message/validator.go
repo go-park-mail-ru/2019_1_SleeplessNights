@@ -1,10 +1,8 @@
 package message
 
-import "fmt"
-
 func (m *Message) IsValid() bool {
 	logger.Info("Logger Entered IsValid ")
-	fmt.Println(m.Payload)
+	logger.Debug(m.Payload)
 	switch m.Title {
 	case Ready:
 		{
