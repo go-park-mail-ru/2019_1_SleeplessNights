@@ -65,8 +65,8 @@ func (pf *playerFactory) BuildChannelPlayer(jobToDo ChannelPlayerLogic, args ...
 	chanPlayer := channelPlayer{
 		work: jobToDo,
 		id:   atomic.AddUint64(&pf.idSource, 1), //Атомик необходим для обеспечения потокобезопасности
-		in:   make(chan messge.Message, 1),
-		out:  make(chan messge.Message, 1),
+		in:   make(chan message.Message, 1),
+		out:  make(chan message.Message, 1),
 	}
 	go func() {
 		chanPlayer.work(chanPlayer.id, &chanPlayer.in, &chanPlayer.out, args...)
