@@ -1,7 +1,6 @@
 package room_manager
 
 import (
-	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/gorilla/websocket"
 	"strings"
@@ -50,7 +49,7 @@ func (t *Talker) StartListen(roomId uint64) {
 				Text:       msg.Payload.Text,
 			}
 
-			bytes, err := json.Marshal(respMsg)
+			bytes, err := respMsg.MarshalJSON()
 			if err != nil {
 				logger.Error(err.Error())
 			}
