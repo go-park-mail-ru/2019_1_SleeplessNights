@@ -140,7 +140,7 @@ func (g *gameFacade) startBalance() {
 func (g *gameFacade) PlayByWebsocket(conn *websocket.Conn, uid uint64) {
 	logger.Info("PlayByWebsocket Got new Connection")
 	//Начинаем игру по вебсокет соединению
-	in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
+	g.in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
 	logger.Info("Player has been read from channel by balancer ")
 }
 
