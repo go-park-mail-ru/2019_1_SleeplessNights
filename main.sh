@@ -29,6 +29,8 @@ ${BASEPATH}/consul/run.sh
 #Запускаем postgres
 ${BASEPATH}/postgresql/run.sh
 
+go_mod_owner=$(stat -c %U ${BASEPATH}/go.mod)
+go_sum_owner=$(stat -c %U ${BASEPATH}/go.sum)
 #Оптимизируем зависимости
 if ${tidy}
 then
@@ -60,3 +62,7 @@ then
     #Запускаем Chat-MS
     ${BASEPATH}/chat_microservice/run.sh
 fi
+
+#Фикисим изменённые файлы
+chown ${go_mod_owner} ${BASEPATH}/go.mod
+chown ${go_sum_owner} ${BASEPATH}/go.sum
