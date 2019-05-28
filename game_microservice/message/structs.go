@@ -1,4 +1,5 @@
 package message
+//go:generate $GOPATH/bin/easyjson $BASEPATH/game_microservice/message/structs.go
 //easyjson:json
 type Message struct {
 	//Формат пакета, средствами которых реализуется общение между клиентом и сервером
