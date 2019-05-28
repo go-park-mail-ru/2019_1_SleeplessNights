@@ -1,7 +1,5 @@
 package database
 
-import "encoding/json"
-
 func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, err error) {
 
 	tx, err := db.dataBase.Begin()
@@ -32,7 +30,7 @@ func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, err e
 		qFF.Text = question.Text
 		qFF.Answers = question.Answers
 		qFF.PackID = question.PackID
-		jsonData, err := json.Marshal(qFF)
+		jsonData, err := qFF.MarshalJSON()
 		if err != nil {
 			return nil, err
 		}
