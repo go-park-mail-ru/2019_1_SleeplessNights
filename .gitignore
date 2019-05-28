@@ -3,4 +3,4 @@ secret
 cover.out
 cover.html
 /main_microservice/static/img/
-
+/postgresql/data

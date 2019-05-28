@@ -31,6 +31,7 @@ container=$(docker run \
     -e POSTGRES_PASSWORD=${password} \
     -h ${host} \
     -p ${port}:5432 \
+    -v  ${BASEPATH}/postgresql/data:/var/lib/postgresql/data
     -d ${image});
 
 
