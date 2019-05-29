@@ -1,4 +1,4 @@
-package main
+package factory_test
 
 import (
 	"github.com/xlab/closer"
