@@ -11,6 +11,7 @@ import (
 	"net"
 )
 
+//go:generate $GOPATH/bin/easyjson ./...
 var logger *log.Logger
 
 func init() {

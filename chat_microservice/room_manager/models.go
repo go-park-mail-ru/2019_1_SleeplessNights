@@ -1,5 +1,5 @@
 package room_manager
-//go:generate $GOPATH/bin/easyjson $BASEPATH/chat_microservice/room_manager/models.go
+
 import (
 	"github.com/gorilla/websocket"
 	"sync"
