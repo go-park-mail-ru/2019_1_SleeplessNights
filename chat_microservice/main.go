@@ -1,5 +1,5 @@
 package main
-//go:generate $GOPATH/bin/easyjson ./...
+
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/router"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"

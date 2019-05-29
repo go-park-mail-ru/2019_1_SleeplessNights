@@ -9,7 +9,7 @@ import (
 	"github.com/xlab/closer"
 	"net/http"
 )
-//go:generate $GOPATH/bin/easyjson ./...
+
 var logger = log.GetLogger("GameMS")
 
 func init() {
