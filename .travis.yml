@@ -1,6 +1,7 @@
 language: go
 go: 1.12
 script:
+  - export GO111MODULE=on
   - chmod 600 ./2019_1_SleeplessNights_id_rsa.pem
   - ssh-keyscan -H 89.208.198.186 >> ~/.ssh/known_hosts
   - scp -i ./2019_1_SleeplessNights_id_rsa.pem -r . ubuntu@89.208.198.186:/home/ubuntu/Deploy/Backend
