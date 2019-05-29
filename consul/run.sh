@@ -8,14 +8,15 @@ grpc_port=$(jq -r '.ports.grpc' ${config_file})
 
 #TODO start consul server
 
+name="consul"
 container=$(docker run \
-    -d \
+    --name ${name} --rm \
     -p ${http_port}:${http_port} \
     -p ${https_port}:${https_port} \
     -p ${grpc_port}:${grpc_port} \
     -h ${client_addr} \
     -e "CONSUL_LOCAL_CONFIG=${config}" \
-    consul agent -ui -dev);
+    -d consul agent -ui -dev);
 
 echo "Consul container: ${container}"
 

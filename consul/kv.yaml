@@ -15,6 +15,7 @@ dev:
           secure: false
   user_ms: #Конфигурация user microservice
     log_level: 4 #logrus.InfoLevel
+    port: 8081
     address: "127.0.0.1:8081"
     pkg:
       user_manager:

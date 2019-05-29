@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println(config.Get("postgres." + os.Args[1]))
+	fmt.Println(config.Get(os.Args[1]))
 }

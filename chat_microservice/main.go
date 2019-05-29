@@ -8,7 +8,6 @@ import (
 	"github.com/xlab/closer"
 	"net/http"
 )
-
 var logger *log.Logger
 
 func init() {
