@@ -550,7 +550,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 -- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+CREATE OR REPLACE FUNCTION public.func_clean_game_db()
   RETURNS VOID
 AS
 $BODY$
