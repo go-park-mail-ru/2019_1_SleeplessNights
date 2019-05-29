@@ -10,8 +10,8 @@ script:
   - scp -i ./2019_1_SleeplessNights_id_rsa.pem -r ../2019_1_SleeplessNights ubuntu@89.208.198.186:/home/ubuntu/Deploy/Backend
 after_success:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker build . -t sleepless_nights_backend
-  - docker push sleepless_nights_backend
+  - docker build . -t uimin1maksim/sleepless_nights_backend
+  - docker push uimin1maksim/sleepless_nights_backend
 branches:
   only:
   - Deploy
