@@ -4,11 +4,12 @@ env:
   - GO111MODULE=on
 services:
   - docker
-  -
+deploy:
+  provider: script
+  script: bash push_docker_backend
+  on:
+    branch: Deploy
 script:
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker build . -t sleepless_nights_backend
-  - docker push sleepless_nights_backend
   - chmod 600 ./2019_1_SleeplessNights_id_rsa.pem
   - ssh-keyscan -H 89.208.198.186 >> ~/.ssh/known_hosts
   - scp -i ./2019_1_SleeplessNights_id_rsa.pem -r ../2019_1_SleeplessNights ubuntu@89.208.198.186:/home/ubuntu/Deploy/Backend
