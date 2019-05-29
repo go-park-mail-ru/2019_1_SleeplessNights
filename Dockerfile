@@ -7,5 +7,5 @@ COPY . /server/
 RUN cd /server
 RUN go mod tidy
 RUN go get -u
-RUN go generate ./...
+#RUN go generate ./...
 ENV BASEPATH "/server"
