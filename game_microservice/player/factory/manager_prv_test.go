@@ -1,4 +1,4 @@
-package game
+package factory
 
 import (
 	"reflect"
@@ -6,10 +6,10 @@ import (
 )
 
 func TestGetInstance(t *testing.T) {
-	if reflect.TypeOf(GetInstance()) != reflect.PtrTo(reflect.TypeOf(gameFacade{})) {
+	if reflect.TypeOf(GetInstance()) != reflect.PtrTo(reflect.TypeOf(playerFactory{})) {
 		t.Errorf("GetInstance method returns value with wrong type: got %s, whant %s",
 			reflect.TypeOf(reflect.TypeOf(GetInstance())),
-			reflect.PtrTo(reflect.TypeOf(gameFacade{})))
+			reflect.PtrTo(reflect.TypeOf(playerFactory{})))
 	}
 }
 

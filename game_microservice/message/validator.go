@@ -2,7 +2,6 @@ package message
 
 func (m *Message) IsValid() bool {
 	logger.Info("Logger Entered IsValid ")
-	logger.Debug(m.Payload)
 	switch m.Title {
 	case Ready:
 		{
