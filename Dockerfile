@@ -11,5 +11,10 @@ RUN cd chat_microservice && go generate -n && cd ..
 RUN cd game_microservice && go generate -n && cd ..
 RUN cd main_microservice && go generate -n && cd ..
 RUN cd user_microservice && go generate -n && cd ..
-RUN cd shared && go generate -n && cd ..
+RUN cd shared/config && go generate -n && cd ../..
+RUN cd shared/console && go generate -n && cd ../..
+RUN cd shared/errors && go generate -n && cd ../..
+RUN cd shared/logger && go generate -n && cd ../..
+RUN cd shared/middleware && go generate -n && cd ../..
+RUN cd shared/services && go generate -n && cd ../..
 ENV BASEPATH "/server"
