@@ -7,7 +7,7 @@ services:
 deploy:
   skip_cleanup: true
   provider: script
-  script: push_docker_backend.sh
+  script: bash ./.travis/push_docker_backend.sh
   on:
     branch: Deploy
 script:
