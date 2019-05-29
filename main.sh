@@ -41,7 +41,7 @@ then
 fi
 
 #Билдим бекэнд
-BACKEND_IMAGE="sleepless_nights_backend"
+BACKEND_IMAGE="uimin1maksim/sleepless_nights_backend"
 export BACKEND_IMAGE=${BACKEND_IMAGE}
 if ${rebuild}
 then

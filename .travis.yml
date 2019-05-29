@@ -8,10 +8,10 @@ script:
   - chmod 600 ./2019_1_SleeplessNights_id_rsa.pem
   - ssh-keyscan -H 89.208.198.186 >> ~/.ssh/known_hosts
   - scp -i ./2019_1_SleeplessNights_id_rsa.pem -r ../2019_1_SleeplessNights ubuntu@89.208.198.186:/home/ubuntu/Deploy/Backend
-after_success:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build . -t uimin1maksim/sleepless_nights_backend
   - docker push uimin1maksim/sleepless_nights_backend
+  - ssh -i ./2019_1_SleeplessNights_id_rsa.pem -
 branches:
   only:
   - Deploy
