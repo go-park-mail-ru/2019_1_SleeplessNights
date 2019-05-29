@@ -5,6 +5,7 @@ env:
 services:
   - docker
 deploy:
+  skip_cleanup: true
   provider: script
   script: bash push_docker_backend
   on:
