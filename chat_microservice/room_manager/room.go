@@ -1,9 +1,9 @@
 package room_manager
 
 import (
-	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/chat_microservice/database"
 	"github.com/gorilla/websocket"
+	json "github.com/mailru/easyjson"
 	"strings"
 	"sync"
 )
@@ -60,7 +60,7 @@ func (t *Talker) StartListen(roomId uint64) {
 				logger.Error(err.Error())
 			}
 
-			for _, user  := range chat.RoomsPool[roomId].TalkersPool {
+			for _, user := range chat.RoomsPool[roomId].TalkersPool {
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())

@@ -143,3 +143,8 @@ func (g *gameFacade) PlayByWebsocket(conn *websocket.Conn, uid uint64) {
 	in <- factory.GetInstance().BuildWebsocketPlayer(conn, uid) //Собственно, всё изи
 	logger.Info("Player has been read from channel by balancer ")
 }
+
+func (g *gameFacade) PlayByChannels(jobToDo factory.ChannelPlayerLogic, args ...interface{}) {
+	in <- factory.GetInstance().BuildChannelPlayer(jobToDo, args...)
+	logger.Info("Player has been read from channel by balancer ")
+}

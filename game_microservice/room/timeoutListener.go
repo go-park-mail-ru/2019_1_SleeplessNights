@@ -1,8 +1,8 @@
 package room
 
 import (
-	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
+	json "github.com/mailru/easyjson"
 )
 
 func (r *Room) AnswerTimerFunc() {
@@ -24,7 +24,6 @@ func (r *Room) AnswerTimerFunc() {
 }
 
 func (r *Room) GoToTimerFunc() {
-
 	logger.Info("GoToTimerFunc Timer Has Expired before answer was given")
 
 	result, err := json.Marshal(message.Message{
@@ -43,11 +42,10 @@ func (r *Room) GoToTimerFunc() {
 }
 
 func (r *Room) ChoosePackTimerFunc() {
-
 	logger.Info("ChoosePackTimerFunc Timer Has Expired before answer was given")
 
 	result, err := json.Marshal(message.Message{
-		Title: message.NotDesiredPack,
+		Title:   message.NotDesiredPack,
 		Payload: message.PackID{PackId: -1},
 	})
 	if err != nil {

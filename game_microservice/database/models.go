@@ -1,5 +1,5 @@
 package database
-
+//go:generate $GOPATH/bin/easyjson $BASEPATH/game_microservice/database/models.go
 type Question struct {
 	ID      uint64   `json:"-"`
 	Answers []string `json:"answers"`
@@ -11,11 +11,10 @@ type Question struct {
 
 type Pack struct {
 	ID uint64 `json:"id"`
-
 	Theme    string `json:"name"`
 	IconPath string `json:"iconPath"`
 }
-
+//easyjson:json
 type QuestionForFrontend struct {
 	Text    string   `json:"text"`
 	Answers []string `json:"answers"`
