@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"sync"
 )
-
+//go:generate $GOPATH/bin/easyjson ./...
 var logger *log.Logger
 
 func init() {
