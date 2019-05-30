@@ -53,6 +53,7 @@ fi
 #Запускаем микросервисы
 if ${run_ms}
 then
+    docker pull uimin1maksim/sleepless_nights_backend
     #Запускаем User-MS
     ${BASEPATH}/user_microservice/run.sh
     #Запускаем Main-MS
