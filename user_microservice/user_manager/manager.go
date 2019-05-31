@@ -38,7 +38,7 @@ type userManager struct {
 }
 
 func init() {
-	secretFile, err := os.Open("/Users/mac/Desktop/back-end/2019_1_SleeplessNights/secret")
+	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {
@@ -63,6 +63,7 @@ func init() {
 func GetInstance() *userManager {
 	return user
 }
+
 
 func UpdateLeaderBoard()  {
 	leaderBoardUpdateInterval, err := time.ParseDuration(config.GetString("user_ms.pkg.user_manager.leaderboard_update_interval"))

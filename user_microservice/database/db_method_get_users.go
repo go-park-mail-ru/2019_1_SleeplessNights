@@ -2,6 +2,7 @@ package database
 
 import "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 
+
 func (db *dbManager) GetUsers(limit uint64) (profiles []*services.Profile, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
