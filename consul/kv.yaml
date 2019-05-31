@@ -19,6 +19,7 @@ dev:
     address: "127.0.0.1:8081"
     pkg:
       user_manager:
+        leaderboard_update_interval: "10s"
         session_life_len: "10h"
       database:
         max_connections: 100
