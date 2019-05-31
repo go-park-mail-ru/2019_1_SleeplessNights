@@ -7,16 +7,22 @@ import (
 	"math"
 )
 
-var LeaderBoardLen = config.GetInt("user_ms.pkg.user_manager.board_len")
 var PageLen = uint64(config.GetInt("user_ms.pkg.user_manager.page_len"))
 
 func (us *userManager) GetLeaderBoardPage(ctx context.Context, in *services.PageData) (*services.LeaderBoardPage, error) {
-	var page *services.LeaderBoardPage
-	for i := in.Since*PageLen - PageLen; i < in.Since*PageLen-1; i++ {
-		page.Leaders = append(page.Leaders, profiles[i])
+	var page services.LeaderBoardPage
+	for i, p := range profiles {
+		if uint64(i) < in.Since*10-10 {
+			continue
+		}
+		if uint64(i) == in.Since*10 {
+			break
+		}
+		page.Leaders = append(page.Leaders, p)
 	}
-	if len(profiles) < LeaderBoardLen {
-		page.PagesCount = uint64(math.Ceil(float64(len(profiles)) / float64(PageLen)))
+	l := uint64(len(profiles))
+	if l < LeaderBoardLen {
+		page.PagesCount = uint64(math.Ceil(float64(l) / float64(PageLen)))
 	}
-	return page, nil
+	return &page, nil
 }

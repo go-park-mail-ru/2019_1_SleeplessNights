@@ -12,10 +12,10 @@ import (
 func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("page")
 	if page == "" {
-		page = "0"
+		page = "1"
 	}
 
-	since, err := strconv.ParseUint(page, 10, 32)
+	since, err := strconv.ParseUint(page, 10, 64)
 	if err != nil {
 		logger.Errorf("Failed to parse page: %v", err.Error())
 		helpers.Return500(&w, err)
@@ -39,7 +39,6 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = w.Write(data)
-	logger.Info(data)
 	if err != nil {
 		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)

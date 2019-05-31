@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -24,6 +25,10 @@ func init() {
 	logger.SetLogLevel(logrus.Level(config.GetInt("user_ms.log_level")))
 }
 
+const defaultLeaderBoardUpdateInterval = 4 * time.Second
+
+var LeaderBoardLen = uint64(config.GetInt("user_ms.pkg.user_manager.board_len"))
+
 var profiles []*services.Profile
 
 var user *userManager
@@ -33,7 +38,7 @@ type userManager struct {
 }
 
 func init() {
-	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
+	secretFile, err := os.Open("/Users/mac/Desktop/back-end/2019_1_SleeplessNights/secret")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {
@@ -53,18 +58,25 @@ func init() {
 	user = &userManager{
 		secret: secret,
 	}
-	doSomething()
 }
 
 func GetInstance() *userManager {
 	return user
 }
 
-func doSomething() {
-	const N = 30
-	ticker := time.NewTicker(time.Second / N)
+func UpdateLeaderBoard()  {
+	leaderBoardUpdateInterval, err := time.ParseDuration(config.GetString("user_ms.pkg.user_manager.leaderboard_update_interval"))
+	if err != nil {
+		leaderBoardUpdateInterval = defaultLeaderBoardUpdateInterval
+	}
+	ticker := time.NewTicker(leaderBoardUpdateInterval)
 	for range ticker.C {
-		fmt.Println("Do anything that takes no longer than 1/Nth of a second")
+		profiles, err = database.GetInstance().GetUsers(LeaderBoardLen)
+		if err != nil {
+			logger.Errorf("Failed to get users: %v", err.Error())
+			return
+		}
+		logger.Info("Updated successful profiles")
 	}
 }
 

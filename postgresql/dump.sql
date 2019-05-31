@@ -197,8 +197,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 -- func get_users
-CREATE OR REPLACE FUNCTION public.func_get_users(arg_since BIGINT,
-                                                 arg_limit BIGINT)
+CREATE OR REPLACE FUNCTION public.func_get_users(arg_limit BIGINT)
   RETURNS SETOF public.type_user
 AS
 $BODY$
@@ -208,9 +207,8 @@ DECLARE
 BEGIN
   FOR rec IN SELECT *
              FROM users
-             WHERE id > arg_since
-             ORDER BY rating
-             LIMIT arg_limit OFFSET arg_since
+             ORDER BY rating DESC
+             LIMIT arg_limit
     LOOP
       result.id := rec.id;
       result.email := rec.email;
