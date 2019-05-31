@@ -32,7 +32,8 @@ message PageData {
 }
 
 message LeaderBoardPage {
-    repeated Profile leaders = 1;
+    uint64           pagesCount = 1;
+    repeated Profile leaders    = 2;
 }
 
 message Profile {
