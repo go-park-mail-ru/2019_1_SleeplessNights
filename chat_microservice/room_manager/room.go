@@ -61,6 +61,9 @@ func (t *Talker) StartListen(roomId uint64) {
 			}
 
 			for _, user := range chat.RoomsPool[roomId].TalkersPool {
+				if user.Id == t.Id{
+					continue
+				}
 				err = user.Conn.WriteJSON(respMsg)
 				if err != nil {
 					logger.Error(err.Error())
