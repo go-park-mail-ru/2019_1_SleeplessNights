@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net"
+	"os"
 )
 
 var consulAddr = flag.String("addr", "127.0.0.1:8500", "Pass consul client address to script")
@@ -28,7 +29,7 @@ func main() {
 		return
 	}
 
-	yamlKV, err := ioutil.ReadFile("kv.yaml")
+	yamlKV, err := ioutil.ReadFile(os.Getenv("BASEPATH") + "/consul/kv.yaml")
 	if err != nil {
 		console.Error("Can't read kv.yaml: " + err.Error())
 		return

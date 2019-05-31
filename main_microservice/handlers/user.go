@@ -16,20 +16,17 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			helpers.FormParsingErrorMsg,
 			err.Error(),
 		}
+		logger.Errorf("Failed to parse form: %v", err.Error())
 		helpers.Return400(&w, formErrorMessages)
 		return
 	}
-	logger.Debug("ParseForm_OK")
-	requestErrors, err := helpers.ValidateRegisterRequest(r)
-	if err != nil {
-		helpers.Return500(&w, err)
-		return
-	}
+
+	requestErrors := helpers.ValidateRegisterRequest(r)
 	if requestErrors != nil {
+		logger.Errorf("RequestErrors isn't empty.")
 		helpers.Return400(&w, requestErrors)
 		return
 	}
-	logger.Debug("ValidateRegisterRequest_OK")
 
 	user, err := userManager.CreateUser(context.Background(),
 		&services.NewUserData{
@@ -37,22 +34,17 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 			Nickname: r.Form.Get("nickname"),
 		})
-
-	//logger.Error(err.Error())
-	//logger.Error(errors.DataBaseUniqueViolation)
 	if err != nil {
-
-		switch err.Error() {
-		case errors.DataBaseUniqueViolation.Error():
+		logger.Errorf("Failed to create user: %v", err.Error())
+		matchedUV := errors.DataBaseUniqueViolationReg.Match([]byte(err.Error()))
+		if matchedUV {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.UniqueEmailErrorMsg})
 			return
-		default:
+		} else {
 			helpers.Return500(&w, err)
 			return
 		}
 	}
-
-	logger.Debug("CreateUser_OK")
 
 	sessionToken, err := userManager.MakeToken(context.Background(),
 		&services.UserSignature{
@@ -60,23 +52,24 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Password: r.Form.Get("password"),
 		})
 	if err != nil {
+		logger.Errorf("Failed to make token: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
-	logger.Debug("MakeToken_OK")
 
 	sessionCookie := helpers.BuildSessionCookie(sessionToken)
 	http.SetCookie(w, &sessionCookie)
 
 	data, err := json.Marshal(user)
 	if err != nil {
+		logger.Errorf("Failed to marshal user: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
 	_, err = w.Write(data)
 	if err != nil {
+		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
-	logger.Debug("BuildSessionCookie_OK")
 }

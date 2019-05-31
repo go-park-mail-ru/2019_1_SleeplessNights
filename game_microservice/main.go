@@ -2,33 +2,24 @@ package main
 
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/faker"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/router"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
 	"net/http"
 )
 
-var logger *log.Logger
+var logger = log.GetLogger("GameMS")
 
 func init() {
-	logger = log.GetLogger("ChatMS")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
 }
-
 func main() {
 	defer closer.Close()
+	database.GetInstance().PopulateDatabase()
 
-	//In case of a lack of data, break parentheses
-	err := database.GetInstance().CleanerDBForTests()
-	if err != nil {
-		logger.Errorf(err.Error())
-	}
-
-	faker.CreateFakePacks()
-
-	PORT := "8006"
+	PORT := config.GetString("game_ms.port")
 	logger.Info("Game microservice started listening on", PORT)
 	r := router.GetRouter()
 	logger.Fatal(http.ListenAndServe(":"+PORT, r))

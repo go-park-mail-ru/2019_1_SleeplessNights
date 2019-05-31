@@ -1,273 +1,70 @@
 package database
 
 import (
-	"database/sql"
-	"encoding/json"
-	"fmt"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database/models"
-	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
-	"github.com/lib/pq"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
+	"github.com/jackc/pgx"
+	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
-	"os"
+	"time"
+
+	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 )
 
-const (
-	SQLNoRows       = "sql: no rows in result set"
-	NoUserFound     = "БД: Не был найден юзер"
-	UniqueViolation = "pq: duplicate key value violates unique constraint \"users_email_ui\""
+var (
+	maxConnections = config.GetInt("game_ms.pkg.database.max_connections")
+	acquireTimeout = config.GetDuration("game_ms.pkg.database.acquire_timeout", 3*time.Second)
 )
-
-var db *dbManager
 
 var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("DB")
+	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
 }
+
+func loadConfiguration() (pgxConfig pgx.ConnConfig) {
+	pgxConfig.Port = uint16(config.GetInt("postgres.port"))
+	pgxConfig.Host = config.GetString("postgres.host")
+	pgxConfig.Database = config.GetString("postgres.db_name")
+	pgxConfig.User = config.GetString("postgres.user")
+	pgxConfig.Password = config.GetString("postgres.password")
+	return
+}
+
+var db *dbManager
 
 type dbManager struct {
-	dataBase *sql.DB
-}
-
-type dbConfig struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	DBName   string `json:"dbname"`
-}
-
-func loadConfiguration(file string) (psqlInfo string) {
-	configFile, err := os.Open(file)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	var config dbConfig
-	jsonParser := json.NewDecoder(configFile)
-	err = jsonParser.Decode(&config)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	err = configFile.Close()
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		config.Host, config.Port, config.User, config.Password, config.DBName)
-
-	return
+	dataBase *pgx.ConnPool
 }
 
 func init() {
 	//TODO check config loading
-	psqlInfo := loadConfiguration(os.Getenv("BASEPATH") + "/game_microservice/database/config.json")
+	pgxConfig := loadConfiguration()
+	pgxConnPoolConfig := pgx.ConnPoolConfig{
+		ConnConfig:     pgxConfig,
+		MaxConnections: maxConnections,
+		AcquireTimeout: acquireTimeout,
+	}
 
-	dataBase, err := sql.Open("postgres", psqlInfo)
+	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 
-	err = dataBase.Ping()
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
-	fmt.Println("DB connection opened")
+	logger.Info("DB connection opened")
 
 	db = &dbManager{
 		dataBase: dataBase,
 	}
 
 	closer.Bind(closeConnection)
-
 }
 
 func closeConnection() {
-	err := db.dataBase.Close()
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
-	fmt.Println("DB connection closed")
+	db.dataBase.Close()
+	logger.Info("DB connection opened")
 }
 
 func GetInstance() *dbManager {
 	return db
-}
-
-func (db *dbManager) CleanerDBForTests() (err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	_, err = db.dataBase.Exec(`TRUNCATE TABLE public.question, public.question_pack RESTART IDENTITY`)
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) GetPacksOfQuestions(n int) (packs []models.Pack, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	rows, err := db.dataBase.Query(
-		`SELECT * FROM 
-               (SELECT DISTINCT ON (theme) * FROM public.question_pack ORDER BY theme) AS qp
-				ORDER BY random() LIMIT $1`, n)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	var pack models.Pack
-	for rows.Next() {
-
-		err = rows.Scan(&pack.ID, &pack.Theme)
-		if err != nil {
-			return
-		}
-
-		packs = append(packs, pack)
-	}
-	err = rows.Err()
-	if err != nil {
-		return
-	}
-
-	err = rows.Close()
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) GetQuestions(ids []int) (questions []models.Question, err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	rows, err := db.dataBase.Query(
-		`SELECT * FROM public.question WHERE pack_id = ANY ($1)`, pq.Array(ids))
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	var question models.Question
-	for rows.Next() {
-		err = rows.Scan(&question.ID, pq.Array(&question.Answers), &question.Correct, &question.Text, &question.PackID)
-		if err != nil {
-			return
-		}
-		questions = append(questions, question)
-	}
-	err = rows.Err()
-	if err != nil {
-		return
-	}
-
-	err = rows.Close()
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) AddQuestionPack(theme string) (err error) {
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	_, err = db.dataBase.Exec(
-		`INSERT INTO public.question_pack (theme) VALUES ($1)`, theme)
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
-}
-
-func (db *dbManager) AddQuestion(question models.Question) (err error) {
-
-	tx, err := db.dataBase.Begin()
-	if err != nil {
-		return
-	}
-	txOK := false
-	defer func() {
-		if !txOK {
-			_ = tx.Rollback()
-		}
-	}()
-
-	_, err = db.dataBase.Exec(
-		`INSERT INTO public.question (answers, correct, text, pack_id)
-			  VALUES ($1, $2, $3, $4)`, pq.Array(question.Answers), question.Correct, question.Text, question.PackID)
-	if err != nil {
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return
-	}
-	txOK = true
-	return
 }

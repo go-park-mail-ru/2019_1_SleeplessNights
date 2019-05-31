@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/gorilla/websocket"
@@ -14,8 +13,8 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("ChatMS")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger = log.GetLogger("GameMS-mux")
+	logger.SetLogLevel(logrus.Level(config.GetInt("main_ms.log_level")))
 }
 
 func UpgradeWs(user *services.User, w http.ResponseWriter, r *http.Request) {
@@ -31,11 +30,6 @@ func UpgradeWs(user *services.User, w http.ResponseWriter, r *http.Request) {
 		logger.Error("Error during UpgradeWs", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	}
-
-	err = conn.WriteJSON(message.Message{Title: "CONNECTED", Payload: "you've been connected to server"})
-	if err != nil {
-		fmt.Println(err)
 	}
 
 	gameInstance := game.GetInstance()

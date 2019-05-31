@@ -1,7 +1,9 @@
 package middleware_test
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	m "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/middleware"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"net/http"
@@ -20,24 +22,24 @@ func TestMiddlewareCORS(t *testing.T) {
 	_router.HandleFunc("/", func(http.ResponseWriter, *http.Request) {})
 	_router.ServeHTTP(resp, req)
 
-	if resp.Header().Get("Access-Control-Allow-Origin") != m.DomainsCORS {
+	if resp.Header().Get("Access-Control-Allow-Origin") != strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.domains"), ",") {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.DomainsCORS, resp.Header().Get("Access-Control-Allow-Origin"))
+			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.domains"), ","), resp.Header().Get("Access-Control-Allow-Origin"))
 	}
 
-	if resp.Header().Get("Access-Control-Allow-Credentials") != m.CredentialsCORS {
+	if resp.Header().Get("Access-Control-Allow-Credentials") != config.GetString("shared.pkg.middleware.CORS.credentials") {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.CredentialsCORS, resp.Header().Get("Access-Control-Allow-Credentials"))
+			config.GetString("shared.pkg.middleware.CORS.credentials"), resp.Header().Get("Access-Control-Allow-Credentials"))
 	}
 
-	if resp.Header().Get("Access-Control-Allow-Methods") != m.MethodsCORS {
+	if resp.Header().Get("Access-Control-Allow-Methods") != strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.methods"), ",") {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.MethodsCORS, resp.Header().Get("Access-Control-Allow-Methods"))
+			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.methods"), ","), resp.Header().Get("Access-Control-Allow-Methods"))
 	}
 
-	if resp.Header().Get("Access-Control-Allow-Headers") != m.HeadersCORS {
+	if resp.Header().Get("Access-Control-Allow-Headers") != strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.headers"), ",") {
 		t.Errorf("Middleware get wrong header:\nwant: %v\ngot: %v",
-			m.HeadersCORS, resp.Header().Get("Access-Control-Allow-Headers"))
+			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.headers"), ","), resp.Header().Get("Access-Control-Allow-Headers"))
 	}
 }
 

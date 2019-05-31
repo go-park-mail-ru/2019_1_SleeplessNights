@@ -4,6 +4,8 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/game_field"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/sirupsen/logrus"
@@ -16,16 +18,18 @@ import (
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("ChatMS")
-	logger.SetLogLevel(logrus.TraceLevel)
+	logger = log.GetLogger("GameMS")
+	logger.SetLogLevel(logrus.Level(config.GetInt("game_ms.log_level")))
 }
 
 var userManager services.UserMSClient
-
+const (
+	StartGameDelay = 1300
+)
 func init() {
 	var err error
 	grpcConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -43,22 +47,18 @@ func init() {
 //Build Environment After getting desiredPacks
 func (r *Room) buildEnv() {
 	logger.Info("Entered BuildEnv in Room")
-	packs, err := database.GetInstance().GetPacksOfQuestions(6)
-	if err != nil {
-		logger.Error("Error occurred while fetching question packs from DB:", err)
-		//TODO deal with error, maybe kill the room
-	}
-	packIDs := make([]int, len(packs))
-	for _, pack := range packs {
-		packIDs = append(packIDs, int(pack.ID))
-		fieldPacks := r.field.GetThemesSlice()
-		*fieldPacks = append(*fieldPacks, message.ThemePack{pack.ID, pack.Theme})
+
+	packs := r.field.GetPacksSlice()
+	logger.Info("Got packs from database")
+	packIDs := make([]uint64, 0)
+	for _, pack := range *packs {
+		packIDs = append(packIDs, uint64(pack.ID))
 	}
 
 	questions, err := database.GetInstance().GetQuestions(packIDs)
 	if err != nil || len(questions) < game_field.QuestionsNum {
 		logger.Error("Error occurred while fetching question from DB:", err)
-		//TODO deal with error, maybe kill the room
+		//TODO deal with error, maybe kill the room_manager
 	}
 
 	r.field.Build(questions)
@@ -69,18 +69,71 @@ func (r *Room) buildEnv() {
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
 
 func (r *Room) prepareMatch() {
+	
+	//Где-то здесь добавить выбор паков игроками
+
 	logger.Info("Entered Prepare Match Room")
+	logger.Info("Delay")
+	time.Sleep(StartGameDelay*time.Millisecond)
+	//BuildEnv достает только выбранные паки и строит игровое поле по ним
 	r.buildEnv()
-	r.requestsQueue = make(chan MessageWrapper, channelCapacity)
-	r.responsesQueue = make(chan MessageWrapper, channelCapacity)
 
-	p1Chan := r.p1.Subscribe()
-	p2Chan := r.p2.Subscribe()
-
+	//Сюда приходим после тогос как паки будут выбраны
 	err := r.notifyAll(message.Message{Title: message.StartGame, Payload: nil})
 	if err != nil {
 		logger.Error("Failed to notify about StartGame ,to all players:", err)
 	}
+
+	if err != nil {
+		logger.Error("Failed to notify Player 1:", err)
+	}
+
+	logger.Info("Игрокам Отправлены StartGame")
+
+	//err = r.notifyAll(message.Message{Title: message.Themes, Payload: r.field.GetThemesSlice()})
+	//if err != nil {
+	//	logger.Error("Failed to send ThemesResponse , to all players:", err)
+	//}
+	packArray := r.field.GetQuestionsThemes()
+	err = r.notifyAll(message.Message{Title: message.QuestionsThemes, Payload: packArray})
+
+	if err != nil {
+		logger.Error("Failed to send QuestionsThemesResponse , to all players:", err)
+	}
+	//Read Messages from Players
+	//Moved message receive conditions to Requests handler
+	r.waitForSyncMsg = message.GoTo
+	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
+	// Результат работы достаем из канала Events()отсылаем в канал ResponsesQueue
+	cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
+
+	var secondPlayer *player.Player
+	if &r.p1 == r.active {
+		secondPlayer = &r.p2
+	}
+	if &r.p2 == r.active {
+		secondPlayer = &r.p1
+	}
+	cells := make([]Pair, 0)
+	for _, cell := range cellsSlice {
+		cells = append(cells, Pair{cell.X, cell.Y})
+	}
+	payload := struct {
+		CellsSlice []Pair
+		Time       time.Duration
+	}{
+		CellsSlice: cells,
+		Time:       timeToMove,
+	}
+	//Send Available cells to active player (Do it every time, after giving player a turn rights
+	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
+	r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
+}
+
+//Точка входа в игровой процесс
+func (r *Room) startGameProcess() {
 
 	user2, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
 	if err != nil {
@@ -90,7 +143,8 @@ func (r *Room) prepareMatch() {
 	if err != nil {
 		logger.Error("Failed to notify Player 1:", err)
 	}
-	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p2.UID()})
+
+	user1, err := userManager.GetUserById(context.Background(), &services.UserId{Id: r.p1.UID()})
 	if err != nil {
 		logger.Error("failed to get userprofile1 from grpc:", err)
 	}
@@ -99,79 +153,38 @@ func (r *Room) prepareMatch() {
 		logger.Error("Failed to notify Player 2:", err)
 	}
 
-	logger.Info("Игрокам Отправлены StartGame")
-
-	err = r.notifyAll(message.Message{Title: message.Themes, Payload: r.field.GetThemesSlice()})
+	//Send available pack to players
+	packs, err := database.GetInstance().GetPacksOfQuestions(packTotal)
+	logger.Info("packs", packs)
 	if err != nil {
-		logger.Error("Failed to send ThemesResponse , to all players:", err)
+		logger.Error("Failed to get available packs from database")
 	}
-	packArray := r.field.GetQuestionsThemes()
-	err = r.notifyAll(message.Message{Title: message.QuestionsThemes, Payload: packArray})
-
-	if err != nil {
-		logger.Error("Failed to send QuestionsThemesResponse , to all players:", err)
+	fieldPacks := r.field.GetPacksSlice()
+	*fieldPacks = make([]database.Pack, packTotal)
+	copy(*fieldPacks, packs)
+	logger.Info(&r.p1, "  ", &r.p2)
+	logger.Info("Packs", packs)
+	payload := struct {
+		Packs []database.Pack
+		Time  time.Duration
+	}{
+		Packs: packs,
+		Time:  timeToChoosePack,
 	}
-	r.waitForSyncMsg = message.Ready
-	//Read Messages from Players
-	//Moved message receive conditions to Requests handler
+	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.AvailablePacks, Payload: payload}}
+	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.AvailablePacks, Payload: payload}}
 
-	go func() {
-		for msgP1 := range p1Chan {
-			logger.Info("got message from P1", msgP1)
-			r.requestsQueue <- MessageWrapper{&r.p1, msgP1}
-		}
-	}()
-
-	go func() {
-		for msgP2 := range p2Chan {
-			logger.Info("got message from P2", msgP2)
-			r.requestsQueue <- MessageWrapper{&r.p2, msgP2}
-		}
-	}()
-	//Channel to Write Server messages to the player1/player2
-	r.startMatch()
+	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
+	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
+	r.waitForSyncMsg = message.NotDesiredPack
+	r.timerToChoosePack = time.AfterFunc(timeToChoosePack, r.ChoosePackTimerFunc)
+	logger.Infof("StartMatch : Game process has started p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 }
 
-func (r *Room) startMatch() {
-	//   Эта процедура запускает игровой процесс
-	//   Здесь мы будем слушать все сообщения пользователей асинхронно и складывать их в очередь для обработки
-	//   В цикле мы будем обрабатывать все входные сообщения, выполнять нашу бизнес логику (менять значение таймера,
-	//   давать пользователям вопросы и т.д.)
-	//   Все сообщения мы будем складывать в очередь на отправку и отправлять всю очередь каждые 0.5 сек
-	//   (цифра примерная, может поменяться и должна быть вынесена в костанту)
-	//TODO develop
-
-	// Call Prepare Room
-
-	logger.Infof("StartMatch : Game process has started p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
-
-	go func() {
-		for serverResponse := range r.responsesQueue {
-			logger.Info("Got message to Send recepient: UID", (*serverResponse.player).UID(), "Message:", serverResponse.msg)
-			err := (*serverResponse.player).Send(serverResponse.msg)
-			if err != nil {
-				logger.Error("responseQueue: error trying to send response to player", err)
-			}
-		}
-		time.Sleep(responseInterval * time.Millisecond)
-	}()
-
-	go func() {
-		for msg := range r.requestsQueue {
-			//Проверка структуры сообщения
-			logger.Info("Got Message from client")
-			if !msg.msg.IsValid() {
-				logger.Error("Message to send has invalid structure")
-				continue
-			}
-
-			if !r.isSyncValid(msg) {
-				logger.Warningf("Got message of type %s from player UID %d, expected %s from player %d",
-					msg.msg.Title, (*msg.player).UID(), r.waitForSyncMsg, r.active)
-				continue
-			}
-			logger.Info("Message entered mux")
-			r.MessageHandlerMux(msg)
-		}
-	}()
+func (r *Room) changeTurn() {
+	if (*r.active).ID() == r.p1.ID() {
+		r.active = &r.p2
+	} else {
+		r.active = &r.p1
+	}
 }

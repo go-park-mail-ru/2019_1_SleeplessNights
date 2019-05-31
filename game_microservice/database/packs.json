@@ -1,0 +1,42 @@
+[
+  {
+    "name": "История",
+    "iconPath": "history.svg"
+  },
+  {
+    "name": "Математика",
+    "iconPath": "math.svg"
+  },
+  {
+    "name": "География",
+    "iconPath": "geography.svg"
+  },
+  {
+    "name": "Спорт",
+    "iconPath": "sport.svg"
+  },
+  {
+    "name": "Английский язык",
+    "iconPath": "english.svg"
+  },
+  {
+    "name": "Информатика",
+    "iconPath": "informatics.svg"
+  },
+  {
+    "name": "Живопись",
+    "iconPath": "art.svg"
+  },
+  {
+    "name": "Экология",
+    "iconPath": "ecology.svg"
+  },
+  {
+    "name": "Литература",
+    "iconPath": "literature.svg"
+  },
+  {
+    "name": "Биология",
+    "iconPath": "biology.svg"
+  }
+]

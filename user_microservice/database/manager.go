@@ -1,67 +1,33 @@
 package database
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/sirupsen/logrus"
+	"time"
 
 	"github.com/jackc/pgx"
-	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
-	"os"
-	"time"
 )
 
-const (
-	maxConnections = 3
-	acquireTimeout = 3 * time.Second
-)
-
-const (
-	SQLNoRows   = "sql: no rows in result set"
-	NoUserFound = "БД: Не был найден юзер"
+var (
+	maxConnections = config.GetInt("user_ms.pkg.database.max_connections")
+	acquireTimeout = config.GetDuration("user_ms.pkg.database.acquire_timeout", 3*time.Second)
 )
 
 var logger *log.Logger
 
 func init() {
-	logger = log.GetLogger("DB")
-	logger.SetLogLevel(logrus.DebugLevel)
+	logger = log.GetLogger("DataBase")
+	logger.SetLogLevel(logrus.Level(config.GetInt("user_ms.log_level")))
 }
 
-type dbConfig struct {
-	Host     string `json:"host"`
-	Port     uint16 `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	DBName   string `json:"dbname"`
-}
-
-func loadConfiguration(file string) (pgxConfig pgx.ConnConfig) {
-	configFile, err := os.Open(file)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	var config dbConfig
-	jsonParser := json.NewDecoder(configFile)
-	err = jsonParser.Decode(&config)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	err = configFile.Close()
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	pgxConfig.Host = config.Host
-	pgxConfig.User = config.User
-	pgxConfig.Password = config.Password
-	pgxConfig.Database = config.DBName
-	pgxConfig.Port = config.Port
-
+func loadConfiguration() (pgxConfig pgx.ConnConfig) {
+	pgxConfig.Port = uint16(config.GetInt("postgres.port"))
+	pgxConfig.Host = config.GetString("postgres.host")
+	pgxConfig.Database = config.GetString("postgres.db_name")
+	pgxConfig.User = config.GetString("postgres.user")
+	pgxConfig.Password = config.GetString("postgres.password")
 	return
 }
 
@@ -73,15 +39,19 @@ type dbManager struct {
 
 func init() {
 
-	pgxConfig := loadConfiguration(os.Getenv("BASEPATH") + "/user_microservice/database/config.json")
-	pgxConnPoolConfig := pgx.ConnPoolConfig{ConnConfig: pgxConfig, MaxConnections: maxConnections, AcquireTimeout: acquireTimeout}
+	pgxConfig := loadConfiguration()
+	pgxConnPoolConfig := pgx.ConnPoolConfig{
+		ConnConfig: pgxConfig,
+		MaxConnections: maxConnections,
+		AcquireTimeout: acquireTimeout,
+	}
 
 	dataBase, err := pgx.NewConnPool(pgxConnPoolConfig)
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Fatalf("Failed to get conn pool: %v", err.Error())
 	}
 
-	fmt.Println("DB connection opened")
+	logger.Info("DB connection opened")
 
 	db = &dbManager{
 		dataBase: dataBase,
@@ -91,7 +61,7 @@ func init() {
 }
 func closeConnection() {
 	db.dataBase.Close()
-	fmt.Println("DB connection closed")
+	logger.Info("DB connection closed")
 }
 
 func GetInstance() *dbManager {

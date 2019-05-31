@@ -1,4 +1,8 @@
-.gitignore
 .git
+.gitignore
+secret
 .idea
-README.md
+cover.out
+cover.html
+/main_microservice/static/img/
+/postgresql/data

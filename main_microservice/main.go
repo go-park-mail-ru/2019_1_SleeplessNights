@@ -4,22 +4,22 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/router"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/sirupsen/logrus"
 	"github.com/xlab/closer"
 	"net/http"
 	"sync"
 )
-
+//go:generate $GOPATH/bin/easyjson ./...
 var logger *log.Logger
 
 func init() {
 	logger = log.GetLogger("Main")
-	//logger.SetLogLevel(logrus.TraceLevel)
+	logger.SetLogLevel(logrus.Level(config.GetInt("main_ms.log_level")))
 }
 
 func main() {
 	defer closer.Close()
-	PORT := config.Get("main_ms.port").(string)
-	logger.Info("Main microservice started listening on", PORT)
+	PORT := config.GetString("main_ms.port")
 	r := router.GetRouter()
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -27,21 +27,7 @@ func main() {
 		logger.Fatal(http.ListenAndServe(":"+string(PORT), r))
 		wg.Done()
 	}(&wg)
-
-	/*user_manager, _ := database.GetInstance().GetUserByID(1)
-	cookie, _ := user_microservice.MakeSession(user_manager)
-	connUser := exec.Command(`./scripts/ws-connect.sh`, PORT, cookie.Value)
-	err := connUser.Run()
-	if err != nil {
-		logger.Error(err)
-	}
-	user_manager, _ = database.GetInstance().GetUserByID(2)
-	cookie, _ = user_microservice.MakeSession(user_manager)
-	connUser = exec.Command(`./scripts/ws-connect.sh`, PORT, cookie.Value)
-	err = connUser.Run()
-	if err != nil {
-		logger.Error(err)
-	}*/
-
+	logger.Info("Main microservice started listening on", PORT)
+	//Здесь можно вызвать скрипты
 	wg.Wait()
 }
