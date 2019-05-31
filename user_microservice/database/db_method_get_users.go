@@ -2,7 +2,7 @@ package database
 
 import "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 
-func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *services.LeaderBoardPage, err error) {
+func (db *dbManager) GetUsers(page *services.PageData) (profiles []*services.Profile, err error) {
 	tx, err := db.dataBase.Begin()
 	if err != nil {
 		logger.Errorf("Failed to begin tx: %v", err.Error())
@@ -17,8 +17,6 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 		return
 	}
 	defer rows.Close()
-
-	var profiles []*services.Profile
 
 	for rows.Next() {
 		var profile services.Profile
@@ -39,9 +37,6 @@ func (db *dbManager) GetUsers(page *services.PageData) (leaderBoardPage *service
 		profiles = append(profiles, &profile)
 	}
 
-	leaderBoardPage = &services.LeaderBoardPage{
-		Leaders: profiles,
-	}
 	err = rows.Err()
 	if err != nil {
 		logger.Errorf("Failed to scan: %v", err.Error())

@@ -5,9 +5,11 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/errors"
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 	"os"
+	"time"
 )
 
 const (
@@ -22,6 +24,8 @@ func init() {
 	logger.SetLogLevel(logrus.Level(config.GetInt("user_ms.log_level")))
 }
 
+var profiles []*services.Profile
+
 var user *userManager
 
 type userManager struct {
@@ -29,7 +33,7 @@ type userManager struct {
 }
 
 func init() {
-	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret") //TODO а тут нужно уберать basepath????
+	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {
@@ -49,10 +53,19 @@ func init() {
 	user = &userManager{
 		secret: secret,
 	}
+	doSomething()
 }
 
 func GetInstance() *userManager {
 	return user
+}
+
+func doSomething() {
+	const N = 30
+	ticker := time.NewTicker(time.Second / N)
+	for range ticker.C {
+		fmt.Println("Do anything that takes no longer than 1/Nth of a second")
+	}
 }
 
 func handlerError(pgError pgx.PgError) (err error) {

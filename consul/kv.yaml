@@ -21,6 +21,8 @@ dev:
       user_manager:
         leaderboard_update_interval: "10s"
         session_life_len: "10h"
+        board_len: 100
+        page_len: 10
       database:
         max_connections: 100
         acquire_timeout: "3s"
