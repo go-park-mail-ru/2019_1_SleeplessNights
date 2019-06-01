@@ -32,11 +32,6 @@ var (
 const (
 	StatusJoined = iota
 	StatusReady
-	StatusLeft
-	StatusSelectedPacks
-	StatusWannaContinue
-	StatusWannaChangeOpponent
-	StatusWannaQuit
 )
 
 type MessageWrapper struct {

@@ -155,12 +155,15 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 				Winner:       (*r.active).UID(),
 				Loser:        (*secondPlayer).UID(),
 				WinnerRating: winnerRating,
-				LoserRating:  winnerRating,
+				LoserRating:  loserRating,
 			}
 			_, err := userManager.UpdateStats(context.Background(), &results)
 			if err != nil {
 				logger.Error("failed to get userprofile1 from grpc:", err)
 			}
+
+			//TODO END GAME HERE
+
 		}
 	}
 	return true
@@ -208,8 +211,7 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 
 	if &r.p1 == r.active {
 		secondPlayer = &r.p2
-	}
-	if &r.p2 == r.active {
+	} else {
 		secondPlayer = &r.p1
 	}
 
@@ -219,6 +221,31 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Loss, Payload: nil}}
 		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Win, Payload: nil}}
 
+		var winnerRating uint64
+		var loserRating uint64
+		idx := r.getPlayerIdx(r.active)
+		if idx == 1 {
+			winnerRating = r.p1Rating
+			loserRating = r.p2Rating
+		} else {
+			winnerRating = r.p2Rating
+			loserRating = r.p1Rating
+		}
+
+		if secondPlayer == nil {
+			logger.Error("Attempt nill dereference of secondPlayer pointer ")
+		}
+
+		results := services.MatchResults{
+			Winner:       (*secondPlayer).UID(),
+			Loser:        (*r.active).UID(),
+			WinnerRating: winnerRating,
+			LoserRating:  loserRating,
+		}
+		_, err := userManager.UpdateStats(context.Background(), &results)
+		if err != nil {
+			logger.Error("failed to get userprofile1 from grpc:", err)
+		}
 		//TODO End Match here
 	} else {
 		//Смена хода после ответа игрока
