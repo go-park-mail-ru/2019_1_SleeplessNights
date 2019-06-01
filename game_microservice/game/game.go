@@ -45,7 +45,6 @@ func (g *gameFacade) startBalance() {
 							roomFound = true
 							break
 						}
-
 					}
 					roomsCounter++
 				}

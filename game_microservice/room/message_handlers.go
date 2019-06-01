@@ -314,45 +314,55 @@ func (r *Room) LeaveHandler(m MessageWrapper) bool {
 
 	if &r.p1 == leaverPlayer {
 		leaver_idx = "1"
-		r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player2 left the game"}}
+
 		stayerPlayer = &r.p2
+		if stayerPlayer != nil {
+			r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player2 left the game"}}
+		}
 	} else {
 		leaver_idx = "2"
-		r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player1 left the game"}}
 		stayerPlayer = &r.p1
+		if stayerPlayer != nil {
+			r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player1 left the game"}}
+		}
 	}
-	r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{Title: message.Win, Payload: nil}}
-	logger.Info("Leave Handler, Player" + leaver_idx + " ID " + fmt.Sprint((*leaverPlayer).ID()) + "Closed Connection")
-	var winnerRating uint64
-	var loserRating uint64
+	if stayerPlayer != nil {
+		r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{Title: message.Win, Payload: nil}}
 
-	idx := r.getPlayerIdx(stayerPlayer)
-	if idx == 1 {
-		winnerRating = r.p1Rating
-		loserRating = r.p2Rating
+		logger.Info("Leave Handler, Player" + leaver_idx + " ID " + fmt.Sprint((*leaverPlayer).ID()) + "Closed Connection")
+		var winnerRating uint64
+		var loserRating uint64
+
+		idx := r.getPlayerIdx(stayerPlayer)
+		if idx == 1 {
+			winnerRating = r.p1Rating
+			loserRating = r.p2Rating
+		} else {
+			winnerRating = r.p2Rating
+			loserRating = r.p1Rating
+		}
+
+		results := services.MatchResults{
+			Winner:       (*stayerPlayer).UID(),
+			Loser:        (*leaverPlayer).UID(),
+			WinnerRating: winnerRating,
+			LoserRating:  loserRating,
+		}
+		_, err := userManager.UpdateStats(context.Background(), &results)
+		if err != nil {
+			logger.Error("Failed to update Match Statistics:", err)
+		}
+		r.KillMePleaseFlag = true
+		logger.Info("No Moves Left, r.KillMePleaseFlag = true")
+		time.AfterFunc(timeToWait*time.Second, func() {
+			r.p1.Close()
+			logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
+			r.p2.Close()
+			logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
+		})
 	} else {
-		winnerRating = r.p2Rating
-		loserRating = r.p1Rating
+		logger.Info("Player left empty room, room is to be deleted")
 	}
-
-	results := services.MatchResults{
-		Winner:       (*stayerPlayer).UID(),
-		Loser:        (*leaverPlayer).UID(),
-		WinnerRating: winnerRating,
-		LoserRating:  loserRating,
-	}
-	_, err := userManager.UpdateStats(context.Background(), &results)
-	if err != nil {
-		logger.Error("Failed to update Match Statistics:", err)
-	}
-	r.KillMePleaseFlag = true
-	logger.Info("No Moves Left, r.KillMePleaseFlag = true")
-	time.AfterFunc(timeToWait*time.Second, func() {
-		r.p1.Close()
-		logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
-		r.p2.Close()
-		logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
-	})
 	return true
 }
 
