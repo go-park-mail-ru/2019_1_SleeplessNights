@@ -52,7 +52,6 @@ func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Re
 	logger.Info("newAvatar ", newAvatar)
 	avatarName := uuid.NewV4().String() + filepath.Ext(newAvatar.Filename)
 	user.AvatarPath = avatarName
-
 	_, err = userManager.UpdateProfile(context.Background(), user)
 	if err != nil {
 		logger.Errorf("Failed to update profile: %v", err.Error())

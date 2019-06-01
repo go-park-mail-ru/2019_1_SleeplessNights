@@ -15,7 +15,7 @@ container=$(docker run \
     -e "CONSUL_ADDR=${CONSUL_ADDR}" \
     --name ${name} --rm \
     --network host \
-    -v ${BASEPATH}/main_microservice/static:${static} \
+    -v ${static}:/server/main_microservice/static \
     -d ${BACKEND_IMAGE} go run /server/main_microservice/main.go);
 
 echo "Main-MS container: ${container}"
