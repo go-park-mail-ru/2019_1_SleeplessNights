@@ -20,9 +20,6 @@ go run ${BASEPATH}/consul/helpers/get_parameter.go postgres.password > password
 password=$(tail -n 1 password)
 rm password
 
-image="sleepless_nights_postgres"
-docker build ${BASEPATH}/postgresql/. -q -t ${image}
-
 name="postgresql"
 container=$(docker run \
     --name ${name} --rm \
@@ -31,8 +28,8 @@ container=$(docker run \
     -e POSTGRES_PASSWORD=${password} \
     -h ${host} \
     -p ${port}:5432 \
-    -d ${image});
-    #-v  ${BASEPATH}/postgresql/data:/var/lib/postgresql/data \
-
+    -v ${BASEPATH}/postgresql/data:/var/lib/postgresql/data \
+    -v ${BASEPATH}/postgresql/dump.sql:/docker-entrypoint-initdb.d/dump.sql \
+    -d postgres);
 
 echo "Postgres container: ${container}"
