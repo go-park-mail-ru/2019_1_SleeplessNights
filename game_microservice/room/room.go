@@ -20,7 +20,7 @@ import (
 const defaultUserMoveTimeout = 20 * time.Second
 
 var (
-	responseInterval = config.GetDuration("game_ms.pkg.room.response_interval", 500 * time.Millisecond)
+	responseInterval = config.GetDuration("game_ms.pkg.room.response_interval", 500*time.Millisecond)
 	channelCapacity  = config.GetInt("game_ms.pkg.room.channel_capacity")
 	packTotal        = config.GetInt("game_ms.pkg.room.pack_total")
 	packsPerPlayer   = config.GetInt("game_ms.pkg.room.packs_to_ban_count")
@@ -53,6 +53,8 @@ type Room struct {
 	p2                player.Player
 	p1Status          int
 	p2Status          int
+	p1Rating          uint64
+	p2Rating          uint64
 	active            *player.Player
 	mu                sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
 	field             game_field.GameField

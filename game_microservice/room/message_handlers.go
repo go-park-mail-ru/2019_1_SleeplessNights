@@ -4,6 +4,8 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
+	"golang.org/x/net/context"
 	"time"
 )
 
@@ -94,7 +96,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			logger.Error("Unexpected condition")
 		}
 	}
-        r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
 	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.SelectedCell, Payload: message.Coordinates{nextX, nextY}}}
 
 	var eventSlice []event.Event
@@ -103,6 +105,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 		eventSlice, err = r.field.TryMovePlayer1(m.msg)
 		secondPlayer = &r.p2
 	}
+
 	if &r.p2 == m.player {
 		eventSlice, err = r.field.TryMovePlayer2(m.msg)
 		secondPlayer = &r.p1
@@ -133,17 +136,37 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			logger.Info("player", (*r.active).ID(), "Has Won the prize")
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Win, Payload: nil}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Loss, Payload: nil}}
-			r.waitForSyncMsg = "Leave"
-			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
-			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
+			if secondPlayer == nil {
+				logger.Error("secondPlayer, Attempt nil dereference ")
+			}
+
+			var winnerRating uint64
+			var loserRating uint64
+			idx := r.getPlayerIdx(r.active)
+			if idx == 1 {
+				winnerRating = r.p1Rating
+				loserRating = r.p2Rating
+			} else {
+				winnerRating = r.p2Rating
+				loserRating = r.p1Rating
+			}
+
+			results := services.MatchResults{
+				Winner:       (*r.active).UID(),
+				Loser:        (*secondPlayer).UID(),
+				WinnerRating: winnerRating,
+				LoserRating:  winnerRating,
+			}
+			_, err := userManager.UpdateStats(context.Background(), &results)
+			if err != nil {
+				logger.Error("failed to get userprofile1 from grpc:", err)
+			}
 		}
 	}
-
 	return true
 }
 
 func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
-
 	logger.Infof("player UID %d answered to ClientAnswerHandler", (*m.player).UID())
 
 	if r.timerToAnswer.Stop() {
@@ -169,6 +192,13 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 		playerIdx := r.getPlayerIdx(r.active)
 		if !r.field.CheckIfMovesAvailable(playerIdx) {
 			playerHasNoMoves = true
+		} else {
+			idx := r.getPlayerIdx(r.active)
+			if idx == 1 {
+				r.p1Rating += 1
+			} else {
+				r.p2Rating += 1
+			}
 		}
 	} else {
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourAnswer, Payload: message.AnswerResult{int(answerId), q.Correct}}}
@@ -188,10 +218,8 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 	if playerHasNoMoves {
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.Loss, Payload: nil}}
 		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.Win, Payload: nil}}
-		r.waitForSyncMsg = "Leave"
-		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
-		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.WannaPlayAgain, Payload: nil}}
 
+		//TODO End Match here
 	} else {
 		//Смена хода после ответа игрока
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.OpponentTurn, Payload: nil}}
@@ -233,99 +261,6 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 }
 
 func (r *Room) LeaveHandler(m MessageWrapper) bool {
-
-	return true
-}
-
-//Оставить комнату с теми же игроками, создать для них новое игровое поле
-//Если один из них голосует выйти, то написать об этом другому
-func (r *Room) ContinueHandler(m MessageWrapper) bool {
-
-	var secondPlayer *player.Player
-
-	if &r.p1 == m.player {
-		r.p1Status = StatusWannaContinue
-		secondPlayer = &r.p2
-	}
-	if &r.p2 == m.player {
-		r.p2Status = StatusWannaContinue
-		secondPlayer = &r.p1
-	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentContinues, Payload: nil}}
-	//Если оба игрока согласны продолжить игру, то при получении последнего
-	// "WannaContinue" собираем игровое поле заново с другими вопросами
-
-	if r.p2Status == StatusWannaContinue && r.p1Status == StatusWannaContinue {
-		logger.Info("Both players wanna continue gaming, preparing new Match")
-		r.field.ResetPlayersPositions()
-		// Получить новый пак вопросов, заново заполнить ячейками игровое поле
-		// Поставить состояние  игрового цикла в начало
-		logger.Info("Building new environment")
-		r.buildEnv()
-		r.p1Status = StatusReady
-		r.p2Status = StatusReady
-		//Здесь перезупускаем игровой процесс с теми же игроками
-		r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.OpponentTurn, Payload: nil}}
-		r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.YourTurn, Payload: nil}}
-		r.active = &r.p2
-		cellsSlice := r.field.GetAvailableCells(r.getPlayerIdx(r.active))
-
-		cells := make([]Pair, 0)
-		for _, cell := range cellsSlice {
-			cells = append(cells, Pair{cell.X, cell.Y})
-		}
-		payload := struct {
-			CellsSlice []Pair
-			Time       time.Duration
-		}{
-			CellsSlice: cells,
-			Time:       timeToMove,
-		}
-		//Send Available cells to active player (Do it every time, after giving player a turn rights
-		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
-		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-		r.timerToMove = time.AfterFunc(timeToMove, r.GoToTimerFunc)
-
-		//Start Timer Here
-		r.waitForSyncMsg = message.GoTo
-
-	}
-	return true
-}
-
-//Выбросить "игрока" из комнаты, поместить в другую (пока не надо трогать)
-func (r *Room) ChangeOpponentHandler(m MessageWrapper) bool {
-
-	var secondPlayer *player.Player
-	//var thisPlayer *player.Player
-
-	if &r.p1 == m.player {
-		//thisPlayer = &r.p1
-		secondPlayer = &r.p2
-	}
-	if &r.p2 == m.player {
-		//thisPlayer = &r.p2
-		secondPlayer = &r.p1
-	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
-
-	return true
-
-}
-
-//Выбросить "пользователя" в главное меню,  connection "игрока" уничтожить
-func (r *Room) QuitHandler(m MessageWrapper) bool {
-
-	var secondPlayer *player.Player
-	//var thisPlayer *player.Player
-
-	if &r.p1 == m.player {
-		secondPlayer = &r.p2
-	}
-	if &r.p2 == m.player {
-		secondPlayer = &r.p1
-	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentLeaves, Payload: nil}}
 
 	return true
 }

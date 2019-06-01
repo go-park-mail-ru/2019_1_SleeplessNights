@@ -50,16 +50,25 @@ message UserId {
     uint64 id = 1;
 }
 
-service UserMS {
-    rpc CheckToken         (SessionToken)  returns (User)            {}
-    rpc MakeToken          (UserSignature) returns (SessionToken)    {}
-    rpc CreateUser         (NewUserData)   returns (User)            {}
-    rpc GetProfile         (User)          returns (Profile)         {}
-    rpc UpdateProfile      (User)          returns (User)            {}
-    rpc GetLeaderBoardPage (PageData)      returns (LeaderBoardPage) {}
-    rpc ClearDB            (Nothing)       returns (Nothing)         {}
-    rpc GetUserById        (UserId)        returns (User)            {}
+message MatchResults {
+    uint64 winner = 1;
+    uint64 loser = 2;
+    uint64 winnerRating = 3;
+    uint64 loserRating = 4;
 }
+
+service UserMS {
+    rpc CheckToken              (SessionToken)  returns (User)            {}
+    rpc MakeToken               (UserSignature) returns (SessionToken)    {}
+    rpc CreateUser              (NewUserData)   returns (User)            {}
+    rpc GetProfile              (User)          returns (Profile)         {}
+    rpc UpdateProfile           (User)          returns (User)            {}
+    rpc GetLeaderBoardPage      (PageData)      returns (LeaderBoardPage) {}
+    rpc ClearDB                 (Nothing)       returns (Nothing)         {}
+    rpc GetUserById             (UserId)        returns (User)            {}
+    rpc UpdateStats             (MatchResults)  returns (Nothing)         {}
+}
+
 
 message RoomSettings {
     uint64 maxConnections   = 1;
