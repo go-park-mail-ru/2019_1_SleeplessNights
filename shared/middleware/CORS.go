@@ -8,15 +8,28 @@ import (
 
 func MiddlewareCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin",
-			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.domains"), ","))
-		w.Header().Set("Access-Control-Allow-Credentials",
-			config.GetString("shared.pkg.middleware.CORS.credentials"))
-		w.Header().Set("Access-Control-Allow-Methods",
-			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.methods"), ","))
-		w.Header().Set("Access-Control-Allow-Headers",
-			strings.Join(config.GetStringSlice("shared.pkg.middleware.CORS.headers"), ","))
-		next.ServeHTTP(w, r)
+		resMap := config.GetMapStringToInterface("shared.pkg.middleware.CORS.domains")
+		var resSlice []string
+		for _, value := range resMap {
+			resSlice = append(resSlice, value.(string))
+		}
+		w.Header().Set("Access-Control-Allow-Origin", strings.Join(resSlice, ","))
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
+		resMap = config.GetMapStringToInterface("shared.pkg.middleware.CORS.methods")
+		resSlice = []string{}
+		for _, value := range resMap {
+			resSlice = append(resSlice, value.(string))
+		}
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join(resSlice, ","))
+
+		resMap = config.GetMapStringToInterface("shared.pkg.middleware.CORS.headers")
+		resSlice = []string{}
+		for _, value := range resMap {
+			resSlice = append(resSlice, value.(string))
+		}
+		w.Header().Set("Access-Control-Allow-Headers", strings.Join(resSlice, ","))
+
+		next.ServeHTTP(w, r)
 	})
 }

@@ -86,7 +86,7 @@ dev:
             - "PATCH"
             - "DELETE"
             - "OPTIONS"
-          cresentials: true
+          credentials: "true"
           headers:
             - "X-Requested-With"
             - "Content-type"
