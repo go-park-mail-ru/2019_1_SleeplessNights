@@ -58,6 +58,7 @@ type Room struct {
 	timerToMove       *time.Timer
 	timerToChoosePack *time.Timer
 	syncChan          chan bool
+	KillMePleaseFlag  bool
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно
@@ -114,4 +115,22 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 	//4. Здесь мы проверяем валидность токена, и возвращаем в сообщении игроку матрицу правильных ответов
 	//5. ВАЖНО! Конретно это сообщение надо отправлять напрямую конкретному игроку, а не через notify
 	//TODO develop
+}
+
+func (r *Room) IsClosed(ch <-chan MessageWrapper) bool {
+	select {
+	case <-ch:
+		return true
+	default:
+	}
+	return false
+}
+
+func (r *Room) CloseResponseRequestChannels() {
+	if !r.IsClosed(r.responsesQueue) {
+		close(r.responsesQueue)
+	}
+	if !r.IsClosed(r.requestsQueue) {
+		close(r.requestsQueue)
+	}
 }

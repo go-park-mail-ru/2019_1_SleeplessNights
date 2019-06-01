@@ -1,6 +1,7 @@
 package room
 
 import (
+	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
@@ -13,6 +14,10 @@ type Pair struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 }
+
+const (
+	timeToWait = 5
+)
 
 func (r *Room) ReadyHandler(m MessageWrapper) bool {
 
@@ -159,11 +164,16 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			}
 			_, err := userManager.UpdateStats(context.Background(), &results)
 			if err != nil {
-				logger.Error("failed to get userprofile1 from grpc:", err)
+				logger.Error("Failed to update Match Statistics:", err)
 			}
+			r.KillMePleaseFlag = true
 
-			//TODO END GAME HERE
-
+			logger.Info("No Moves Left, r.KillMePleaseFlag = true")
+			time.AfterFunc(timeToWait*time.Second, func() {
+				r.p1.Close()
+				r.p2.Close()
+				logger.Info("WinPrize, r.p Close() called")
+			})
 		}
 	}
 	return true
@@ -234,6 +244,7 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 
 		if secondPlayer == nil {
 			logger.Error("Attempt nill dereference of secondPlayer pointer ")
+			return true
 		}
 
 		results := services.MatchResults{
@@ -244,9 +255,17 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 		}
 		_, err := userManager.UpdateStats(context.Background(), &results)
 		if err != nil {
-			logger.Error("failed to get userprofile1 from grpc:", err)
+			logger.Error("Failed to update Match Statistics:", err)
 		}
-		//TODO End Match here
+		r.KillMePleaseFlag = true
+		logger.Info("No Moves Left, r.KillMePleaseFlag = true")
+
+		time.AfterFunc(timeToWait*time.Second, func() {
+			r.p1.Close()
+			r.p2.Close()
+			logger.Info("No Moves Left, r.p Close() called")
+		})
+
 	} else {
 		//Смена хода после ответа игрока
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.OpponentTurn, Payload: nil}}
@@ -263,7 +282,6 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 			secondPlayer = &r.p1
 		}
 		if len(cellsSlice) != 0 {
-
 			cells := make([]Pair, 0)
 			for _, cell := range cellsSlice {
 				cells = append(cells, Pair{cell.X, cell.Y})
@@ -289,6 +307,52 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 
 func (r *Room) LeaveHandler(m MessageWrapper) bool {
 
+	var leaverPlayer *player.Player
+	leaverPlayer = m.player
+	var stayerPlayer *player.Player
+	leaver_idx := ""
+
+	if &r.p1 == leaverPlayer {
+		leaver_idx = "1"
+		r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player2 left the game"}}
+		stayerPlayer = &r.p2
+	} else {
+		leaver_idx = "2"
+		r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player1 left the game"}}
+		stayerPlayer = &r.p1
+	}
+	r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{Title: message.Win, Payload: nil}}
+	logger.Info("Leave Handler, Player" + leaver_idx + " ID " + fmt.Sprint((*leaverPlayer).ID()) + "Closed Connection")
+	var winnerRating uint64
+	var loserRating uint64
+
+	idx := r.getPlayerIdx(stayerPlayer)
+	if idx == 1 {
+		winnerRating = r.p1Rating
+		loserRating = r.p2Rating
+	} else {
+		winnerRating = r.p2Rating
+		loserRating = r.p1Rating
+	}
+
+	results := services.MatchResults{
+		Winner:       (*stayerPlayer).UID(),
+		Loser:        (*leaverPlayer).UID(),
+		WinnerRating: winnerRating,
+		LoserRating:  loserRating,
+	}
+	_, err := userManager.UpdateStats(context.Background(), &results)
+	if err != nil {
+		logger.Error("Failed to update Match Statistics:", err)
+	}
+	r.KillMePleaseFlag = true
+	logger.Info("No Moves Left, r.KillMePleaseFlag = true")
+	time.AfterFunc(timeToWait*time.Second, func() {
+		r.p1.Close()
+		logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
+		r.p2.Close()
+		logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
+	})
 	return true
 }
 
