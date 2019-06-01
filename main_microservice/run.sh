@@ -4,7 +4,7 @@ static="${BASEPATH}/main_microservice/static"
 while [[ -n "$1" ]]
 do
 case "$1" in
---prod) static="/home/ubuntu/Deploy/Frontend/public/assets";;
+--prod) static="/usr/share/nginx/html/assets";;
 *) return 1;;
 esac
 shift
