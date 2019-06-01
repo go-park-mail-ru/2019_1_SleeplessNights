@@ -39,7 +39,8 @@ type userManager struct {
 }
 
 func init() {
-	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
+	//secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
+	secretFile, err := os.Open( "/Users/mac/Desktop/back-end/2019_1_SleeplessNights/secret")
 
 	defer func() {
 		err := secretFile.Close()
