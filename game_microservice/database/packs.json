@@ -11,10 +11,10 @@
     "name": "Логика",
     "iconPath": "logic.svg"
   },
-//  {
-//    "name": "Спорт",
-//    "iconPath": "sport.svg"
-//  },
+  {
+    "name": "Программирование на С/С++",
+    "iconPath": "programming.svg"
+  },
   {
     "name": "Английский язык",
     "iconPath": "english.svg"
