@@ -20,13 +20,13 @@ import (
 const defaultUserMoveTimeout = 20 * time.Second
 
 var (
-	responseInterval = config.GetDuration("game_ms.pkg.room.response_interval", 500 * time.Millisecond)
+	responseInterval = config.GetInt("game_ms.pkg.room.response_interval")
 	channelCapacity  = config.GetInt("game_ms.pkg.room.channel_capacity")
 	packTotal        = config.GetInt("game_ms.pkg.room.pack_total")
 	packsPerPlayer   = config.GetInt("game_ms.pkg.room.packs_to_ban_count")
-	timeToAnswer     = config.GetDuration("game_ms.pkg.room.time_to_answer", defaultUserMoveTimeout)
-	timeToMove       = config.GetDuration("game_ms.pkg.room.time_to_move", defaultUserMoveTimeout)
-	timeToChoosePack = config.GetDuration("game_ms.pkg.room.time_to_choose_pack", defaultUserMoveTimeout)
+	timeToAnswer     = config.GetInt("game_ms.pkg.room.time_to_answer")
+	timeToMove       = config.GetInt("game_ms.pkg.room.time_to_move")
+	timeToChoosePack = config.GetInt("game_ms.pkg.room.time_to_choose_pack")
 )
 
 const (

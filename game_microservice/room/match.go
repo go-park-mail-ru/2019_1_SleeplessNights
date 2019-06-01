@@ -121,7 +121,7 @@ func (r *Room) prepareMatch() {
 	}
 	payload := struct {
 		CellsSlice []Pair
-		Time       time.Duration
+		Time      int
 	}{
 		CellsSlice: cells,
 		Time:       timeToMove,
@@ -129,7 +129,7 @@ func (r *Room) prepareMatch() {
 	//Send Available cells to active player (Do it every time, after giving player a turn rights
 	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-	r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
+	r.timerToMove = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.GoToTimerFunc)
 }
 
 //Точка входа в игровой процесс
@@ -166,7 +166,7 @@ func (r *Room) startGameProcess() {
 	logger.Info("Packs", packs)
 	payload := struct {
 		Packs []database.Pack
-		Time  time.Duration
+		Time  int
 	}{
 		Packs: packs,
 		Time:  timeToChoosePack,
@@ -177,7 +177,7 @@ func (r *Room) startGameProcess() {
 	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
 	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
 	r.waitForSyncMsg = message.NotDesiredPack
-	r.timerToChoosePack = time.AfterFunc(timeToChoosePack, r.ChoosePackTimerFunc)
+	r.timerToChoosePack = time.AfterFunc(time.Duration(timeToChoosePack)*time.Second, r.ChoosePackTimerFunc)
 	logger.Infof("StartMatch : Game process has started p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 }
 

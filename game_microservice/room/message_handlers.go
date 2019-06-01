@@ -79,7 +79,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			}
 			payload := struct {
 				CellsSlice []Pair
-				Time       time.Duration
+				Time       int
 			}{
 				CellsSlice: cells,
 				Time:       timeToMove,
@@ -87,7 +87,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			//Send Available cells to active player (Do it every time, after giving player a turn rights
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-			r.timerToMove = time.AfterFunc(timeToAnswer, r.GoToTimerFunc)
+			r.timerToMove = time.AfterFunc(time.Duration(timeToAnswer)*time.Second, r.GoToTimerFunc)
 			r.waitForSyncMsg = message.GoTo
 			return true
 		} else {
@@ -126,7 +126,7 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.YourQuestion, Payload: q}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.OpponentQuestion, Payload: q}}
 			r.waitForSyncMsg = "ANSWER"
-			r.timerToAnswer = time.AfterFunc(timeToAnswer, r.AnswerTimerFunc)
+			r.timerToAnswer = time.AfterFunc(time.Duration(timeToAnswer)*time.Second, r.AnswerTimerFunc)
 		}
 		if e.Etype == event.WinPrize {
 			//Write to DB results of the
@@ -215,7 +215,7 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 			}
 			payload := struct {
 				CellsSlice []Pair
-				Time       time.Duration
+				Time       int
 			}{
 				CellsSlice: cells,
 				Time:       timeToMove,
@@ -223,7 +223,7 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 			//Send Available cells to active player (Do it every time, after giving player a turn rights
 			r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
 			r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-			r.timerToMove = time.AfterFunc(timeToMove, r.GoToTimerFunc)
+			r.timerToMove = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.GoToTimerFunc)
 
 		} else {
 			logger.Error("Unexpected condition")
@@ -276,7 +276,7 @@ func (r *Room) ContinueHandler(m MessageWrapper) bool {
 		}
 		payload := struct {
 			CellsSlice []Pair
-			Time       time.Duration
+			Time       int
 		}{
 			CellsSlice: cells,
 			Time:       timeToMove,
@@ -284,7 +284,7 @@ func (r *Room) ContinueHandler(m MessageWrapper) bool {
 		//Send Available cells to active player (Do it every time, after giving player a turn rights
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
 		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-		r.timerToMove = time.AfterFunc(timeToMove, r.GoToTimerFunc)
+		r.timerToMove = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.GoToTimerFunc)
 
 		//Start Timer Here
 		r.waitForSyncMsg = message.GoTo
@@ -381,7 +381,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 
 		r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
 		r.changeTurn()
-		r.timerToChoosePack = time.AfterFunc(timeToMove, r.ChoosePackTimerFunc)
+		r.timerToChoosePack = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.ChoosePackTimerFunc)
 		r.waitForSyncMsg = message.NotDesiredPack
 		return true
 	}
@@ -408,7 +408,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.YourTurn, Payload: nil}}
 	r.responsesQueue <- MessageWrapper{thisPlayer, message.Message{Title: message.OpponentTurn, Payload: nil}}
 	r.changeTurn()
-	r.timerToChoosePack = time.AfterFunc(timeToMove, r.ChoosePackTimerFunc)
+	r.timerToChoosePack = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.ChoosePackTimerFunc)
 	r.waitForSyncMsg = message.NotDesiredPack
 	return true
 }

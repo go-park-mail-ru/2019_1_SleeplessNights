@@ -57,6 +57,6 @@ func (r *Room) StartResponsesSender() {
 				logger.Error("responseQueue: error trying to send response to player", err)
 			}
 		}
-		time.Sleep(responseInterval)
+		time.Sleep(time.Duration(responseInterval)*time.Second)
 	}()
 }

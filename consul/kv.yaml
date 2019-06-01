@@ -45,13 +45,13 @@ dev:
         channel_capacity: 50 #Размер очередей входящих и исходящих сообщений комнаты
         pack_total: 10
         packs_to_ban_count: 2
-        time_to_answer: "20s"
-        time_to_move: "20s"
-        time_to_choose_pack: "20s"
+        time_to_answer: 20
+        time_to_move: 20
+        time_to_choose_pack: 20
       game_field:
         size: 8
         questions_num: 60
-        turn_duration: "20s"
+        turn_duration: 20
         prize_pos:
           - x: 3
             "y": 3
