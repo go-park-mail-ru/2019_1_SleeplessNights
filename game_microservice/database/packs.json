@@ -23,20 +23,20 @@
     "name": "Информатика",
     "iconPath": "informatics.svg"
   },
-//  {
-//    "name": "Живопись",
-//    "iconPath": "art.svg"
-//  },
-//  {
-//    "name": "Экология",
-//    "iconPath": "ecology.svg"
-//  },
-//  {
-//    "name": "Литература",
-//    "iconPath": "literature.svg"
-//  },
-//  {
-//    "name": "Биология",
-//    "iconPath": "biology.svg"
-//  }
+  {
+    "name": "Живопись",
+    "iconPath": "art.svg"
+  },
+  {
+    "name": "Экология",
+    "iconPath": "ecology.svg"
+  },
+  {
+    "name": "Литература",
+    "iconPath": "literature.svg"
+  },
+  {
+    "name": "Биология",
+    "iconPath": "biology.svg"
+  }
 ]
