@@ -70,6 +70,11 @@ func (gf *GameField) ResetPlayersPositions() {
 	gf.p2.pos = nil
 }
 
+func (gf *GameField) SetPlayerFirstPosition(){
+	gf.p1.pos = &Pair{1,1}
+	return
+}
+
 func (gf *GameField) GetCurrentState() string {
 	fieldState := fmt.Sprintln("\n x0 x1 x2 x3 x4 x5 x6 x7\n __ __ __ __ __ __ __ __")
 	for i := 0; i < fieldSize; i++ {

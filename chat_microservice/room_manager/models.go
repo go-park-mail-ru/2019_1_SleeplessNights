@@ -1,5 +1,5 @@
 package room_manager
-
+//go:generate $GOPATH/bin/easyjson models.go
 import (
 	"github.com/gorilla/websocket"
 	"sync"
@@ -21,7 +21,7 @@ type payload struct {
 	Text  string `json:"text,omitempty"`
 	Since uint64 `json:"since,omitempty"`
 }
-
+//easyjson:json
 type responseMessage struct {
 	Nickname   string `json:"nickname"`
 	AvatarPath string `json:"avatarPath"`

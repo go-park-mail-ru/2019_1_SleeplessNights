@@ -1,6 +1,6 @@
 package database
 
-import "encoding/json"
+import json "github.com/mailru/easyjson"
 
 func (db *dbManager) GetQuestions(packIDs []uint64) (questions []Question, err error) {
 

@@ -1,18 +1,28 @@
 package user_manager
 
 import (
+	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/user_microservice/database"
-	"github.com/jackc/pgx"
 	"golang.org/x/net/context"
+	"math"
 )
 
+var PageLen = uint64(config.GetInt("user_ms.pkg.user_manager.page_len"))
+
 func (us *userManager) GetLeaderBoardPage(ctx context.Context, in *services.PageData) (*services.LeaderBoardPage, error) {
-	page, err := database.GetInstance().GetUsers(in)
-	if _err, ok := err.(pgx.PgError); ok {
-		logger.Errorf("Failed to get users: %v", err.Error())
-		err = handlerError(_err)
-		return nil, err
+	var page services.LeaderBoardPage
+	for i, p := range profiles {
+		if uint64(i) < in.Since*PageLen-PageLen {
+			continue
+		}
+		if uint64(i) == in.Since*PageLen {
+			break
+		}
+		page.Leaders = append(page.Leaders, p)
 	}
-	return page, nil
+	l := uint64(len(profiles))
+	if l < LeaderBoardLen {
+		page.PagesCount = uint64(math.Ceil(float64(l) / float64(PageLen)))
+	}
+	return &page, nil
 }

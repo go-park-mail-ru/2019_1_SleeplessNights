@@ -197,8 +197,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 -- func get_users
-CREATE OR REPLACE FUNCTION public.func_get_users(arg_since BIGINT,
-                                                 arg_limit BIGINT)
+CREATE OR REPLACE FUNCTION public.func_get_users(arg_limit BIGINT)
   RETURNS SETOF public.type_user
 AS
 $BODY$
@@ -208,9 +207,8 @@ DECLARE
 BEGIN
   FOR rec IN SELECT *
              FROM users
-             WHERE id > arg_since
-             ORDER BY rating
-             LIMIT arg_limit OFFSET arg_since
+             ORDER BY rating DESC
+             LIMIT arg_limit
     LOOP
       result.id := rec.id;
       result.email := rec.email;
@@ -455,7 +453,7 @@ $BODY$
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- GAME ----------------------------------------------------------------------------------------------------------------
 -- TABLES --------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -487,7 +485,7 @@ ALTER TABLE ONLY public.question
   ADD CONSTRAINT "question_pack_id_fk" FOREIGN KEY (pack_id) REFERENCES public.question_pack (id);
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- GAME ----------------------------------------------------------------------------------------------------------------
 -- TYPES ---------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -510,7 +508,7 @@ CREATE TYPE public.type_question AS
   );
 
 
-------------------------------------------------------------------------------------------------------------------------
+-- GAME ----------------------------------------------------------------------------------------------------------------
 -- FUNCTIONS -----------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -550,7 +548,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 -- func clean_db
-CREATE OR REPLACE FUNCTION public.func_clean_db()
+CREATE OR REPLACE FUNCTION public.func_clean_game_db()
   RETURNS VOID
 AS
 $BODY$

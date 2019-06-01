@@ -11,6 +11,7 @@ import (
 	"net"
 )
 
+//go:generate $GOPATH/bin/easyjson ./...
 var logger *log.Logger
 
 func init() {
@@ -22,21 +23,23 @@ func main() {
 	logger.SetLogLevel(logrus.DebugLevel)
 	defer closer.Close()
 
+	go user_manager.UpdateLeaderBoard()
+
 	lis, err := net.Listen("tcp", config.GetString("user_ms.address"))
 	if err != nil {
-		logger.Fatal("Auth microservice can't listen port", err)
+		logger.Fatal("User microservice can't listen port", err)
 	}
 
 	server := grpc.NewServer()
 
 	services.RegisterUserMSServer(server, user_manager.GetInstance())
-
-	logger.Info("Auth microservice started listening at :8081")
+	logger.Info("User microservice started listening at :8081")
 	err = server.Serve(lis)
 	if err != nil {
-		logger.Error("Auth microservice dropped with error")
+		logger.Error("User microservice dropped with error")
 		logger.Info("Restarting user_manager microservice...")
 		logger.Info("Auth microservice started listening at :8081")
 		err = server.Serve(lis)
 	}
+
 }

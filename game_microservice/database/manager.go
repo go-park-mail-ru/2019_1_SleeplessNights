@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
@@ -52,7 +51,7 @@ func init() {
 		logger.Fatal(err.Error())
 	}
 
-	fmt.Println("DB connection opened")
+	logger.Info("DB connection opened")
 
 	db = &dbManager{
 		dataBase: dataBase,
@@ -63,7 +62,7 @@ func init() {
 
 func closeConnection() {
 	db.dataBase.Close()
-	fmt.Println("DB connection closed")
+	logger.Info("DB connection opened")
 }
 
 func GetInstance() *dbManager {

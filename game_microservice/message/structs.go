@@ -1,5 +1,6 @@
 package message
-
+//go:generate $GOPATH/bin/easyjson structs.go
+//easyjson:json
 type Message struct {
 	//Формат пакета, средствами которых реализуется общение между клиентом и сервером
 	//Самый простой вариант - JSON, и у нас нет причин от него отказываться

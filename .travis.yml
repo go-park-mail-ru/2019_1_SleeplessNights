@@ -11,7 +11,6 @@ script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build . -t uimin1maksim/sleepless_nights_backend
   - docker push uimin1maksim/sleepless_nights_backend
-  - ssh -i ./2019_1_SleeplessNights_id_rsa.pem -
 branches:
   only:
   - Deploy
