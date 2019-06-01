@@ -23,10 +23,10 @@
     "name": "Информатика",
     "iconPath": "informatics.svg"
   },
-//  {
-//    "name": "Живопись",
-//    "iconPath": "art.svg"
-//  },
+  {
+   "name": "История ЭВМ",
+    "iconPath": "history_evm.svg"
+   },
 //  {
 //    "name": "Экология",
 //    "iconPath": "ecology.svg"
