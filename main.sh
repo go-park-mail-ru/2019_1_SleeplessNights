@@ -59,7 +59,7 @@ then
     #Запускаем User-MS
     ${BASEPATH}/user_microservice/run.sh
     #Запускаем Main-MS
-    if prod
+    if ${prod}
     then
         ${BASEPATH}/main_microservice/run.sh --prod
     else
