@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func init() {
 	logger.SetLogLevel(logrus.Level(config.GetInt("user_ms.log_level")))
 }
 
-const defaultLeaderBoardUpdateInterval = 4 * time.Second
+const defaultLeaderBoardUpdateInterval = 1 * time.Second
 
 var LeaderBoardLen = uint64(config.GetInt("user_ms.pkg.user_manager.board_len"))
 
@@ -38,7 +39,8 @@ type userManager struct {
 }
 
 func init() {
-	secretFile, err := os.Open(os.Getenv("BASEPATH") + "/secret")
+	secretFile, err := os.Open("/Users/mac/Desktop/back-end/2019_1_SleeplessNights/secret")
+	fmt.Print(os.Getenv("BASEPATH") + "////")
 	defer func() {
 		err := secretFile.Close()
 		if err != nil {
@@ -70,14 +72,24 @@ func UpdateLeaderBoard()  {
 	if err != nil {
 		leaderBoardUpdateInterval = defaultLeaderBoardUpdateInterval
 	}
-	ticker := time.NewTicker(leaderBoardUpdateInterval)
-	for range ticker.C {
-		profiles, err = database.GetInstance().GetUsers(LeaderBoardLen)
-		if err != nil {
-			logger.Errorf("Failed to get users: %v", err.Error())
-			return
-		}
-		logger.Info("Updated successful profiles")
+
+	for {
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+		time.AfterFunc(leaderBoardUpdateInterval, func() {
+			profiles, err = database.GetInstance().GetUsers(LeaderBoardLen)
+			if err != nil {
+				logger.Errorf("Failed to get users: %v", err.Error())
+				return
+			}
+			logger.Info("Updated successful profiles")
+			leaderBoardUpdateInterval, err = time.ParseDuration(config.GetString("user_ms.pkg.user_manager.leaderboard_update_interval"))
+			if err != nil {
+				leaderBoardUpdateInterval = defaultLeaderBoardUpdateInterval
+			}
+			wg.Done()
+		})
+		wg.Wait()
 	}
 }
 
