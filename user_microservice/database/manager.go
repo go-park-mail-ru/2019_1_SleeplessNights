@@ -23,16 +23,11 @@ func init() {
 }
 
 func loadConfiguration() (pgxConfig pgx.ConnConfig) {
-	//pgxConfig.Port = uint16(config.GetInt("postgres.port"))
-	//pgxConfig.Host = config.GetString("postgres.host")
-	//pgxConfig.Database = config.GetString("postgres.db_name")
-	//pgxConfig.User = config.GetString("postgres.user")
-	//pgxConfig.Password = config.GetString("postgres.password")
-	pgxConfig.Port = 5432
-	pgxConfig.Host = "localhost"
-	pgxConfig.Database = "game"
-	pgxConfig.User = "postgres"
-	pgxConfig.Password = "1209qawsed"
+	pgxConfig.Port = uint16(config.GetInt("postgres.port"))
+	pgxConfig.Host = config.GetString("postgres.host")
+	pgxConfig.Database = config.GetString("postgres.db_name")
+	pgxConfig.User = config.GetString("postgres.user")
+	pgxConfig.Password = config.GetString("postgres.password")
 	return
 }
 
