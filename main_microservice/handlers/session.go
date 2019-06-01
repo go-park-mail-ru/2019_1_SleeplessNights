@@ -35,7 +35,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
 			return
 		} else if matchedNDF {
-			helpers.Return400(&w, helpers.ErrorSet{helpers.WrongPassword})
+			helpers.Return400(&w, helpers.ErrorSet{helpers.MissedUserErrorMsg})
 			return
 		} else {
 			helpers.Return500(&w, err)
