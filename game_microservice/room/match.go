@@ -23,9 +23,11 @@ func init() {
 }
 
 var userManager services.UserMSClient
+
 const (
 	StartGameDelay = 1300
 )
+
 func init() {
 	var err error
 	grpcConn, err := grpc.Dial(
@@ -58,7 +60,7 @@ func (r *Room) buildEnv() {
 	questions, err := database.GetInstance().GetQuestions(packIDs)
 	if err != nil || len(questions) < game_field.QuestionsNum {
 		logger.Error("Error occurred while fetching question from DB:", err)
-		//TODO deal with error, maybe kill the room_manager
+		//TODO deal with error, maybe kill the room
 	}
 
 	r.field.Build(questions)
@@ -69,12 +71,12 @@ func (r *Room) buildEnv() {
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
 
 func (r *Room) prepareMatch() {
-	
+
 	//Где-то здесь добавить выбор паков игроками
 
 	logger.Info("Entered Prepare Match Room")
 	logger.Info("Delay")
-	time.Sleep(StartGameDelay*time.Millisecond)
+	time.Sleep(StartGameDelay * time.Millisecond)
 	//BuildEnv достает только выбранные паки и строит игровое поле по ним
 	r.buildEnv()
 
@@ -121,7 +123,7 @@ func (r *Room) prepareMatch() {
 	}
 	payload := struct {
 		CellsSlice []Pair
-		Time      int
+		Time       int
 	}{
 		CellsSlice: cells,
 		Time:       timeToMove,

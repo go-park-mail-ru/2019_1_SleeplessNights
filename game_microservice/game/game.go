@@ -28,17 +28,23 @@ func (g *gameFacade) startBalance() {
 				logger.Warning("Failed to notify player with UID", p.UID())
 			}
 
-			logger.Info("goroutine Started:", "player UID", p.UID(), " looking for space room_manager")
+			logger.Info("goroutine Started:", "player UID", p.UID(), " looking for space room")
 			roomFound := false
 			for !roomFound {
 				roomsCounter := 0
 				roomFound = false
-				//Search for room_manager a player can join
-				for _, v := range g.rooms {
-					if v.TryJoin(p) {
-						logger.Info("Found Existing room_manager, player UID ", p.UID(), " added")
-						roomFound = true
-						break
+				//Search for a player can join
+				for k, r := range g.rooms {
+					if r.KillMePleaseFlag == true {
+						r.CloseResponseRequestChannels()
+						delete(g.rooms, k)
+						logger.Info("Game, Room" + fmt.Sprint(k) + "was deleted from map")
+					} else {
+						if r.TryJoin(p) {
+							logger.Info("Found Existing , player UID ", p.UID(), " added")
+							roomFound = true
+							break
+						}
 					}
 					roomsCounter++
 				}
@@ -53,7 +59,7 @@ func (g *gameFacade) startBalance() {
 				g.mu.Unlock()
 				if roomFound {
 					logger.Info("Successfully found Room with id", roomId)
-					logger.Info("Player with UID", p.UID(), "added to room_manager", roomId)
+					logger.Info("Player with UID", p.UID(), "added to room", roomId)
 				} else {
 					logger.Error("Failed to join just created Room with id", roomId)
 				}
