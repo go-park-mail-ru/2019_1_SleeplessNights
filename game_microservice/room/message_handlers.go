@@ -327,6 +327,7 @@ func (r *Room) CurrentStateHandler(m MessageWrapper) {
 }
 
 func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
+	r.mu.Lock()
 	logger.Info("entered PackSelectorHandler")
 	if r.timerToChoosePack.Stop() {
 		logger.Info("PackSelectorHandler, Timer is disabled manually")
@@ -364,6 +365,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 		r.changeTurn()
 		r.timerToChoosePack = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.ChoosePackTimerFunc)
 		r.waitForSyncMsg = message.NotDesiredPack
+		r.mu.Unlock()
 		return true
 	}
 	logger.Info("player chosen pack_ID", packId)
@@ -383,6 +385,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	if len(*packs) == packTotal-2*packsPerPlayer {
 		r.active = &r.p1
 		go r.prepareMatch()
+		r.mu.Unlock()
 		return true
 	}
 
@@ -391,5 +394,6 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	r.changeTurn()
 	r.timerToChoosePack = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.ChoosePackTimerFunc)
 	r.waitForSyncMsg = message.NotDesiredPack
+	r.mu.Unlock()
 	return true
 }
