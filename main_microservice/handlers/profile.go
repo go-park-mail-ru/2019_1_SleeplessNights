@@ -13,7 +13,13 @@ import (
 )
 
 func ProfileHandler(user *services.User, w http.ResponseWriter, r *http.Request) {
-	data, err := json.Marshal(user)
+	profile, err := userManager.GetProfile(context.Background(), user)
+	if err != nil {
+		logger.Error("Unable to get profile by user:", err)
+		helpers.Return500(&w, err)
+	}
+
+	data, err := json.Marshal(profile)
 	if err != nil {
 		logger.Errorf("Failed to marshal user: %v", err.Error())
 		helpers.Return500(&w, err)
