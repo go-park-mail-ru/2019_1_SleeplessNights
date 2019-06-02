@@ -19,7 +19,6 @@ func init() {
 var userManager services.UserMSClient
 
 func init() {
-	logger.SetLogLevel(logrus.DebugLevel)
 	grpcConn, err := grpc.Dial(
 		config.GetString("user_ms.address"),
 		grpc.WithInsecure(),
