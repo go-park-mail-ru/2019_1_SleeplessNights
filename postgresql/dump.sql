@@ -13,7 +13,7 @@ CREATE TABLE public.users
   salt        BYTEA                      NOT NULL,
   nickname    TEXT                       NOT NULL,
   avatar_path TEXT                       NOT NULL,
-  win_rate    DOUBLE PRECISION DEFAULT 0 NOT NULL,
+  win_rate    DECIMAL(10, 2)   DEFAULT 0 NOT NULL,
   matches     DOUBLE PRECISION DEFAULT 0 NOT NULL,
   wins        DOUBLE PRECISION DEFAULT 0 NOT NULL,
   rating      INT              DEFAULT 0 NOT NULL
@@ -39,7 +39,6 @@ CREATE OR REPLACE FUNCTION public.update_rating()
 $BODY$
 BEGIN
   NEW.win_rate := NEW.wins / NEW.matches;
-  --   NEW.rating := OLD.rating + NEW.rating;
   RETURN NEW;
 END;
 $BODY$
@@ -248,6 +247,32 @@ BEGIN
     RAISE no_data_found;
   END IF;
   RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+-- func update_user
+CREATE OR REPLACE FUNCTION public.func_update_stats(arg_winner_id BIGINT,
+                                                    arg_loser_id BIGINT,
+                                                    arg_winner_rating BIGINT)
+  RETURNS VOID
+AS
+$BODY$
+BEGIN
+  UPDATE public.users
+  SET matches = matches + 1,
+      wins    = wins + 1,
+      rating  = rating + arg_winner_rating
+  WHERE id = arg_winner_id;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  UPDATE public.users
+  SET matches = matches + 1
+  WHERE id = arg_loser_id;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
 END;
 $BODY$
   LANGUAGE plpgsql;
