@@ -23,19 +23,6 @@ func (r *Room) MessageHandlerMux(m MessageWrapper) {
 		{
 			r.LeaveHandler(m)
 		}
-
-	case message.Continue:
-		{
-			r.ContinueHandler(m)
-		}
-	case message.ChangeOpponent:
-		{
-			r.ChangeOpponentHandler(m)
-		}
-	case message.Quit:
-		{
-			r.QuitHandler(m)
-		}
 	case message.State:
 		{
 			r.CurrentStateHandler(m)

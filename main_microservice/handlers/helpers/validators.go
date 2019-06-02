@@ -16,10 +16,6 @@ func ValidateUpdateProfileRequest(r *http.Request) (requestErrors ErrorSet) {
 	newNickname := r.Form.Get("nickname")
 	validateNickname(newNickname, &requestErrors)
 
-	newEmail := strings.ToLower(r.Form.Get("email"))
-	r.Form.Set("email", newEmail)
-	validateEmail(newEmail, &requestErrors)
-
 	avatar := r.MultipartForm.File["avatar"][0]
 	validateAvatar(avatar, &requestErrors)
 

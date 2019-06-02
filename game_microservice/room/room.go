@@ -20,23 +20,18 @@ import (
 const defaultUserMoveTimeout = 20 * time.Second
 
 var (
-	responseInterval = config.GetDuration("game_ms.pkg.room.response_interval", 500 * time.Millisecond)
+	responseInterval = config.GetInt("game_ms.pkg.room.response_interval")
 	channelCapacity  = config.GetInt("game_ms.pkg.room.channel_capacity")
 	packTotal        = config.GetInt("game_ms.pkg.room.pack_total")
 	packsPerPlayer   = config.GetInt("game_ms.pkg.room.packs_to_ban_count")
-	timeToAnswer     = config.GetDuration("game_ms.pkg.room.time_to_answer", defaultUserMoveTimeout)
-	timeToMove       = config.GetDuration("game_ms.pkg.room.time_to_move", defaultUserMoveTimeout)
-	timeToChoosePack = config.GetDuration("game_ms.pkg.room.time_to_choose_pack", defaultUserMoveTimeout)
+	timeToAnswer     = config.GetInt("game_ms.pkg.room.time_to_answer")
+	timeToMove       = config.GetInt("game_ms.pkg.room.time_to_move")
+	timeToChoosePack = config.GetInt("game_ms.pkg.room.time_to_choose_pack")
 )
 
 const (
 	StatusJoined = iota
 	StatusReady
-	StatusLeft
-	StatusSelectedPacks
-	StatusWannaContinue
-	StatusWannaChangeOpponent
-	StatusWannaQuit
 )
 
 type MessageWrapper struct {
@@ -53,6 +48,8 @@ type Room struct {
 	p2                player.Player
 	p1Status          int
 	p2Status          int
+	p1Rating          uint64
+	p2Rating          uint64
 	active            *player.Player
 	mu                sync.Mutex //Добавление игрока в комнату - конкурентная операция, поэтому нужен мьютекс
 	field             game_field.GameField
@@ -61,6 +58,8 @@ type Room struct {
 	timerToMove       *time.Timer
 	timerToChoosePack *time.Timer
 	syncChan          chan bool
+	KillMePleaseFlag  bool
+	RoomIsBlocked     bool
 	//Если не знаете, что это такое, то погуглите (для любого языка), об этом написано много, но, обычно, довольно сложно
 	//Если по-простому, то это типа стоп-сигнала для всех остальных потоков, который можно включить,
 	//сделать всё, что нужно, пока тебе никто не мешает, и выключить обратно
@@ -86,11 +85,11 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	} else if r.p2 == nil {
 		r.p2 = p
 		r.p1Status = StatusJoined
-		err := r.notifyP2(message.Message{Title: "CONNECTED", Payload: "you've been added to room_manager"})
+		err := r.notifyP2(message.Message{Title: "CONNECTED", Payload: "you've been added to room"})
 		if err != nil {
 			logger.Error("Failed to notify player ", p.UID())
 		}
-		logger.Infof("Player UID %d is now p2 in room_manager", p.UID())
+		logger.Infof("Player UID %d is now p2 in room", p.UID())
 
 		found = true
 	}
@@ -117,4 +116,22 @@ func (r *Room) grantGodMod(p player.Player, token []byte) {
 	//4. Здесь мы проверяем валидность токена, и возвращаем в сообщении игроку матрицу правильных ответов
 	//5. ВАЖНО! Конретно это сообщение надо отправлять напрямую конкретному игроку, а не через notify
 	//TODO develop
+}
+
+func (r *Room) IsClosed(ch <-chan MessageWrapper) bool {
+	select {
+	case <-ch:
+		return true
+	default:
+	}
+	return false
+}
+
+func (r *Room) CloseResponseRequestChannels() {
+	if !r.IsClosed(r.responsesQueue) {
+		close(r.responsesQueue)
+	}
+	if !r.IsClosed(r.requestsQueue) {
+		close(r.requestsQueue)
+	}
 }

@@ -7,7 +7,6 @@ import (
 	log "github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/logger"
 	"github.com/sirupsen/logrus"
 	"strconv"
-	"time"
 )
 
 var logger *log.Logger
@@ -16,7 +15,7 @@ const fieldSize = 8
 
 var (
 	QuestionsNum = config.GetInt("game_ms.pkg.game_field.questions_num")
-	TurnDuration = config.GetDuration("game_field.pkg.game_field.turn_duration", 20*time.Second)
+	TurnDuration = config.GetInt("game_field.pkg.game_field.turn_duration")
 )
 
 var prizePos []Pair
@@ -70,8 +69,8 @@ func (gf *GameField) ResetPlayersPositions() {
 	gf.p2.pos = nil
 }
 
-func (gf *GameField) SetPlayerFirstPosition(){
-	gf.p1.pos = &Pair{1,1}
+func (gf *GameField) SetPlayerFirstPosition() {
+	gf.p1.pos = &Pair{1, 1}
 	return
 }
 

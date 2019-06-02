@@ -77,7 +77,7 @@ func (t *Talker) StartListen(roomId uint64) {
 
 			strPayload := "[" + strings.Join(payload, ",") + "]"
 
-			err = t.Conn.WriteMessage(websocket.BinaryMessage, []byte(strPayload))
+			err = t.Conn.WriteMessage(websocket.TextMessage, []byte(strPayload))
 			if err != nil {
 				logger.Error(err.Error())
 			}

@@ -23,9 +23,11 @@ func init() {
 }
 
 var userManager services.UserMSClient
+
 const (
 	StartGameDelay = 1300
 )
+
 func init() {
 	var err error
 	grpcConn, err := grpc.Dial(
@@ -58,7 +60,7 @@ func (r *Room) buildEnv() {
 	questions, err := database.GetInstance().GetQuestions(packIDs)
 	if err != nil || len(questions) < game_field.QuestionsNum {
 		logger.Error("Error occurred while fetching question from DB:", err)
-		//TODO deal with error, maybe kill the room_manager
+		//TODO deal with error, maybe kill the room
 	}
 
 	r.field.Build(questions)
@@ -69,12 +71,12 @@ func (r *Room) buildEnv() {
 // TODO PREPAREMATCH AND BUILD ENV (simultaneously (optional), then wait them both to work out, use with WaitGroup )
 
 func (r *Room) prepareMatch() {
-	
+
 	//Где-то здесь добавить выбор паков игроками
 
 	logger.Info("Entered Prepare Match Room")
 	logger.Info("Delay")
-	time.Sleep(StartGameDelay*time.Millisecond)
+	time.Sleep(StartGameDelay * time.Millisecond)
 	//BuildEnv достает только выбранные паки и строит игровое поле по ним
 	r.buildEnv()
 
@@ -121,7 +123,7 @@ func (r *Room) prepareMatch() {
 	}
 	payload := struct {
 		CellsSlice []Pair
-		Time       time.Duration
+		Time       int
 	}{
 		CellsSlice: cells,
 		Time:       timeToMove,
@@ -129,7 +131,7 @@ func (r *Room) prepareMatch() {
 	//Send Available cells to active player (Do it every time, after giving player a turn rights
 	r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.AvailableCells, Payload: payload}}
 	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.AvailableCells, Payload: payload}}
-	r.timerToMove = time.AfterFunc(timeToMove*time.Second, r.GoToTimerFunc)
+	r.timerToMove = time.AfterFunc(time.Duration(timeToMove)*time.Second, r.GoToTimerFunc)
 }
 
 //Точка входа в игровой процесс
@@ -166,7 +168,7 @@ func (r *Room) startGameProcess() {
 	logger.Info("Packs", packs)
 	payload := struct {
 		Packs []database.Pack
-		Time  time.Duration
+		Time  int
 	}{
 		Packs: packs,
 		Time:  timeToChoosePack,
@@ -177,7 +179,7 @@ func (r *Room) startGameProcess() {
 	r.responsesQueue <- MessageWrapper{&r.p1, message.Message{Title: message.YourTurn, Payload: nil}}
 	r.responsesQueue <- MessageWrapper{&r.p2, message.Message{Title: message.OpponentTurn, Payload: nil}}
 	r.waitForSyncMsg = message.NotDesiredPack
-	r.timerToChoosePack = time.AfterFunc(timeToChoosePack, r.ChoosePackTimerFunc)
+	r.timerToChoosePack = time.AfterFunc(time.Duration(timeToChoosePack)*time.Second, r.ChoosePackTimerFunc)
 	logger.Infof("StartMatch : Game process has started p1 UID: %d, p2 UID: %d", r.p1.UID(), r.p2.UID())
 }
 

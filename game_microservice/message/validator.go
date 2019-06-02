@@ -40,19 +40,6 @@ func (m *Message) IsValid() bool {
 		{
 			return true
 		}
-
-	case Continue:
-		{
-			return true
-		}
-	case ChangeOpponent:
-		{
-			return true
-		}
-	case Quit:
-		{
-			return true
-		}
 	case State:
 		{
 			return true

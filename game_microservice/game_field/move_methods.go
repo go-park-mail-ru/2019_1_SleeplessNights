@@ -7,7 +7,6 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/database"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
-	"time"
 )
 
 func isPrizePosition(x, y int) bool {
@@ -164,11 +163,12 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 	gf.regQuestion = *(gf.GetQuestionByCell(nextX, nextY))
 	payload := struct {
 		Question database.Question
-		Time     time.Duration
+		Time     int
 	}{
 		Question: gf.regQuestion,
-		Time:     TurnDuration,
+		Time:     20,
 	}
+	logger.Info("Question Time: ", payload.Time)
 	question, err := json.Marshal(payload)
 	if err != nil {
 		logger.Info("question unmarshal error")
