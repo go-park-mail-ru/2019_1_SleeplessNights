@@ -17,6 +17,8 @@ func init() {
 }
 func main() {
 	defer closer.Close()
+	database.GetInstance().CleanerDBForTests()
+
 	database.GetInstance().PopulateDatabase()
 
 	PORT := config.GetString("game_ms.port")
