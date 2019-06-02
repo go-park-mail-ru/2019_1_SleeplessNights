@@ -21,6 +21,7 @@ func init() {
 var userManager services.UserMSClient
 
 func init() {
+	logger.SetLogLevel(logrus.TraceLevel)
 	var err error
 	grpcConn, err := grpc.Dial(
 		config.GetString("user_ms.address"),
@@ -44,9 +45,9 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Add("Referer", r.URL.String())
 		sessionCookie, err := r.Cookie("session_token")
-		if err != nil {
+		if err != nil || sessionCookie.Value == "" {
 			logger.Info("Got connection with missing cookie")
-			if err == http.ErrNoCookie && !strict {
+			if (err == http.ErrNoCookie || sessionCookie.Value == "")  && !strict {
 				logger.Info("Trying to connect anonymous client")
 
 				user := services.User{
