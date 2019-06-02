@@ -343,7 +343,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 	if !ok {
 		logger.Error(`PackSelectorHandler, couldn't find value in map st with key "pack_id" `)
 	}
-
+	packId = packId + 1
 	var secondPlayer *player.Player
 	var thisPlayer *player.Player
 
