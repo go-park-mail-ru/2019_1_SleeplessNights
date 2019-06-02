@@ -7,7 +7,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-const defaultAvatar = "default-avatar.png"
+const defaultAvatar = "default_avatar.jpg"
 
 func (us *userManager) CreateUser(ctx context.Context, in *services.NewUserData) (*services.User, error) {
 
