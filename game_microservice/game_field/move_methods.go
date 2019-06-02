@@ -166,8 +166,9 @@ func (gf *GameField) tryMovePlayer(player *gfPlayer, nextX int, nextY int) (e []
 		Time     int
 	}{
 		Question: gf.regQuestion,
-		Time:     TurnDuration,
+		Time:     20,
 	}
+	logger.Info("Question Time: ", payload.Time)
 	question, err := json.Marshal(payload)
 	if err != nil {
 		logger.Info("question unmarshal error")
