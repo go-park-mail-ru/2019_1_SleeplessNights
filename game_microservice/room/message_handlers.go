@@ -339,7 +339,7 @@ func (r *Room) LeaveHandler(m MessageWrapper) bool {
 	if r.timerToChoosePack != nil {
 		r.timerToChoosePack.Stop()
 	}
-	close((*leaverPlayer).Subscribe())
+
 	if &r.p1 == leaverPlayer {
 		leaver_idx = "1"
 		stayerPlayer = &r.p2

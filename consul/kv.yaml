@@ -62,7 +62,7 @@ dev:
           - x: 4
             "y": 4
       game:
-        max_rooms: 100
+        max_rooms: 300
         player_input_queue_len: 100
       database:
         max_connections: 100
