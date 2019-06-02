@@ -155,25 +155,35 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 				winnerRating = r.p2Rating
 				loserRating = r.p1Rating
 			}
-
-			results := services.MatchResults{
-				Winner:       (*r.active).UID(),
-				Loser:        (*secondPlayer).UID(),
-				WinnerRating: winnerRating,
-				LoserRating:  loserRating,
-			}
-			_, err := userManager.UpdateStats(context.Background(), &results)
-			if err != nil {
-				logger.Error("Failed to update Match Statistics:", err)
+			if secondPlayer != nil {
+				results := services.MatchResults{
+					Winner:       (*r.active).UID(),
+					Loser:        (*secondPlayer).UID(),
+					WinnerRating: winnerRating,
+					LoserRating:  loserRating,
+				}
+				_, err := userManager.UpdateStats(context.Background(), &results)
+				if err != nil {
+					logger.Error("Failed to update Match Statistics:", err)
+				}
+				(*secondPlayer).Close()
+				logger.Info("WinPrize, second Close() called")
 			}
 			r.KillMePleaseFlag = true
+			if r.timerToAnswer != nil {
+				r.timerToAnswer.Stop()
+			}
+			if r.timerToMove != nil {
+				r.timerToMove.Stop()
+			}
+			if r.timerToChoosePack != nil {
+				r.timerToChoosePack.Stop()
+			}
 
-			logger.Info("No Moves Left, r.KillMePleaseFlag = true")
-			time.AfterFunc(timeToWait*time.Second, func() {
-				r.p1.Close()
-				r.p2.Close()
-				logger.Info("WinPrize, r.p Close() called")
-			})
+			(*r.active).Close()
+			logger.Info("WinPrize, active Close() called")
+			logger.Info("Won The Prize, room is to be deleted, r.KillMePleaseFlag = true")
+
 		}
 	}
 	return true
@@ -258,13 +268,21 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 			logger.Error("Failed to update Match Statistics:", err)
 		}
 		r.KillMePleaseFlag = true
-		logger.Info("No Moves Left, r.KillMePleaseFlag = true")
 
-		time.AfterFunc(timeToWait*time.Second, func() {
-			r.p1.Close()
-			r.p2.Close()
-			logger.Info("No Moves Left, r.p Close() called")
-		})
+		if r.timerToAnswer != nil {
+			r.timerToAnswer.Stop()
+		}
+		if r.timerToMove != nil {
+			r.timerToMove.Stop()
+		}
+		if r.timerToChoosePack != nil {
+			r.timerToChoosePack.Stop()
+		}
+
+		logger.Info("No Moves Left, r.KillMePleaseFlag = true")
+		r.p1.Close()
+		r.p2.Close()
+		logger.Info("No Moves Left, Close channels")
 
 	} else {
 		//Смена хода после ответа игрока
@@ -312,10 +330,20 @@ func (r *Room) LeaveHandler(m MessageWrapper) bool {
 	var stayerPlayer *player.Player
 	leaver_idx := ""
 
+	if r.timerToAnswer != nil {
+		r.timerToAnswer.Stop()
+	}
+	if r.timerToMove != nil {
+		r.timerToMove.Stop()
+	}
+	if r.timerToChoosePack != nil {
+		r.timerToChoosePack.Stop()
+	}
+	close((*leaverPlayer).Subscribe())
 	if &r.p1 == leaverPlayer {
 		leaver_idx = "1"
-
 		stayerPlayer = &r.p2
+
 		if stayerPlayer != nil {
 			r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player2 left the game"}}
 		}
@@ -353,13 +381,17 @@ func (r *Room) LeaveHandler(m MessageWrapper) bool {
 			logger.Error("Failed to update Match Statistics:", err)
 		}
 		r.KillMePleaseFlag = true
-		logger.Info("No Moves Left, r.KillMePleaseFlag = true")
-		time.AfterFunc(timeToWait*time.Second, func() {
-			r.p1.Close()
-			logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
+
+		if &r.p1 == leaverPlayer {
 			r.p2.Close()
-			logger.Info("Leave Handler, r.p Close() called ID ", r.p1.ID())
-		})
+		}
+
+		if &r.p2 == leaverPlayer {
+			r.p1.Close()
+		}
+
+		logger.Info("Player Leaves, r.KillMePleaseFlag = true")
+
 	} else {
 		logger.Info("Player left empty room, room is to be deleted")
 	}

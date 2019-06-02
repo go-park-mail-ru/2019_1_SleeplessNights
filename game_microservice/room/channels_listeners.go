@@ -50,12 +50,17 @@ func (r *Room) StartResponsesSender() {
 	logger.Info("started listening to response channel")
 	go func() {
 		for serverResponse := range r.responsesQueue {
-			logger.Info("Got message to Send recepient: UID", (*serverResponse.player).UID(), "Message:", serverResponse.msg)
-			err := (*serverResponse.player).Send(serverResponse.msg)
-			if err != nil {
-				logger.Error("responseQueue: error trying to send response to player", err)
+			if serverResponse.player != nil {
+				logger.Info("Got message to Send recepient: UID", (*serverResponse.player).UID(), "Message:", serverResponse.msg)
+				err := (*serverResponse.player).Send(serverResponse.msg)
+				if err != nil {
+					logger.Error("responseQueue: error trying to send response to player", err)
+				}
+			} else {
+				logger.Warning("Attempt to perform nill dereference while sending")
 			}
+
 		}
-		time.Sleep(time.Duration(responseInterval)*time.Second)
+		time.Sleep(time.Duration(responseInterval) * time.Second)
 	}()
 }

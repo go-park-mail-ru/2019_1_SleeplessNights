@@ -36,8 +36,9 @@ func (g *gameFacade) startBalance() {
 				//Search for a player can join
 				for k, r := range g.rooms {
 					if r.KillMePleaseFlag == true {
-						r.CloseResponseRequestChannels()
-						delete(g.rooms, k)
+						logger.Info("Trying to delete Room k=", k, "r=", r)
+						// r.CloseResponseRequestChannels()
+						// delete(g.rooms, k)
 						logger.Info("Game, Room" + fmt.Sprint(k) + "was deleted from map")
 					} else {
 						if r.TryJoin(p) {

@@ -31,8 +31,10 @@ func (wsPlayer *websocketPlayer) StartListen() {
 			if websocket.IsUnexpectedCloseError(err) {
 				logger.Infof("Player %d closed the connection", wsPlayer.uid)
 				wsPlayer.in <- message.Message{Title: message.Leave}
-
+				logger.Info("Before Close attempt in Start Listen Unxexpected Close")
 				wsPlayer.Close()
+				logger.Info("After Close attempt in Start Listen Unxexpected Close")
+
 				return
 			}
 		}
@@ -65,11 +67,18 @@ func (wsPlayer *websocketPlayer) UID() uint64 {
 }
 
 func (wsPlayer *websocketPlayer) Close() {
+
 	logger.Infof("Player UID  %d closed the connection", wsPlayer.uid)
 	err := wsPlayer.conn.Close()
 	if err != nil {
 		logger.Error(err)
 	}
+	defer func() {
+		err := recover()
+		if err != nil {
+			logger.Error("(websocketPlayer) Close()", err)
+		}
+	}()
 	wsPlayer.in <- message.Message{Title: message.Leave}
 	close(wsPlayer.in)
 }
