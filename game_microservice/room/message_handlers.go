@@ -1,7 +1,6 @@
 package room
 
 import (
-	"fmt"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/event"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/player"
@@ -167,13 +166,12 @@ func (r *Room) GoToHandler(m MessageWrapper) bool {
 				if err != nil {
 					logger.Error("Failed to update Match Statistics:", err)
 				}
-				(*secondPlayer).Close()
 				logger.Info("WinPrize, second Close() called")
 			}
-			(*r.active).Close()
+
 			logger.Info("WinPrize, active Close() called")
 			logger.Info("Won The Prize, room is to be deleted, r.KillMePleaseFlag = true")
-
+			r.KillMePleaseFlag = true
 		}
 	}
 	return true
@@ -269,11 +267,6 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 			r.timerToChoosePack.Stop()
 		}
 
-		logger.Info("No Moves Left, r.KillMePleaseFlag = true")
-		r.p1.Close()
-		r.p2.Close()
-		logger.Info("No Moves Left, Close channels")
-
 	} else {
 		//Смена хода после ответа игрока
 		r.responsesQueue <- MessageWrapper{r.active, message.Message{Title: message.OpponentTurn, Payload: nil}}
@@ -314,87 +307,7 @@ func (r *Room) ClientAnswerHandler(m MessageWrapper) bool {
 }
 
 func (r *Room) LeaveHandler(m MessageWrapper) bool {
-	logger.Info("entered Leave Handler")
-	var leaverPlayer *player.Player
-	leaverPlayer = m.player
-	var stayerPlayer *player.Player
-	leaver_idx := ""
-
-	if r.timerToAnswer != nil {
-		r.timerToAnswer.Stop()
-	}
-	if r.timerToMove != nil {
-		r.timerToMove.Stop()
-	}
-	if r.timerToChoosePack != nil {
-		r.timerToChoosePack.Stop()
-	}
-	logger.Info("Stopped Timers")
-	if &r.p1 == leaverPlayer {
-		leaver_idx = "1"
-		stayerPlayer = &r.p2
-
-		if stayerPlayer != nil {
-			r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player2 left the game"}}
-			time.Sleep(time.Second)
-		}
-	} else {
-		leaver_idx = "2"
-		stayerPlayer = &r.p1
-		if stayerPlayer != nil {
-
-			r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{message.Leave, "Player1 left the game"}}
-			time.Sleep(time.Second)
-		}
-	}
-	if stayerPlayer != nil {
-		r.responsesQueue <- MessageWrapper{stayerPlayer, message.Message{Title: message.Win, Payload: nil}}
-		time.Sleep(time.Second)
-		logger.Info("Leave Handler, Player" + leaver_idx + " ID " + fmt.Sprint((*leaverPlayer).ID()) + "Closed Connection")
-		var winnerRating uint64
-		var loserRating uint64
-
-		idx := r.getPlayerIdx(stayerPlayer)
-		if idx == 1 {
-			winnerRating = r.p1Rating
-			loserRating = r.p2Rating
-		} else {
-			winnerRating = r.p2Rating
-			loserRating = r.p1Rating
-		}
-
-		results := services.MatchResults{
-			Winner:       (*stayerPlayer).UID(),
-			Loser:        (*leaverPlayer).UID(),
-			WinnerRating: winnerRating,
-			LoserRating:  loserRating,
-		}
-		logger.Info("stats updating started")
-		_, err := userManager.UpdateStats(context.Background(), &results)
-
-		if err != nil {
-			logger.Error("Failed to update Match Statistics:", err)
-		}
-		logger.Info("stats updating finished")
-
-		r.KillMePleaseFlag = true
-		logger.Info("Going to close r.p2")
-		if &r.p1 == leaverPlayer {
-			r.p2.Close()
-		}
-		logger.Info("r.p2 is Closed")
-
-		logger.Info("Going to close r.p1")
-		if &r.p2 == leaverPlayer {
-			r.p1.Close()
-		}
-		logger.Info("r.p1 is Closed")
-
-		logger.Info("Stayer Player Leaves, r.KillMePleaseFlag = true")
-
-	} else {
-		logger.Info("Player left empty room, room is to be deleted")
-	}
+	logger.Info("___________________entered Leave Handler__________________________")
 	return true
 }
 

@@ -11,7 +11,6 @@ func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 		isValid = true
 		return
 	}
-
 	if wm.msg.Title == message.State {
 		isValid = true
 

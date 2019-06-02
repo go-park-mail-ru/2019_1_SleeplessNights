@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/gorilla/websocket"
 	"sync"
+	"time"
 )
 
 type websocketPlayer struct {
@@ -21,6 +22,13 @@ func (wsPlayer *websocketPlayer) StartListen() {
 	//Если его не вызвать, то игрок не сможет сообщить серверу о своих действиях
 	for {
 		var msg message.Message
+
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Error("Panic recovered ", r)
+			}
+
+		}()
 		err := wsPlayer.conn.ReadJSON(&msg)
 		if err != nil {
 			//В случае получения ошибки нам нельзя прекращать слушать клиента, т.к. возможно, что
@@ -29,10 +37,12 @@ func (wsPlayer *websocketPlayer) StartListen() {
 			// то-то типа "от кигрока пришло битое сообщение"
 
 			if websocket.IsUnexpectedCloseError(err) {
+				logger.Error("!!!!!!!!!!!!!!!!!!   PLAYER CLOSED CONNECTION   !!!!!!!!!!!!!!!!!!!!1")
 				logger.Infof("Player %d closed the connection", wsPlayer.uid)
-				wsPlayer.in <- message.Message{Title: message.Leave}
+				//wsPlayer.in <- message.Message{Title: message.Leave}
 				logger.Info("Before Close attempt in Start Listen Unxexpected Close")
-				wsPlayer.Close()
+				time.Sleep(time.Second)
+				//wsPlayer.Close()
 				logger.Info("After Close attempt in Start Listen Unxexpected Close")
 
 				return
@@ -40,6 +50,7 @@ func (wsPlayer *websocketPlayer) StartListen() {
 		}
 		logger.Info("Got from connection", msg)
 		wsPlayer.in <- msg
+
 	}
 }
 
