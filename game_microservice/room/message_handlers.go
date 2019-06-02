@@ -16,7 +16,7 @@ type Pair struct {
 }
 
 const (
-	timeToWait = 5
+	timeToWait = 2
 )
 
 func (r *Room) ReadyHandler(m MessageWrapper) bool {
