@@ -84,11 +84,11 @@ func (r *Room) TryJoin(p player.Player) (success bool) {
 	} else if r.p2 == nil {
 		r.p2 = p
 		r.p1Status = StatusJoined
-		err := r.notifyP2(message.Message{Title: "CONNECTED", Payload: "you've been added to room_manager"})
+		err := r.notifyP2(message.Message{Title: "CONNECTED", Payload: "you've been added to room"})
 		if err != nil {
 			logger.Error("Failed to notify player ", p.UID())
 		}
-		logger.Infof("Player UID %d is now p2 in room_manager", p.UID())
+		logger.Infof("Player UID %d is now p2 in room", p.UID())
 
 		found = true
 	}
