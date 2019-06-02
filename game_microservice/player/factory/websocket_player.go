@@ -3,6 +3,7 @@ package factory
 import (
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/game_microservice/message"
 	"github.com/gorilla/websocket"
+	"sync"
 )
 
 type websocketPlayer struct {
@@ -12,6 +13,7 @@ type websocketPlayer struct {
 	uid  uint64
 	in   chan message.Message
 	conn *websocket.Conn
+	mu   sync.Mutex
 }
 
 func (wsPlayer *websocketPlayer) StartListen() {
@@ -41,10 +43,12 @@ func (wsPlayer *websocketPlayer) StartListen() {
 
 func (wsPlayer *websocketPlayer) Send(msg message.Message) (err error) {
 	//Получаем наш месседж, который хотим отправить, и отправляем его в формате JSON
+	wsPlayer.mu.Lock()
 	err = wsPlayer.conn.WriteJSON(msg)
 	if err != nil {
 		return
 	}
+	wsPlayer.mu.Unlock()
 	return nil
 }
 
