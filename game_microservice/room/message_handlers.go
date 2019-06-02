@@ -380,7 +380,7 @@ func (r *Room) PackSelectorHandler(m MessageWrapper) bool {
 			logger.Error("pack with id", packId, "wasn't found in packs slice")
 		}
 	}
-	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: int64(packId)}}}
+	r.responsesQueue <- MessageWrapper{secondPlayer, message.Message{Title: message.SelectedPack, Payload: message.PackID{PackId: int64(packId - 1)}}}
 
 	if len(*packs) == packTotal-2*packsPerPlayer {
 		r.active = &r.p1
