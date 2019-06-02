@@ -24,17 +24,14 @@ const (
 	OpponentTurn = "OPPONENT_TURN" // Оповещаемк клиента о том, что ходит его оппонент
 	SelectedCell = "SELECTED_CELL" // выбранная для хода Клетка
 
-	AvailableCells    = "AVAILABLE_CELLS"    // Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
-	YourQuestion      = "QUESTION"           // Даём клиенту вопрос, связанный с клеткой; payload = question
-	OpponentQuestion  = "OPPONENT_QUESTION"  // Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
-	OpponentAnswer    = "OPPONENT_ANSWER"    // Оповещаем клиента об ответе, который дал его оппонент; payload = int
-	YourAnswer        = "YOUR_ANSWER"        // Оповещаем обоих клиентов о том, что какой ответ был выбран а какой был правильный
-	Loss              = "LOSS"               // Оповещаем клиента о его поражении
-	Win               = "WIN"                // Оповещаем клиента о его победе
-	OpponentProfile   = "OPPONENT_PROFILE"   // Данные оппонента
-	WannaPlayAgain    = "WANNA_PLAY_AGAIN"   // Даём клиенту выбор продолжить играть или нет
-	OpponentLeaves    = "OPPONENT_QUITS"     // Оповещаем клиента о желании соперника продолжить
-	OpponentContinues = "OPPONENT_CONTINUES" // Оповещаем клиента о желании выйти из игры
+	AvailableCells   = "AVAILABLE_CELLS"   // Оповещаем клиента о том, на какие клетки он может ходить; payload = []pair
+	YourQuestion     = "QUESTION"          // Даём клиенту вопрос, связанный с клеткой; payload = question
+	OpponentQuestion = "OPPONENT_QUESTION" // Оповещаем клиента о вопросе, на который отвечает его оппонент; payload = question
+	OpponentAnswer   = "OPPONENT_ANSWER"   // Оповещаем клиента об ответе, который дал его оппонент; payload = int
+	YourAnswer       = "YOUR_ANSWER"       // Оповещаем обоих клиентов о том, что какой ответ был выбран а какой был правильный
+	Loss             = "LOSS"              // Оповещаем клиента о его поражении
+	Win              = "WIN"               // Оповещаем клиента о его победе
+	OpponentProfile  = "OPPONENT_PROFILE"  // Данные оппонента
 
 	CurrentState           = "CURRENT_STATE"           // Текущее состояние игры
 	ThemesRequest          = "THEMES_REQUEST"          // Массив тем игрового поля

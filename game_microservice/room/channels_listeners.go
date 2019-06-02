@@ -47,7 +47,6 @@ func (r *Room) StartRequestsListening() {
 }
 
 func (r *Room) StartResponsesSender() {
-
 	logger.Info("started listening to response channel")
 	go func() {
 		for serverResponse := range r.responsesQueue {
