@@ -17,20 +17,17 @@ func (r *Room) isSyncValid(wm MessageWrapper) (isValid bool) {
 		return
 	}
 
-	if wm.msg.Title == message.NotDesiredPack && r.active == wm.player {
+	if wm.msg.Title == message.NotDesiredPack {
 		isValid = true
-
 		return
 	}
-
 	if wm.msg.Title == message.ThemesRequest {
 		isValid = true
-
 		return
 	}
-
 	if wm.player != r.active && (wm.msg.Title != message.Ready) {
 		logger.Error("isSync Player addr error")
+
 		isValid = false
 		return
 	}
