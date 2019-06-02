@@ -53,7 +53,7 @@ func MiddlewareAuth(next AuthHandler, strict bool) http.Handler {
 					Id:         0,
 					Email:      "",
 					Nickname:   "Guest",
-					AvatarPath: "default_avatar.jpg",
+					AvatarPath: "default-avatar.png",
 				}
 				next(&user, w, r)
 				return

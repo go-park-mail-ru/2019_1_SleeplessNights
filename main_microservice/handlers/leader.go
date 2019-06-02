@@ -3,36 +3,38 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/main_microservice/handlers/helpers"
-	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/config"
 	"github.com/go-park-mail-ru/2019_1_SleeplessNights/shared/services"
 	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
 )
 
-var limit = uint64(config.GetInt("main_ms.pkg.handlers.leaderborad_page_len"))
-
 func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("page")
 	if page == "" {
-		page = "0"
+		page = "1"
 	}
 
-	since, err := strconv.ParseUint(page, 10, 32)
+	since, err := strconv.ParseUint(page, 10, 64)
 	if err != nil {
 		logger.Errorf("Failed to parse page: %v", err.Error())
-		helpers.Return500(&w, err)
+		helpers.Return400(&w,helpers.ErrorSet{err.Error()})
 		return
 	}
 
 	leaders, err := userManager.GetLeaderBoardPage(context.Background(),
 		&services.PageData{
-			Since: since * limit,
-			Limit: limit,
+			Since: since,
 		})
 	if err != nil {
 		logger.Errorf("Failed to get leader board page: %v", err.Error())
 		helpers.Return500(&w, err)
+		return
+	}
+
+	if len(leaders.Leaders) == 0 {
+		logger.Errorf("Page didn't find")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -43,7 +45,6 @@ func LeadersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = w.Write(data)
-	logger.Info(data)
 	if err != nil {
 		logger.Errorf("Failed to write response: %v", err.Error())
 		helpers.Return500(&w, err)

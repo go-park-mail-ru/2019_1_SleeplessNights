@@ -276,7 +276,8 @@ func (m *PageData) GetLimit() uint64 {
 }
 
 type LeaderBoardPage struct {
-	Leaders              []*Profile `protobuf:"bytes,1,rep,name=leaders,proto3" json:"leaders,omitempty"`
+	PagesCount           uint64     `protobuf:"varint,1,opt,name=pagesCount,proto3" json:"pagesCount,omitempty"`
+	Leaders              []*Profile `protobuf:"bytes,2,rep,name=leaders,proto3" json:"leaders,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
 	XXX_unrecognized     []byte     `json:"-"`
 	XXX_sizecache        int32      `json:"-"`
@@ -306,6 +307,13 @@ func (m *LeaderBoardPage) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_LeaderBoardPage proto.InternalMessageInfo
+
+func (m *LeaderBoardPage) GetPagesCount() uint64 {
+	if m != nil {
+		return m.PagesCount
+	}
+	return 0
+}
 
 func (m *LeaderBoardPage) GetLeaders() []*Profile {
 	if m != nil {

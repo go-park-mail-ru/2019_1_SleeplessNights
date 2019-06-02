@@ -3,9 +3,11 @@
 rebuild=false
 tidy=false
 run_ms=true
+prod=false
 while [[ -n "$1" ]]
 do
 case "$1" in
+--prod) prod=true;;
 --rebuild) rebuild=true;;
 --tidy) tidy=true;;
 --no-ms) run_ms=false;;
@@ -57,7 +59,12 @@ then
     #Запускаем User-MS
     ${BASEPATH}/user_microservice/run.sh
     #Запускаем Main-MS
-    ${BASEPATH}/main_microservice/run.sh
+    if ${prod}
+    then
+        ${BASEPATH}/main_microservice/run.sh --prod
+    else
+        ${BASEPATH}/main_microservice/run.sh
+    fi
     #Запускаем Game-MS
     ${BASEPATH}/game_microservice/run.sh
     #Запускаем Chat-MS

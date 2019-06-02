@@ -39,7 +39,7 @@ func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	requestErrors:= helpers.ValidateUpdateProfileRequest(r)
+	requestErrors := helpers.ValidateUpdateProfileRequest(r)
 	if requestErrors != nil {
 		logger.Errorf("RequestErrors isn't empty.")
 		helpers.Return400(&w, requestErrors)
@@ -47,10 +47,11 @@ func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Re
 	}
 
 	user.Nickname = r.MultipartForm.Value["nickname"][0]
+	logger.Info("nickname ", user.Nickname)
 	newAvatar := r.MultipartForm.File["avatar"][0]
+	logger.Info("newAvatar ", newAvatar)
 	avatarName := uuid.NewV4().String() + filepath.Ext(newAvatar.Filename)
 	user.AvatarPath = avatarName
-
 	_, err = userManager.UpdateProfile(context.Background(), user)
 	if err != nil {
 		logger.Errorf("Failed to update profile: %v", err.Error())
@@ -75,12 +76,13 @@ func ProfileUpdateHandler(user *services.User, w http.ResponseWriter, r *http.Re
 	}()
 
 	avatarBytes, err := ioutil.ReadAll(avatarFile)
+	logger.Info("Avatar bytes :", avatarBytes)
 	if err != nil {
 		logger.Errorf("Failed to read all file: %v", err.Error())
 		helpers.Return500(&w, err)
 		return
 	}
-
+	logger.Info(" New Image is saved to \"" + os.Getenv("BASEPATH") + AvatarPrefix + avatarName + "\" ")
 	file, err := os.Create(os.Getenv("BASEPATH") + AvatarPrefix + avatarName)
 	if err != nil {
 		logger.Errorf("Failed to create file: %v", err.Error())
